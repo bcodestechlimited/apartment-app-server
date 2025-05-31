@@ -16,8 +16,6 @@ import agenda from "../../lib/agenda.js";
 export class AuthService {
   static async register(userData: RegisterDTO) {
     const { email } = userData;
-    console.log({ userData });
-
     const user = await UserService.createUser({
       ...userData,
     });
@@ -31,8 +29,9 @@ export class AuthService {
     //   // user.firstName
     // );
 
-    await agenda.now("send_otp_email", {
+    agenda.now("send_otp_email", {
       email: user.email,
+      username: user.firstName,
     });
 
     return ApiSuccess.created(
@@ -43,6 +42,8 @@ export class AuthService {
 
   static async login(userData: LoginDTO) {
     const { email, password } = userData;
+
+    console.log({ userData });
     const user = await UserService.findUserByEmail(email);
     await comparePassword(password, user.password as string);
 
@@ -52,7 +53,7 @@ export class AuthService {
     const token = generateToken({ userId: user._id });
 
     return ApiSuccess.ok("Login Successful", {
-      user: { email: user.email, id: user._id },
+      user,
       token,
     });
   }

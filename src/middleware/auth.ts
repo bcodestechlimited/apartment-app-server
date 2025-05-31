@@ -5,13 +5,19 @@ import { ApiError } from "../utils/responseHandler.js";
 
 const isAuth = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const authHeader = req.headers.authorization;
+    // const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    // if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    //   throw ApiError.unauthorized("No Token Provided");
+    // }
+    // const token = authHeader.split(" ")[1];
+
+    const token = req.cookies.token;
+
+    if (!token) {
       throw ApiError.unauthorized("No Token Provided");
     }
 
-    const token = authHeader.split(" ")[1];
     const payload = verifyToken(token as string);
 
     req.user = payload;

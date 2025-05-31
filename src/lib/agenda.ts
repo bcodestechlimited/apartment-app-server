@@ -9,13 +9,16 @@ const agenda = new Agenda({
 });
 
 agenda.define("send_otp_email", async (job, done) => {
-  const { email } = job.attrs.data as { email: string };
+  const { email, username } = job.attrs.data as {
+    email: string;
+    username: string;
+  };
 
   console.log(`Running job to send OTP email to ${email}`);
 
   try {
-    const result = await mailService.sendOTPViaEmail(email, "-");
-    logger.error(`Email sent to ${email}`, { result });
+    const result = await mailService.sendOTPViaEmail(email, username);
+    logger.info(`Email sent to ${email}`, { result });
     done();
   } catch (err) {
     logger.error(`Failed to send OTP to ${email}:`, { err });

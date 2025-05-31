@@ -7,14 +7,13 @@ import User from "./user.model";
 
 class UserService {
   static async createUser(userData: RegisterDTO): Promise<IUser> {
-    const { firstName, lastName, password, email, phoneNumber } = userData;
+    const { firstName, lastName, password, email } = userData;
 
     const hashedPassword = await hashPassword(password);
 
     const user = new User({
-      firstName,
-      lastName,
-      phoneNumber,
+      firstName: firstName || "",
+      lastName: lastName || "",
       email,
       password: hashedPassword,
     });
@@ -24,7 +23,7 @@ class UserService {
     return user;
   }
   static async findUserByEmail(email: string): Promise<IUser> {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
       throw ApiError.notFound("No user with this email");
     }

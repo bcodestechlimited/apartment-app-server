@@ -1,6 +1,6 @@
 import type { Document, ObjectId } from "mongoose";
 
-export type UserRolesEnum = ("user" | "admin")[];
+export type UserRolesEnum = ("user" | "landlord" | "tenant" | "admin")[];
 
 export interface IUser extends Document {
   firstName: string;

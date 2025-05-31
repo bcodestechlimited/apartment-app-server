@@ -14,6 +14,18 @@ export class AuthController {
   static async login(req: Request, res: Response) {
     const userData = req.body;
     const result = await AuthService.login(userData);
+    const { token } = result.data;
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 3 * 24 * 60 * 60 * 1000,
+      path: "/",
+    });
+
+    result.data.token = undefined;
+
     res.status(200).json(result);
   }
 

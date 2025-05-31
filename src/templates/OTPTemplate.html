@@ -4,196 +4,118 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>OTP Email</title>
+    <title>OTP Request</title>
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <style>
       body {
         margin: 0;
-        font-family: "Poppins", sans-serif;
+        padding: 0;
+        font-family: "Inter", sans-serif;
+        background-color: #f9f9f9;
+        color: #333333;
+        font-size: 16px;
+        line-height: 1.5;
+        text-align: left;
+      }
+
+      .email-container {
+        max-width: 600px;
+        margin: 40px auto;
         background: #ffffff;
-        font-size: 14px;
-        text-align: center; /* Center all text */
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
       }
 
-      .container {
-        max-width: 680px;
-        margin: 0 auto;
-        padding: 45px 30px 60px;
-        background: #f4f7ff;
-        /* background-image: url(https://archisketch-resources.s3.ap-northeast-2.amazonaws.com/vrstyler/1661497957196_595865/email-template-background-banner); */
-        background-repeat: no-repeat;
-        background-size: 800px 452px;
-        background-position: top center;
-        color: #434343;
-      }
-
-      header,
-      main,
-      footer {
+      .email-header {
+        background-color: #004542;
+        padding: 20px;
         text-align: center;
-        margin: 0 auto;
       }
 
-      header p {
-        font-size: 1.6rem;
-      }
-
-      h1 {
+      .email-header h1 {
         margin: 0;
         font-size: 24px;
-        font-weight: 500;
-        color: #1f1f1f;
-      }
-
-      p {
-        margin: 0;
-        font-size: 16px;
-        font-weight: 500;
-        color: #1f1f1f;
-        margin-top: 17px;
-      }
-
-      .otp {
-        font-size: 40px;
         font-weight: 600;
-        letter-spacing: 25px;
-        color: #ba3d4f;
-        margin-top: 60px;
+        color: #ffffff;
       }
 
-      footer {
-        width: 100%;
-        max-width: 490px;
-        margin: 20px auto 0;
-        border-top: 1px solid #e6ebf1;
+      .email-body {
+        padding: 30px;
       }
 
-      footer p {
-        margin: 0;
-        margin-top: 8px;
-        color: #434343;
+      .email-body h2 {
+        font-size: 22px;
+        font-weight: 500;
+        margin-bottom: 15px;
+        color: #333333;
       }
 
-      footer div {
-        margin: 0;
-        margin-top: 16px;
+      .email-body p {
+        margin: 0 0 20px;
+        font-size: 16px;
+        color: #555555;
       }
 
-      footer div a {
-        display: inline-block;
-        margin-left: 8px;
+      .otp-code {
+        font-size: 32px;
+        font-weight: 700;
+        text-align: center;
+        letter-spacing: 6px;
+        color: #004542;
+        margin: 20px 0;
       }
 
-      .time {
-        font-weight: 800;
-        color: #1f1f1f;
+      .email-footer {
+        padding: 20px;
+        background: #f1f5f9;
+        text-align: center;
+        font-size: 14px;
+        color: #777777;
       }
 
-      .header-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-bottom: 20px;
+      .email-footer p {
+        margin: 5px 0;
       }
 
-      .header-content p {
-        margin: 0;
-      }
-      .date {
-        font-weight: 800;
-        color: #1f1f1f;
-      }
-
-      .main-content {
-        width: 100%;
-        max-width: 489px;
-        margin: 0 auto;
-      }
-
-      .icons {
-        display: flex;
-        gap: 10px;
-        justify-content: center;
+      .email-footer strong {
+        font-weight: 500;
+        color: #333333;
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <header>
-        <div
-          style="
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-          "
-          class="header-content"
-        >
-          <p>Cake App</p>
-          <div class="date">{{date}}</div>
-        </div>
-      </header>
+    <div class="email-container">
+      <!-- Header -->
+      <div class="email-header">
+        <h1>City Lights Realty</h1>
+      </div>
 
-      <main>
-        <div class="main-content">
-          <h1>Your OTP</h1>
-          <p>Hey {{userName}},</p>
-          <p>
-            Use the following OTP to complete the procedure in the app. OTP is
-            valid for
-            <span class="time">5 minutes</span>. Do <strong>NOT</strong> share
-            this code with others.
-          </p>
-          <p class="otp">{{otp}}</p>
-          <p>You received this email because you registered on Cake App.</p>
-          <p>If you did not request for this OTP, please ignore this email.</p>
-        </div>
-      </main>
+      <!-- Body -->
+      <div class="email-body">
+        <h2>OTP Request</h2>
+        <p>Hi {{userName}},</p>
+        <p>
+          Please use the following OTP to complete your action. This code is
+          valid for <strong>5 minutes</strong>.
+        </p>
+        <div class="otp-code">{{otp}}</div>
+        <p>
+          If you did not request this OTP, you can safely ignore this email. No
+          action is required from you.
+        </p>
+      </div>
 
-      <footer>
-        <p>Car Rental Company</p>
-        <p>104, Illupeju, Lagos, State.</p>
-        <div
-          style="
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            justify-content: center;
-          "
-        >
-          <a href="" target="_blank">
-            <img
-              width="36px"
-              alt="Facebook"
-              src="https://archisketch-resources.s3.ap-northeast-2.amazonaws.com/vrstyler/1661502815169_682499/email-template-icon-facebook"
-            />
-          </a>
-          <a href="" target="_blank">
-            <img
-              width="36px"
-              alt="Instagram"
-              src="https://archisketch-resources.s3.ap-northeast-2.amazonaws.com/vrstyler/1661504218208_684135/email-template-icon-instagram"
-            />
-          </a>
-          <a href="" target="_blank">
-            <img
-              width="36px"
-              alt="Twitter"
-              src="https://archisketch-resources.s3.ap-northeast-2.amazonaws.com/vrstyler/1661503043040_372004/email-template-icon-twitter"
-            />
-          </a>
-          <a href="" target="_blank">
-            <img
-              width="36px"
-              alt="Youtube"
-              src="https://archisketch-resources.s3.ap-northeast-2.amazonaws.com/vrstyler/1661503195931_210869/email-template-icon-youtube"
-            />
-          </a>
-        </div>
-        <p>Copyright © 2022 Company. All rights reserved.</p>
-      </footer>
+      <!-- Footer -->
+      <div class="email-footer">
+        <p>
+          &copy; {{date}} <strong>City Lights Realty</strong>. All rights
+          reserved.
+        </p>
+      </div>
     </div>
   </body>
 </html>

@@ -6,12 +6,12 @@ const UserSchema: Schema<IUser> = new Schema(
     firstName: {
       type: String,
       trim: true,
-      required: [true, "Please provide a username"],
+      // required: [true, "Please provide a username"],
     },
     lastName: {
       type: String,
       trim: true,
-      required: [true, "Please provide a last name"],
+      // required: [true, "Please provide a last name"],
     },
     email: {
       type: String,
@@ -27,17 +27,17 @@ const UserSchema: Schema<IUser> = new Schema(
     password: {
       type: String,
       required: [true, "Please provide a password"],
-      minlength: [8, "Password must be at least 8 characters long"],
+      minlength: [5, "Password must be at least 5 characters long"],
       select: false,
     },
-    phoneNumber: {
-      type: String,
-      required: [true, "Please provide a phone number"],
-      match: [
-        /^(0)(7|8|9){1}(0|1){1}[0-9]{8}$/,
-        "Please enter a valid Nigerian phone number",
-      ],
-    },
+    // phoneNumber: {
+    //   type: String,
+    //   required: [true, "Please provide a phone number"],
+    //   match: [
+    //     /^(0)(7|8|9){1}(0|1){1}[0-9]{8}$/,
+    //     "Please enter a valid Nigerian phone number",
+    //   ],
+    // },
     isActive: {
       type: Boolean,
       default: true,
@@ -48,7 +48,7 @@ const UserSchema: Schema<IUser> = new Schema(
     },
     roles: {
       type: [String],
-      enum: ["user", "driver", "admin"],
+      enum: ["user", "landlord", "tenant", "admin"],
       default: ["user"],
     },
   },
