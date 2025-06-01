@@ -4,6 +4,7 @@ import type {
   OTPData,
   RegisterDTO,
   ResetPasswordDTO,
+  updateUserDTO,
 } from "./auth.interface.js";
 import UserService from "../user/user.service.js";
 import { comparePassword, hashPassword } from "../../utils/validationUtils.js";
@@ -65,6 +66,13 @@ export class AuthService {
       user,
     });
   }
+  static async updateUser(userId: ObjectId, userData: updateUserDTO) {
+    const user = await UserService.updateUser(userId, userData);
+    user.password = undefined;
+    return ApiSuccess.ok("Profile Updated Successfully", {
+      user,
+    });
+  }
 
   static async sendOTP({ email }: { email: string }) {
     const user = await UserService.findUserByEmail(email);
@@ -72,13 +80,12 @@ export class AuthService {
       return ApiSuccess.ok("User Already Verified");
     }
 
-    const emailInfo = await mailService.sendOTPViaEmail(
-      user.email,
-      ""
-      //   user.firstName
-    );
+    agenda.now("send_otp_email", {
+      email: user.email,
+      username: user.firstName,
+    });
 
-    return ApiSuccess.ok(`OTP has been sent to ${emailInfo.envelope.to}`);
+    return ApiSuccess.ok(`OTP has been sent to ${email}`);
   }
 
   static async verifyOTP({ email, otp }: OTPData) {
@@ -96,9 +103,12 @@ export class AuthService {
   }
 
   static async forgotPassword({ email }: { email: string }) {
-    const userProfile = await UserService.findUserByEmail(email);
-    const emailInfo = await mailService.sendOTPViaEmail(userProfile.email, "");
-    return ApiSuccess.ok(`OTP has been sent to ${emailInfo.envelope.to}`);
+    const user = await UserService.findUserByEmail(email);
+    agenda.now("send_otp_email", {
+      email: user.email,
+      username: user.firstName,
+    });
+    return ApiSuccess.ok(`OTP has been sent to ${user.email}`);
   }
 
   static async resetPassword({ email, otp, password }: ResetPasswordDTO) {

@@ -5,6 +5,13 @@ export interface RegisterDTO {
   [key: string]: any;
 }
 
+export interface updateUserDTO {
+  email: string;
+  password: string;
+  firstName?: string;
+  [key: string]: any;
+}
+
 export interface LoginDTO {
   email: string;
   password: string;

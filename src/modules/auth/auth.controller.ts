@@ -36,6 +36,13 @@ export class AuthController {
     res.status(200).json(result);
   }
 
+  static async updateUser(req: Request, res: Response) {
+    const { userId } = req.user as AuthenticatedUser;
+    const userData = req.body;
+    const result = await AuthService.updateUser(userId, userData);
+    res.status(200).json(result);
+  }
+
   // Send OTP
   static async sendOTP(req: Request, res: Response) {
     const { email } = req.body;

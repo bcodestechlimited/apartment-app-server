@@ -6,10 +6,10 @@ import type { IUser } from "./user.interface";
 import User from "./user.model";
 
 class UserService {
-  static async createUser(userData: RegisterDTO): Promise<IUser> {
+  static async createUser(userData: Partial<IUser>): Promise<IUser> {
     const { firstName, lastName, password, email } = userData;
 
-    const hashedPassword = await hashPassword(password);
+    const hashedPassword = await hashPassword(password as string);
 
     const user = new User({
       firstName: firstName || "",
@@ -19,6 +19,21 @@ class UserService {
     });
 
     await user.save();
+
+    return user;
+  }
+  static async updateUser(
+    userId: ObjectId,
+    userData: Partial<IUser>
+  ): Promise<IUser> {
+    
+    const user = await User.findOneAndUpdate({ _id: userId }, userData, {
+      new: true,
+    });
+
+    if (!user) {
+      throw ApiError.notFound("User Not Found");
+    }
 
     return user;
   }

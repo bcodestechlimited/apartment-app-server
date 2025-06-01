@@ -8,7 +8,11 @@ import { validateBody } from "../../middleware/validateSchema.js";
 
 const router = express.Router();
 
-router.route("/").get(isAuth, AuthController.getUser).all(methodNotAllowed);
+router
+  .route("/")
+  .get(isAuth, AuthController.getUser)
+  .patch(isAuth, validateBody(AuthSchemas.update), AuthController.updateUser)
+  .all(methodNotAllowed);
 
 router
   .route("/signup")

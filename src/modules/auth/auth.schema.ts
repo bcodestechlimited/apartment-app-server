@@ -12,6 +12,23 @@ export class AuthSchemas {
     })
     .strict();
 
+  static update = z
+    .object({
+      email: z
+        .string()
+        .email("Please provide a valid email address")
+        .optional(),
+      password: z
+        .string()
+        .min(5, "Password must be at least 5 characters long")
+        .optional(),
+      roles: z
+        .array(z.string())
+        .nonempty("Please provide at least one role")
+        .optional(),
+    })
+    .strict();
+
   static login = z
     .object({
       email: z
