@@ -1,16 +1,19 @@
 import type { Request, Response } from "express";
 import { PropertyService } from "./property.service.js";
 import type { AuthenticatedUser } from "../user/user.interface.js";
+import type { FileArray } from "express-fileupload";
 
 export class PropertyController {
   // Create new property
   static async createProperty(req: Request, res: Response) {
     const propertyData = req.body;
+    const files = req.files
     const { userId } = req.user as AuthenticatedUser;
-    const result = await PropertyService.createProperty({
-      ...propertyData,
-      user: userId,
-    });
+    const result = await PropertyService.createProperty(
+      propertyData,
+      files,
+      userId
+    );
     res.status(201).json(result);
   }
 

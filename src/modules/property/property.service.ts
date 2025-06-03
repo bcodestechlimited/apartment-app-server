@@ -5,13 +5,32 @@ import type {
   UpdatePropertyDTO,
 } from "./property.interface.js";
 import type { ObjectId } from "mongoose";
+import { UploadService } from "../../services/upload.service.js";
+import type { UploadedFile } from "express-fileupload";
 
 export class PropertyService {
   // Create new property
-  static async createProperty(propertyData: CreatePropertyDTO) {
-    const property = new Property(propertyData);
-    await property.save();
+  static async createProperty(
+    propertyData: CreatePropertyDTO,
+    files: any,
+    userId: ObjectId
+  ) {
+    const { pictures } = files;
+    const property = new Property({ ...propertyData, user: userId });
 
+    const uploadedPictures = await Promise.all(
+      pictures.map(async (picture: UploadedFile) => {
+        const { secure_url } = await UploadService.uploadToCloudinary(
+          picture.tempFilePath
+        );
+        return secure_url;
+      })
+    );
+
+    // console.log({ uploadedPictures });
+
+    property.pictures = uploadedPictures;
+    await property.save();
     return ApiSuccess.created("Property created successfully", { property });
   }
 

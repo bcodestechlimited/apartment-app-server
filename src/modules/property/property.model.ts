@@ -39,8 +39,7 @@ const PropertySchema: Schema<IProperty> = new Schema(
 
     // Other specific fields
     numberOfRooms: {
-      type: Number,
-      min: [1, "Property must have at least one room"],
+      type: String,
     },
 
     // Co-working-space-specific fields

@@ -25,12 +25,12 @@ export interface IProperty {
   isDeleted: boolean;
 
   // For standard-rental / serviced-apartment
-  numberOfRooms?: number;
+  numberOfRooms?: string;
 
   // For workspaces
   availability?: string[];
   pricingModel?: PricingModel;
-  seatingCapacity?: number;
+  seatingCapacity?: string;
 }
 
 export interface CreatePropertyDTO {

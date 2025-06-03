@@ -13,7 +13,7 @@ export const env = cleanEnv(Bun.env, {
   CORS_ORIGIN: str(),
   SERVER_BASE_URL: str(),
   CLIENT_BASE_URL: str(),
-  CLOUNINARY_NAME: str(),
-  CLOUNINARY_API_KEY: str(),
-  CLOUNINARY_API_SECRET: str(),
+  CLOUDINARY_NAME: str(),
+  CLOUDINARY_API_KEY: str(),
+  CLOUDINARY_API_SECRET: str(),
 });

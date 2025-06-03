@@ -12,7 +12,8 @@ router
   .get(PropertyController.getAllProperties) // public or protected as needed
   .post(
     isAuth,
-    validateBody(PropertySchemas.create),
+    PropertySchemas.validateImages,
+    // validateBody(PropertySchemas.create),
     PropertyController.createProperty
   )
   .all(methodNotAllowed);
