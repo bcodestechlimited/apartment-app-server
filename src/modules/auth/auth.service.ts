@@ -4,7 +4,6 @@ import type {
   OTPData,
   RegisterDTO,
   ResetPasswordDTO,
-  updateUserDTO,
 } from "./auth.interface.js";
 import UserService from "../user/user.service.js";
 import { comparePassword, hashPassword } from "../../utils/validationUtils.js";
@@ -13,6 +12,9 @@ import { generateToken } from "../../config/token.js";
 import { mailService } from "../../services/mail.service.js";
 import type { ObjectId } from "mongoose";
 import agenda from "../../lib/agenda.js";
+import type { IUser, updateUserDTO } from "../user/user.interface.js";
+import type { FileArray, UploadedFile } from "express-fileupload";
+import { UploadService } from "../../services/upload.service.js";
 
 export class AuthService {
   static async register(userData: RegisterDTO) {
@@ -66,8 +68,36 @@ export class AuthService {
       user,
     });
   }
-  static async updateUser(userId: ObjectId, userData: updateUserDTO) {
-    const user = await UserService.updateUser(userId, userData);
+  static async updateUser(
+    userId: ObjectId,
+    userData: Partial<updateUserDTO>,
+    files?: { document?: UploadedFile; avatar?: UploadedFile }
+  ) {
+    const UpdatedUserData = {
+      ...userData,
+    };
+
+    if (files && files.document) {
+      const { document } = files;
+      const { secure_url, resource_type } =
+        await UploadService.uploadToCloudinary(document.tempFilePath);
+
+      UpdatedUserData.document = {
+        type: resource_type === "image" ? "image" : "file",
+        url: secure_url as string,
+      };
+    }
+
+    if (files && files.avatar) {
+      const { secure_url } = await UploadService.uploadToCloudinary(
+        files.avatar.tempFilePath
+      );
+      UpdatedUserData.avatar = secure_url as string;
+    }
+
+    console.log({ UpdatedUserData, files });
+
+    const user = await UserService.updateUser(userId, UpdatedUserData);
     user.password = undefined;
     return ApiSuccess.ok("Profile Updated Successfully", {
       user,

@@ -11,7 +11,12 @@ const router = express.Router();
 router
   .route("/")
   .get(isAuth, AuthController.getUser)
-  .patch(isAuth, validateBody(AuthSchemas.update), AuthController.updateUser)
+  .patch(
+    isAuth,
+    validateBody(AuthSchemas.update),
+    AuthSchemas.validateFiles,
+    AuthController.updateUser
+  )
   .all(methodNotAllowed);
 
 router
@@ -22,6 +27,11 @@ router
 router
   .route("/signin")
   .post(validateBody(AuthSchemas.login), AuthController.login)
+  .all(methodNotAllowed);
+
+router
+  .route("/logout")
+  .get(isAuth, AuthController.logout)
   .all(methodNotAllowed);
 
 router

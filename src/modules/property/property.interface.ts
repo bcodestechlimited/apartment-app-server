@@ -19,10 +19,46 @@ export enum PricingModel {
 export interface IProperty {
   user: ObjectId;
   description: string;
+  price: string;
   amenities: string[];
   type: PropertyType;
   pictures: string[];
   isDeleted: boolean;
+  isVerified: boolean;
+  status: string;
+
+  // For standard-rental / serviced-apartment
+  numberOfBedRooms?: string;
+  numberOfBathrooms?: string;
+  // For workspaces
+  availability?: string[];
+  pricingModel?: PricingModel;
+  seatingCapacity?: string;
+}
+
+export interface CreatePropertyDTO {
+  description: string;
+  price: string;
+  amenities: string[];
+  type: PropertyType;
+  pictures: string[];
+
+  // For standard-rental / serviced-apartment
+  numberOfBedRooms?: string;
+  numberOfBathrooms?: string;
+
+  // For workspaces
+  availability?: string[];
+  pricingModel?: PricingModel;
+  seatingCapacity?: string;
+}
+
+export interface UpdatePropertyDTO {
+  description: string;
+  price: string;
+  amenities: string[];
+  type: PropertyType;
+  pictures: string[];
 
   // For standard-rental / serviced-apartment
   numberOfRooms?: string;
@@ -31,18 +67,4 @@ export interface IProperty {
   availability?: string[];
   pricingModel?: PricingModel;
   seatingCapacity?: string;
-}
-
-export interface CreatePropertyDTO {
-  email: string;
-  password: string;
-  firstName?: string;
-  [key: string]: any;
-}
-
-export interface UpdatePropertyDTO {
-  email: string;
-  password: string;
-  firstName?: string;
-  [key: string]: any;
 }

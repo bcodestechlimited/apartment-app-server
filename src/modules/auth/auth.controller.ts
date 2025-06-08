@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { AuthService } from "./auth.service.js";
 import type { AuthenticatedUser } from "../user/user.interface.js";
+import type { UploadedFile } from "express-fileupload";
 
 export class AuthController {
   // Register user
@@ -29,6 +30,16 @@ export class AuthController {
     res.status(200).json(result);
   }
 
+  static async logout(req: Request, res: Response) {
+    res.clearCookie("token", { path: "/" });
+    res.status(200).json({
+      success: true,
+      status_code: 200,
+      message: "Logout successful",
+      data: null,
+    });
+  }
+
   // Get user data
   static async getUser(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
@@ -39,7 +50,10 @@ export class AuthController {
   static async updateUser(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
-    const result = await AuthService.updateUser(userId, userData);
+    const files = req.files as
+      | { document?: UploadedFile; avatar?: UploadedFile }
+      | undefined;
+    const result = await AuthService.updateUser(userId, userData, files);
     res.status(200).json(result);
   }
 

@@ -2,7 +2,7 @@ import type { ObjectId } from "mongoose";
 import { ApiError } from "../../utils/responseHandler";
 import { hashPassword } from "../../utils/validationUtils";
 import type { RegisterDTO } from "../auth/auth.interface";
-import type { IUser } from "./user.interface";
+import type { IUser, updateUserDTO } from "./user.interface";
 import User from "./user.model";
 
 class UserService {
@@ -24,10 +24,21 @@ class UserService {
   }
   static async updateUser(
     userId: ObjectId,
-    userData: Partial<IUser>
+    userData: Partial<updateUserDTO>
   ): Promise<IUser> {
-    
-    const user = await User.findOneAndUpdate({ _id: userId }, userData, {
+    const { document, preferences, ...otherFields } = userData;
+
+    const updatedFields = {
+      ...otherFields,
+      $addToSet: {
+        documents: userData.document,
+        preferences: userData.preferences,
+      },
+    };
+
+    console.log({ updatedFields });
+
+    const user = await User.findOneAndUpdate({ _id: userId }, updatedFields, {
       new: true,
     });
 

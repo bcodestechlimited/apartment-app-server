@@ -15,6 +15,7 @@ import agenda from "./lib/agenda";
 
 //Routes
 import propertyRoutes from "./modules/property/property.routes";
+import bookingRoutes from "./modules/booking/booking.routes";
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use(
     limits: { fileSize: 50 * 1024 * 1024 }, // Limits file size to 50MB
     useTempFiles: true,
     tempFileDir: "/tmp/",
+    parseNested: true,
   })
 );
 app.use(
@@ -41,6 +43,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/property", propertyRoutes);
+app.use("/api/v1/booking", bookingRoutes); // Assuming booking routes are similar to property routes
 
 app.use(helmet());
 app.use(notFound);

@@ -19,6 +19,11 @@ const PropertySchema: Schema<IProperty> = new Schema(
       required: [true, "Please provide a property description"],
       trim: true,
     },
+    price: {
+      type: String,
+      required: [true, "Please provide a property price"],
+      trim: true,
+    },
     amenities: {
       type: [String],
       default: [],
@@ -32,13 +37,9 @@ const PropertySchema: Schema<IProperty> = new Schema(
       type: [String],
       default: [],
     },
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
 
     // Other specific fields
-    numberOfRooms: {
+    numberOfBedRooms: {
       type: String,
     },
 
@@ -54,6 +55,20 @@ const PropertySchema: Schema<IProperty> = new Schema(
     seatingCapacity: {
       type: Number,
       min: [1, "Seating capacity must be at least 1"],
+    },
+
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    status: {
+      type: String,
+      enum: ["available", "unavailable"],
+      default: "available",
     },
   },
   {

@@ -19,7 +19,7 @@ router
   .all(methodNotAllowed);
 
 router
-  .route("/:id")
+  .route("/:propertyId")
   .get(PropertyController.getPropertyById) // public or protected as needed
   .patch(
     isAuth,

@@ -6,9 +6,17 @@ import { ApiError } from "../../utils/responseHandler";
 export class PropertySchemas {
   static create = z
     .object({
-      numberOfRooms: z
+      numberOfBedRooms: z
         .string({ required_error: "Number of rooms is required" })
         .min(1, "There must be at least one room")
+        .optional(),
+      // numberOfBathrooms: z
+      //   .string({ required_error: "Number of rooms is required" })
+      //   .min(1, "There must be at least one room")
+      //   .optional(),
+      price: z
+        .string({ required_error: "Price is required" })
+        .min(1, "Price must be at least 1")
         .optional(),
       availability: z
         .array(z.string(), {
@@ -98,7 +106,7 @@ export class PropertySchemas {
           });
         }
       } else {
-        if (data.numberOfRooms == null) {
+        if (data.numberOfBedRooms == null) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "Number of rooms is required for non-workspace properties",
@@ -150,7 +158,7 @@ export class PropertySchemas {
       throw ApiError.badRequest("Pictures are required");
     }
 
-    if (pictures.length <= 2) {
+    if (pictures.length <= 1) {
       throw ApiError.badRequest("Please upload at least three images");
     }
 

@@ -7,8 +7,20 @@ import type {
 import type { ObjectId } from "mongoose";
 import { UploadService } from "../../services/upload.service.js";
 import type { UploadedFile } from "express-fileupload";
+import fs from "fs";
 
 export class PropertyService {
+  static async getPropertyDocumentById(propertyId: string | ObjectId) {
+    const property = await Property.findOne({ _id: propertyId }).populate(
+      "user",
+      "-password"
+    );
+    if (!property) {
+      throw ApiError.notFound("Property not found");
+    }
+
+    return property;
+  }
   // Create new property
   static async createProperty(
     propertyData: CreatePropertyDTO,
@@ -23,13 +35,12 @@ export class PropertyService {
         const { secure_url } = await UploadService.uploadToCloudinary(
           picture.tempFilePath
         );
+        console.log({ secure_url });
         return secure_url;
       })
     );
 
-    // console.log({ uploadedPictures });
-
-    property.pictures = uploadedPictures;
+    property.pictures = uploadedPictures as string[];
     await property.save();
     return ApiSuccess.created("Property created successfully", { property });
   }
@@ -42,6 +53,8 @@ export class PropertyService {
 
   // Get single property by ID
   static async getPropertyById(id: string) {
+    console.log({ id });
+
     const property = await Property.findById(id).populate("user", "-password");
     if (!property) {
       throw ApiError.notFound("Property not found");
