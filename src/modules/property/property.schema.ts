@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { number, z } from "zod";
 import { PropertyType, PricingModel } from "./property.interface";
 import type { NextFunction, Request, Response } from "express";
 import { ApiError } from "../../utils/responseHandler";
@@ -7,13 +7,13 @@ export class PropertySchemas {
   static create = z
     .object({
       numberOfBedRooms: z
-        .string({ required_error: "Number of rooms is required" })
+        .string({ required_error: "Number of bedrooms is required" })
         .min(1, "There must be at least one room")
         .optional(),
-      // numberOfBathrooms: z
-      //   .string({ required_error: "Number of rooms is required" })
-      //   .min(1, "There must be at least one room")
-      //   .optional(),
+      numberOfBathrooms: z
+        .string({ required_error: "Number of bathrooms is required" })
+        .min(1, "There must be at least one room")
+        .optional(),
       price: z
         .string({ required_error: "Price is required" })
         .min(1, "Price must be at least 1")
@@ -26,8 +26,6 @@ export class PropertySchemas {
         .optional(),
       pricingModel: z
         .nativeEnum(PricingModel, {
-          // invalid_type_error: "Invalid pricing model",
-          // required_error: "Pricing model is required",
           errorMap: (issue, ctx) => {
             return { message: "Invalid pricing model" };
           },
@@ -69,6 +67,38 @@ export class PropertySchemas {
         .pipe(
           z.array(z.string()).nonempty("Please provide at least one amenity")
         ),
+      facilities: z
+        .any()
+        .transform((val, ctx) => {
+          if (typeof val === "string") {
+            try {
+              const parsed = JSON.parse(val);
+              if (
+                Array.isArray(parsed) &&
+                parsed.every((v) => typeof v === "string")
+              ) {
+                return parsed;
+              } else {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: "Facilities must be a JSON array of strings",
+                });
+                return z.NEVER;
+              }
+            } catch {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Invalid JSON format for facilities",
+              });
+              return z.NEVER;
+            }
+          }
+
+          return val;
+        })
+        .pipe(
+          z.array(z.string()).nonempty("Please provide at least one facility")
+        ),
 
       description: z
         .string({ required_error: "Description is required" })
@@ -81,7 +111,7 @@ export class PropertySchemas {
         },
       }),
     })
-    .strict()
+    // .strict()
     .superRefine((data, ctx) => {
       if (data.type === PropertyType.CO_WORKING_SPACE) {
         if (!data.availability || data.availability.length === 0) {
@@ -106,11 +136,11 @@ export class PropertySchemas {
           });
         }
       } else {
-        if (data.numberOfBedRooms == null) {
+        if (!data.numberOfBedRooms) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "Number of rooms is required for non-workspace properties",
-            path: ["numberOfRooms"],
+            path: ["numberOfBedRooms"],
           });
         }
       }

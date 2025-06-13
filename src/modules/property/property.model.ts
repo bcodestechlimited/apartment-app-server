@@ -28,6 +28,10 @@ const PropertySchema: Schema<IProperty> = new Schema(
       type: [String],
       default: [],
     },
+    facilities: {
+      type: [String],
+      default: [],
+    },
     type: {
       type: String,
       enum: Object.values(PropertyType),
@@ -42,6 +46,9 @@ const PropertySchema: Schema<IProperty> = new Schema(
     numberOfBedRooms: {
       type: String,
     },
+    numberOfBathrooms: {
+      type: String,
+    },
 
     // Co-working-space-specific fields
     availability: {
@@ -51,6 +58,7 @@ const PropertySchema: Schema<IProperty> = new Schema(
     pricingModel: {
       type: String,
       enum: Object.values(PricingModel),
+      required: [true, "Please specify the pricing model"],
     },
     seatingCapacity: {
       type: Number,
@@ -62,6 +70,10 @@ const PropertySchema: Schema<IProperty> = new Schema(
       default: false,
     },
     isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    isAvailable: {
       type: Boolean,
       default: false,
     },

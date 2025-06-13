@@ -13,7 +13,7 @@ router
   .post(
     isAuth,
     PropertySchemas.validateImages,
-    // validateBody(PropertySchemas.create),
+    validateBody(PropertySchemas.create),
     PropertyController.createProperty
   )
   .all(methodNotAllowed);

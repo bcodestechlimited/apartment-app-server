@@ -13,9 +13,58 @@ export class BookingService {
 
     const property = await PropertyService.getPropertyDocumentById(propertyId);
 
-    
+    if (!property.isAvailable) {
+      throw ApiError.forbidden("Property is not available");
+    }
 
-    const booking = new Booking({ ...bookingData, user: userId });
+    let startDate;
+    let endDate;
+
+    switch (property.pricingModel.toLowerCase()) {
+      case "hourly":
+        startDate = new Date();
+        endDate = new Date(startDate.getTime() + duration * 60 * 60 * 1000);
+        break;
+      case "daily":
+        startDate = new Date();
+        endDate = new Date(
+          startDate.getTime() + duration * 24 * 60 * 60 * 1000
+        );
+        break;
+      case "weekly":
+        startDate = new Date();
+        endDate = new Date(
+          startDate.getTime() + duration * 7 * 24 * 60 * 60 * 1000
+        );
+        break;
+      case "monthly":
+        startDate = new Date();
+        endDate = new Date(
+          startDate.getFullYear(),
+          startDate.getMonth() + duration,
+          startDate.getDate()
+        );
+        break;
+      case "yearly":
+        startDate = new Date();
+        endDate = new Date(
+          startDate.getFullYear() + duration,
+          startDate.getMonth(),
+          startDate.getDate()
+        );
+        break;
+      default:
+        throw ApiError.badRequest("Invalid pricing model");
+    }
+
+    const booking = new Booking({
+      ...bookingData,
+      landlord: property.user,
+      tenant: userId,
+      property: propertyId,
+      startDate,
+      endDate,
+    });
     await booking.save();
     return ApiSuccess.created("Booking created successfully", { booking });
   }

@@ -45,8 +45,6 @@ export class AuthService {
 
   static async login(userData: LoginDTO) {
     const { email, password } = userData;
-
-    console.log({ userData });
     const user = await UserService.findUserByEmail(email);
     await comparePassword(password, user.password as string);
 
