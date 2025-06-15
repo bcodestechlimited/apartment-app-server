@@ -44,8 +44,10 @@ export interface CreatePropertyDTO {
   description: string;
   price: string;
   location: string;
-  amenities: string[];
-  facilities: string[];
+  // amenities: string[];
+  // facilities: string[];
+  amenities: string;
+  facilities: string;
   type: PropertyType;
   pictures: string[];
   pricingModel: PricingModel;

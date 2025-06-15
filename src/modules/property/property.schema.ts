@@ -41,6 +41,7 @@ export class PropertySchemas {
           if (typeof val === "string") {
             try {
               const parsed = JSON.parse(val);
+
               if (
                 Array.isArray(parsed) &&
                 parsed.every((v) => typeof v === "string")

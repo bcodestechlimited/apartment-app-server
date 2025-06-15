@@ -29,23 +29,19 @@ export class PropertyService {
     files: any,
     userId: ObjectId
   ) {
+    const parsedAmenities = JSON.parse(propertyData.amenities);
+    const parsedFacilities = JSON.parse(propertyData.facilities);
+    propertyData.amenities = parsedAmenities;
+    propertyData.facilities = parsedFacilities;
+
     const { pictures } = files;
     const property = new Property({ ...propertyData, user: userId });
 
     const uploadedPictures = await Promise.all(
       pictures.map(async (picture: UploadedFile) => {
-        console.log("Cloudinary config:", cloudinary.config());
-        console.log("Uploading file:", {
-          path: picture.tempFilePath,
-          size: fs.statSync(picture.tempFilePath).size,
-          name: picture.name,
-        });
-
         const { secure_url } = await UploadService.uploadToCloudinary(
-          // picture.tempFilePath
-          pictures[0].tempFilePath
+          picture.tempFilePath
         );
-        console.log({ secure_url });
         return secure_url;
       })
     );
