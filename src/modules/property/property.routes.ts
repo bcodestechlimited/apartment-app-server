@@ -19,6 +19,11 @@ router
   .all(methodNotAllowed);
 
 router
+  .route("/landlord")
+  .get(PropertyController.getAllProperties) // public or protected as needed
+  .all(methodNotAllowed);
+
+router
   .route("/:propertyId")
   .get(PropertyController.getPropertyById) // public or protected as needed
   .patch(

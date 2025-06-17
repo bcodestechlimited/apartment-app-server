@@ -14,6 +14,21 @@ const PropertySchema: Schema<IProperty> = new Schema(
       ref: "User",
       required: true,
     },
+    address: {
+      type: String,
+      required: [true, "Please provide a property address"],
+      trim: true,
+    },
+    state: {
+      type: String,
+      required: [true, "Please provide a property state"],
+      trim: true,
+    },
+    lga: {
+      type: String,
+      required: [true, "Please provide a property local government area"],
+      trim: true,
+    },
     description: {
       type: String,
       required: [true, "Please provide a property description"],
@@ -51,9 +66,9 @@ const PropertySchema: Schema<IProperty> = new Schema(
     },
 
     // Co-working-space-specific fields
-    availability: {
-      type: [String], // e.g., ['Monday', 'Tuesday']
-      default: [],
+    availabilityDate: {
+      type: String, // e.g., ['Monday', 'Tuesday']
+      default: "",
     },
     pricingModel: {
       type: String,

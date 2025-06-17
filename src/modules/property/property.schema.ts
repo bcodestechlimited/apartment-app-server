@@ -6,6 +6,23 @@ import { ApiError } from "../../utils/responseHandler";
 export class PropertySchemas {
   static create = z
     .object({
+      description: z
+        .string({ required_error: "Description is required" })
+        .min(10, "Description must be at least 10 characters long"),
+      type: z.nativeEnum(PropertyType, {
+        // required_error: "Property type is required",
+        // invalid_type_error: "Invalid property type",
+        errorMap: (issue, ctx) => {
+          return { message: "Invalid property type" };
+        },
+      }),
+      address: z
+        .string({ required_error: "Address is required" })
+        .min(10, "Address must be at least 10 characters long"),
+      state: z.string({ required_error: "State is required" }),
+      // .min(10, "State must be at least 10 characters long"),
+      lga: z.string({ required_error: "LGA is required" }),
+      // .min(5, "LGA must be at least 10 characters long"),
       numberOfBedRooms: z
         .string({ required_error: "Number of bedrooms is required" })
         .min(1, "There must be at least one room")
@@ -18,9 +35,9 @@ export class PropertySchemas {
         .string({ required_error: "Price is required" })
         .min(1, "Price must be at least 1")
         .optional(),
-      availability: z
-        .array(z.string(), {
-          invalid_type_error: "Availability must be an array of strings",
+      availabilityDate: z
+        .string({
+          invalid_type_error: "Please provide a valid availability time slot",
         })
         .nonempty("Please provide at least one availability time slot")
         .optional(),
@@ -100,28 +117,17 @@ export class PropertySchemas {
         .pipe(
           z.array(z.string()).nonempty("Please provide at least one facility")
         ),
-
-      description: z
-        .string({ required_error: "Description is required" })
-        .min(10, "Description must be at least 10 characters long"),
-      type: z.nativeEnum(PropertyType, {
-        // required_error: "Property type is required",
-        // invalid_type_error: "Invalid property type",
-        errorMap: (issue, ctx) => {
-          return { message: "Invalid property type" };
-        },
-      }),
     })
     // .strict()
     .superRefine((data, ctx) => {
       if (data.type === PropertyType.CO_WORKING_SPACE) {
-        if (!data.availability || data.availability.length === 0) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Availability is required for workspaces",
-            path: ["availability"],
-          });
-        }
+        // if (!data.availabilityDate) {
+        //   ctx.addIssue({
+        //     code: z.ZodIssueCode.custom,
+        //     message: "Availability is required for workspaces",
+        //     path: ["availability"],
+        //   });
+        // }
         if (!data.pricingModel) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,

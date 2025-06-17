@@ -1,13 +1,13 @@
 import type { Request, Response } from "express";
 import { PropertyService } from "./property.service.js";
 import type { AuthenticatedUser } from "../user/user.interface.js";
-import type { FileArray } from "express-fileupload";
+import type { IQueryParams } from "../../shared/interfaces/query.interface.js";
 
 export class PropertyController {
   // Create new property
   static async createProperty(req: Request, res: Response) {
     const propertyData = req.body;
-    const files = req.files
+    const files = req.files;
     const { userId } = req.user as AuthenticatedUser;
     const result = await PropertyService.createProperty(
       propertyData,
@@ -18,8 +18,16 @@ export class PropertyController {
   }
 
   // Get all properties
-  static async getAllProperties(_req: Request, res: Response) {
-    const result = await PropertyService.getAllProperties();
+  static async getAllProperties(req: Request, res: Response) {
+    const query = req.query as IQueryParams;
+    const result = await PropertyService.getAllProperties(query);
+    res.status(200).json(result);
+  }
+
+  static async getAllLandlordProperties(req: Request, res: Response) {
+    const query = req.query as IQueryParams;
+    const { userId } = req.user as AuthenticatedUser;
+    const result = await PropertyService.getLandlordProperties(userId, query);
     res.status(200).json(result);
   }
 

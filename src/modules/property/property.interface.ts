@@ -21,7 +21,11 @@ export interface IProperty {
   user: ObjectId;
   description: string;
   price: string;
-  location: string;
+  // location: string;
+  address: string;
+  state: string;
+  lga: string;
+  pricingModel: PricingModel;
   amenities: string[];
   facilities: string[];
   type: PropertyType;
@@ -29,14 +33,13 @@ export interface IProperty {
   isDeleted: boolean;
   isVerified: boolean;
   isAvailable: boolean;
-  pricingModel: PricingModel;
   status: string;
 
   // For standard-rental / serviced-apartment
+  availabilityDate?: string;
   numberOfBedRooms?: string;
   numberOfBathrooms?: string;
   // For workspaces
-  availability?: string[];
   seatingCapacity?: string;
 }
 

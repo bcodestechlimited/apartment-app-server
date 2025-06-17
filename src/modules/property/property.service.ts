@@ -1,15 +1,15 @@
 import Property from "./property.model.js";
 import { ApiError, ApiSuccess } from "../../utils/responseHandler.js";
-import type {
-  CreatePropertyDTO,
-  UpdatePropertyDTO,
+import {
+  PropertyType,
+  type CreatePropertyDTO,
+  type UpdatePropertyDTO,
 } from "./property.interface.js";
 import type { ObjectId } from "mongoose";
 import { UploadService } from "../../services/upload.service.js";
 import type { UploadedFile } from "express-fileupload";
-import fs from "fs";
-import cloudinary from "../../lib/cloudinary.js";
-import path from "path";
+import type { IQueryParams } from "../../shared/interfaces/query.interface.js";
+import { paginate } from "../../utils/paginate.js";
 
 export class PropertyService {
   static async getPropertyDocumentById(propertyId: string | ObjectId) {
@@ -23,6 +23,22 @@ export class PropertyService {
 
     return property;
   }
+  static getActualTypeFromParam(type: string): string | undefined {
+    if (!type || type.toLowerCase() === "all") {
+      return undefined;
+    }
+
+    const propertyTypes: Record<string, PropertyType> = {
+      serviced: PropertyType.SERVICED_APARTMENT,
+      shared: PropertyType.SHARED_APARTMENT,
+      standard: PropertyType.STANDARD_RENTAL,
+      "short-let": PropertyType.SHORT_LETS,
+      "co-working-space": PropertyType.CO_WORKING_SPACE,
+    };
+
+    return propertyTypes[type];
+  }
+
   // Create new property
   static async createProperty(
     propertyData: CreatePropertyDTO,
@@ -33,6 +49,8 @@ export class PropertyService {
     const parsedFacilities = JSON.parse(propertyData.facilities);
     propertyData.amenities = parsedAmenities;
     propertyData.facilities = parsedFacilities;
+
+    console.log({ propertyData });
 
     const { pictures } = files;
     const property = new Property({ ...propertyData, user: userId });
@@ -50,58 +68,64 @@ export class PropertyService {
     await property.save();
     return ApiSuccess.created("Property created successfully", { property });
   }
-  // static async createProperty(
-  //   propertyData: CreatePropertyDTO,
-  //   files: any,
-  //   userId: ObjectId
-  // ) {
-  //   const { pictures } = files;
-  //   const property = new Property({ ...propertyData, user: userId });
-
-  //   const tempDir = path.resolve(__dirname, "../temp");
-  //   if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
-
-  //   const uploadedPictures: string[] = [];
-  //   const tempPaths: string[] = [];
-
-  //   // Step 1: Save each uploaded picture to temp folder
-  //   for (const picture of pictures) {
-  //     const timestamp = Date.now();
-  //     const safeName = picture.name.replace(/\s+/g, "_"); // remove spaces
-  //     const tempFileName = `${timestamp}-${safeName}`;
-  //     const tempPath = path.join(tempDir, tempFileName);
-
-  //     await picture.mv(tempPath); // save file to temp dir
-  //     tempPaths.push(tempPath);
-  //   }
-
-  //   // Step 2: Upload to Cloudinary one by one
-  //   for (const tempPath of tempPaths) {
-  //     console.log({ tempPath });
-
-  //     const { secure_url } = await UploadService.uploadToCloudinary(tempPath);
-
-  //     console.log({ secure_url });
-
-  //     uploadedPictures.push(secure_url as string);
-  //   }
-
-  //   // Step 3: Delete temp files
-  //   for (const tempPath of tempPaths) {
-  //     fs.unlinkSync(tempPath);
-  //   }
-
-  //   // Step 4: Save property with uploaded picture URLs
-  //   property.pictures = uploadedPictures;
-  //   await property.save();
-
-  //   return ApiSuccess.created("Property created successfully", { property });
-  // }
-
   // Get all properties
-  static async getAllProperties() {
-    const properties = await Property.find().populate("user", "-password");
-    return ApiSuccess.ok("Properties retrieved successfully", { properties });
+  static async getAllProperties(query: IQueryParams) {
+    const { limit = 10, page = 1, type } = query;
+
+    const filterQuery: Record<string, any> = {};
+    if (type) {
+      const propertyType = PropertyService.getActualTypeFromParam(type);
+      console.log({ propertyType });
+
+      if (propertyType) {
+        filterQuery.type = propertyType;
+      }
+    }
+
+    const { documents: properties, pagination } = await paginate({
+      model: Property,
+      query: filterQuery,
+      page,
+      limit,
+      sort: { createdAt: -1 },
+    });
+
+    return ApiSuccess.ok("Properties retrieved successfully", {
+      properties,
+      pagination,
+    });
+  }
+  static async getLandlordProperties(
+    userId: string | ObjectId,
+    query: IQueryParams
+  ) {
+    const { limit = 10, page = 1, type } = query;
+
+    const filterQuery: Record<string, any> = {};
+
+    if (type) {
+      const propertyType = PropertyService.getActualTypeFromParam(type);
+      console.log({ propertyType });
+
+      if (propertyType) {
+        filterQuery.type = propertyType;
+      }
+    }
+
+    filterQuery.user = userId;
+
+    const { documents: properties, pagination } = await paginate({
+      model: Property,
+      query: filterQuery,
+      page,
+      limit,
+      sort: { createdAt: -1 },
+    });
+
+    return ApiSuccess.ok("Properties retrieved successfully", {
+      properties,
+      pagination,
+    });
   }
 
   // Get single property by ID

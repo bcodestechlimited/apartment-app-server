@@ -1,7 +1,8 @@
 import { Document, Model } from "mongoose";
 
 interface PaginateOptions {
-  model: Model<Document>;
+  // model: Model<Document>;
+  model: any;
   query?: Record<string, any>;
   page?: number;
   limit?: number;
