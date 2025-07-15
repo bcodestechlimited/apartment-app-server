@@ -11,11 +11,13 @@ import connectDB from "./config/connectDB";
 import notFound from "./middleware/notFound";
 import authRoutes from "./modules/auth/auth.routes";
 import { errorMiddleware } from "./middleware/error";
-import agenda from "./lib/agenda";
+import { startAgenda } from "./lib/agenda";
 
 //Routes
 import propertyRoutes from "./modules/property/property.routes";
 import bookingRoutes from "./modules/booking/booking.routes";
+import bookingRequestRoutes from "./modules/booking-request/booking-request.routes";
+import webookRoutes from "./modules/webhook/webhook.routes";
 
 const app = express();
 
@@ -44,7 +46,9 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/property", propertyRoutes);
-app.use("/api/v1/booking", bookingRoutes); // Assuming booking routes are similar to property routes
+app.use("/api/v1/booking", bookingRoutes);
+app.use("/api/v1/booking-request", bookingRequestRoutes);
+app.use("/api/v1/webhook", webookRoutes);
 
 app.use(helmet());
 app.use(notFound);
@@ -55,9 +59,8 @@ const startServer = async () => {
     await connectDB();
     app.listen(env.PORT, async () => {
       logger.info(`Server is listening on PORT:${env.PORT}`);
-      agenda.start();
-      logger.info("Agenda started");
     });
+    startAgenda();
   } catch (error) {
     logger.error(error);
   }

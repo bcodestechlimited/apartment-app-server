@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Booking Request</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Inter", sans-serif;
+        background-color: #f9f9f9;
+        color: #333333;
+        font-size: 16px;
+        line-height: 1.5;
+        text-align: left;
+      }
+
+      .email-container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .email-header {
+        background-color: #004542;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .email-header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+        color: #ffffff;
+      }
+
+      .email-body {
+        padding: 30px;
+      }
+
+      .email-body h2 {
+        font-size: 22px;
+        font-weight: 500;
+        margin-bottom: 15px;
+        color: #333333;
+      }
+
+      .email-body p {
+        margin: 0 0 20px;
+        font-size: 16px;
+        color: #555555;
+      }
+
+      .highlight-box {
+        background-color: #f1f5f9;
+        padding: 15px 20px;
+        border-left: 5px solid #004542;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+
+      .highlight-box strong {
+        display: block;
+        font-size: 18px;
+        color: #004542;
+        margin-bottom: 5px;
+      }
+
+      .email-button {
+        display: inline-block;
+        margin: 30px 0 10px;
+        padding: 12px 24px;
+        background-color: #004542;
+        color: #ffffff !important;
+        font-weight: 500;
+        font-size: 16px;
+        text-decoration: none;
+        border-radius: 6px;
+        transition: background-color 0.3s ease;
+      }
+
+      .email-button:hover {
+        background-color: #006a65;
+      }
+
+      .email-footer {
+        padding: 20px;
+        background: #f1f5f9;
+        text-align: center;
+        font-size: 14px;
+        color: #777777;
+      }
+
+      .email-footer p {
+        margin: 5px 0;
+      }
+
+      .email-footer strong {
+        font-weight: 500;
+        color: #333333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <!-- Header -->
+      <div class="email-header">
+        <h1>City Lights Realty</h1>
+      </div>
+
+      <!-- Body -->
+      <div class="email-body">
+        <h2>New Booking Request</h2>
+        <p>Hi {{landlordName}},</p>
+        <p>
+          A prospective tenant has requested to book a viewing for your
+          property:
+        </p>
+
+        <div class="highlight-box">
+          <strong>{{propertyName}}</strong>
+          <span>Preferred move-in date: <strong>{{moveInDate}}</strong></span>
+        </div>
+
+        <p>
+          You have <strong>24 hours</strong> to accept or decline this request.
+          If accepted, the tenant will be prompted to proceed with payment.
+        </p>
+
+        <p>Please respond promptly to ensure a smooth booking experience.</p>
+
+        <a href="{{landlordDashboardUrl}}" class="email-button"
+          >Review & Respond</a
+        >
+
+        <p>
+          If you have any questions, feel free to reach out to our support team.
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div class="email-footer">
+        <p>
+          &copy; {{date}} <strong>City Lights Realty</strong>. All rights
+          reserved.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

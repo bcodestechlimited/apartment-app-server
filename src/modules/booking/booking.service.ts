@@ -2,9 +2,13 @@ import Booking from "./booking.model.js";
 import { ApiError, ApiSuccess } from "../../utils/responseHandler.js";
 import type { CreateBookingDTO } from "./booking.interface.js";
 import type { ObjectId } from "mongoose";
-import { UploadService } from "../../services/upload.service.js";
-import type { UploadedFile } from "express-fileupload";
 import { PropertyService } from "../property/property.service.js";
+import agenda from "../../lib/agenda.js";
+import { PaymentService } from "../../services/payment.service.js";
+import { calculateBookingPeriod } from "../../utils/calculationUtils.js";
+import { paginate } from "../../utils/paginate.js";
+import type { IQueryParams } from "../../shared/interfaces/query.interface.js";
+import BookingRequest from "../booking-request/booking-request.model.js";
 
 export class BookingService {
   // Create new booking
@@ -20,42 +24,42 @@ export class BookingService {
     let startDate;
     let endDate;
 
-    switch (property.pricingModel.toLowerCase()) {
-      case "hourly":
-        startDate = new Date();
-        endDate = new Date(startDate.getTime() + duration * 60 * 60 * 1000);
-        break;
-      case "daily":
-        startDate = new Date();
-        endDate = new Date(
-          startDate.getTime() + duration * 24 * 60 * 60 * 1000
-        );
-        break;
-      case "weekly":
-        startDate = new Date();
-        endDate = new Date(
-          startDate.getTime() + duration * 7 * 24 * 60 * 60 * 1000
-        );
-        break;
-      case "monthly":
-        startDate = new Date();
-        endDate = new Date(
-          startDate.getFullYear(),
-          startDate.getMonth() + duration,
-          startDate.getDate()
-        );
-        break;
-      case "yearly":
-        startDate = new Date();
-        endDate = new Date(
-          startDate.getFullYear() + duration,
-          startDate.getMonth(),
-          startDate.getDate()
-        );
-        break;
-      default:
-        throw ApiError.badRequest("Invalid pricing model");
-    }
+    // switch (property.pricingModel.toLowerCase()) {
+    //   case "hourly":
+    //     startDate = new Date();
+    //     endDate = new Date(startDate.getTime() + duration * 60 * 60 * 1000);
+    //     break;
+    //   case "daily":
+    //     startDate = new Date();
+    //     endDate = new Date(
+    //       startDate.getTime() + duration * 24 * 60 * 60 * 1000
+    //     );
+    //     break;
+    //   case "weekly":
+    //     startDate = new Date();
+    //     endDate = new Date(
+    //       startDate.getTime() + duration * 7 * 24 * 60 * 60 * 1000
+    //     );
+    //     break;
+    //   case "monthly":
+    //     startDate = new Date();
+    //     endDate = new Date(
+    //       startDate.getFullYear(),
+    //       startDate.getMonth() + duration,
+    //       startDate.getDate()
+    //     );
+    //     break;
+    //   case "yearly":
+    //     startDate = new Date();
+    //     endDate = new Date(
+    //       startDate.getFullYear() + duration,
+    //       startDate.getMonth(),
+    //       startDate.getDate()
+    //     );
+    //     break;
+    //   default:
+    //     throw ApiError.badRequest("Invalid pricing model");
+    // }
 
     const booking = new Booking({
       ...bookingData,
@@ -121,6 +125,89 @@ export class BookingService {
     await booking.deleteOne();
 
     return ApiSuccess.ok("Booking deleted successfully");
+  }
+
+
+  static async generatePaymentLink(bookingRequestId: string) {
+    const bookingRequest = await BookingRequest.findById(bookingRequestId);
+    if (!bookingRequest) {
+      throw ApiError.notFound("Booking request not found");
+    }
+
+    if (bookingRequest.status !== "pending") {
+      throw ApiError.badRequest(
+        "Payment link can only be generated for pending booking requests"
+      );
+    }
+
+    return ApiSuccess.ok("Payment link generated successfully", {});
+  }
+
+  static async handlePaymentSuccess(
+    bookingRequestId: string,
+    transactionReference: string
+  ) {
+    const existingPaymentReference = await BookingRequest.findOne({
+      paymentReference: transactionReference,
+    });
+
+    if (existingPaymentReference) {
+      throw ApiError.badRequest("Payment reference has already been used.");
+    }
+
+    const bookingRequest = await BookingRequest.findById(bookingRequestId);
+
+    if (!bookingRequest) throw ApiError.notFound("Booking request not found");
+
+    const { data } = await PaymentService.verifyPayStackPayment(
+      transactionReference
+    );
+
+    if (data?.status !== "success") {
+      throw ApiError.badRequest("Transasction Reference Invalid");
+    }
+
+    if (data?.amount && data?.amount / 100 !== bookingRequest.totalPrice) {
+      throw ApiError.badRequest("Reference amount Mismatch");
+    }
+
+    bookingRequest.paymentStatus = "success";
+    bookingRequest.paymentReference = transactionReference;
+    await bookingRequest.save();
+
+    // Create the actual booking
+    // const booking = new Booking({
+    //   tenant: bookingRequest.tenant,
+    //   landlord: bookingRequest.landlord,
+    //   property: bookingRequest.property,
+    //   moveInDate: bookingRequest.moveInDate,
+    //   startDate: bookingRequest.startDate,
+    //   endDate: bookingRequest.endDate,
+    //   totalPrice: bookingRequest.totalPrice,
+    //   netPrice: bookingRequest.netPrice,
+    //   serviceChargeAmount: bookingRequest.serviceChargeAmount,
+    //   paymentMethod: bookingRequest.paymentMethod,
+    //   paymentProvider: bookingRequest.paymentProvider,
+    //   paymentReference: transactionReference,
+    // });
+
+    // await booking.save();
+
+    // Notify tenant about successful payment
+    agenda.now("send_payment_success_email_to_tenant", {
+      tenantEmail: bookingRequest.tenant.email,
+      tenantName: bookingRequest.tenant.firstName,
+      propertyName: bookingRequest.property.description, // Change to title later
+    });
+
+    // Notify landlord about successful payment
+    agenda.now("send_payment_success_email_to_landlord", {
+      landlordEmail: bookingRequest.landlord.email,
+      landlordName: bookingRequest.landlord.firstName,
+      propertyName: bookingRequest.property.description, // Change to title later
+    });
+
+    return ApiSuccess.ok("Payment successful", { bookingRequest });
   }
 }
 

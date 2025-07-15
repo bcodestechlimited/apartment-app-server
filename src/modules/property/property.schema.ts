@@ -6,6 +6,9 @@ import { ApiError } from "../../utils/responseHandler";
 export class PropertySchemas {
   static create = z
     .object({
+      title: z
+        .string({ required_error: "Title is required" })
+        .min(10, "Title must be at least 10 characters long"),
       description: z
         .string({ required_error: "Description is required" })
         .min(10, "Description must be at least 10 characters long"),

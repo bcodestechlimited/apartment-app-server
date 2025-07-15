@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
-import type { IBooking } from "./booking.interface";
+import type { IBookingRequest } from "./booking-request.interface";
 
-const BookingSchema: Schema<IBooking> = new Schema(
+const BookingRequestSchema: Schema<IBookingRequest> = new Schema(
   {
     tenant: {
       type: mongoose.Schema.Types.ObjectId,
@@ -30,10 +30,10 @@ const BookingSchema: Schema<IBooking> = new Schema(
       type: Date,
       required: true,
     },
-    totalPrice: {
+    basePrice: {
       type: Number,
-      required: true,
       min: [0, "Total price must be a positive number"],
+      default: 0,
     },
     netPrice: {
       type: Number,
@@ -44,6 +44,10 @@ const BookingSchema: Schema<IBooking> = new Schema(
       type: Number,
       min: [0, "Service charge amount must be a positive number"],
       default: 0,
+    },
+    paymentDue: {
+      type: Date,
+      default: null,
     },
     paymentStatus: {
       type: String,
@@ -67,11 +71,18 @@ const BookingSchema: Schema<IBooking> = new Schema(
     },
     status: {
       type: String,
-      enum: ["active", "expired", "cancelled"],
-      default: "active",
+      enum: ["pending", "approved", "declined", "expired"],
+      default: "pending",
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-export default mongoose.model<IBooking>("Booking", BookingSchema);
+const BookingRequest = mongoose.model<IBookingRequest>(
+  "BookingRequest",
+  BookingRequestSchema
+);
+
+export default BookingRequest;

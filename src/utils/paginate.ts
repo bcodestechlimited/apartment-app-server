@@ -1,4 +1,4 @@
-import { Document, Model } from "mongoose";
+import { Document, Model, type PopulateOptions } from "mongoose";
 
 interface PaginateOptions {
   // model: Model<Document>;
@@ -7,7 +7,7 @@ interface PaginateOptions {
   page?: number;
   limit?: number;
   sort?: Record<string, any>;
-  populateOptions?: string[];
+  populateOptions?: PopulateOptions[];
   select?: string[];
   excludeById?: string | null;
   excludeField?: string;

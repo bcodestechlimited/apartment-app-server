@@ -14,6 +14,11 @@ const PropertySchema: Schema<IProperty> = new Schema(
       ref: "User",
       required: true,
     },
+    title: {
+      type: String,
+      required: [true, "Please provide a property title"],
+      trim: true,
+    },
     address: {
       type: String,
       required: [true, "Please provide a property address"],
@@ -90,12 +95,17 @@ const PropertySchema: Schema<IProperty> = new Schema(
     },
     isAvailable: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     status: {
       type: String,
       enum: ["available", "unavailable"],
       default: "available",
+    },
+    users: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
     },
   },
   {

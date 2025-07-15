@@ -1,30 +1,43 @@
-import { Agenda } from "agenda";
+import { Agenda, Job } from "agenda";
 import { env } from "../config/env.config";
-import { mailService } from "../services/mail.service";
-import logger from "../utils/logger";
+import { sentOTPEmailJob } from "../jobs/sendOTPEmail";
+import {
+  expireBookingRequestAfter24Hours,
+  sendBookingRequestToLandlord,
+  sendBookingRequestToTenant,
+} from "../jobs/sendBookingRequest";
+import { sendBookingRequestDeclinedEmailToTenant } from "../jobs/sendBookingRequestDeclined";
+import { sendPaymentReminderToTenant } from "../jobs/sendPaymentReminder.job";
+
+function addDbToUri(uri: string, dbName: string): string {
+  const [base, query = ""] = uri.split("?"); // 1️⃣ split once
+  const trimmedBase = base?.replace(/\/$/, ""); // 2️⃣ drop trailing “/” if present
+  return `${trimmedBase}/${dbName}${query ? "?" + query : ""}`; // 3️⃣ glue it back
+}
 
 const agenda = new Agenda({
-  db: { address: env.MONGODB_URI, collection: "agendaJobs" },
-  processEvery: "30 seconds",
+  db: {
+    address: addDbToUri(env.MONGODB_URI, "citylights"),
+    collection: "agendaJobs",
+  },
+  processEvery: "5 seconds",
 });
 
-agenda.define("send_otp_email", async (job, done) => {
-  const { email, username } = job.attrs.data as {
-    email: string;
-    username: string;
-  };
+// Jobs
+agenda.define("send_otp_email", sentOTPEmailJob);
 
-  console.log(`Running job to send OTP email to ${email}`);
+agenda.define("send_booking_request_to_landlord", sendBookingRequestToLandlord);
+agenda.define("send_booking_request_to_tenant", sendBookingRequestToTenant);
+agenda.define(
+  "send_booking_request_declined_email_to_tenant",
+  sendBookingRequestDeclinedEmailToTenant
+);
+agenda.define(
+  "expire_booking_request_after_24_hours",
+  expireBookingRequestAfter24Hours
+);
 
-  try {
-    const result = await mailService.sendOTPViaEmail(email, username);
-    logger.info(`Email sent to ${email}`, { result });
-    done();
-  } catch (err) {
-    logger.error(`Failed to send OTP to ${email}:`, { err });
-    throw err; // causes retry
-  }
-});
+agenda.define("send_payment_reminder_to_tenant", sendPaymentReminderToTenant);
 
 export const startAgenda = async () => {
   await agenda.start();
@@ -33,10 +46,14 @@ export const startAgenda = async () => {
   // Log all jobs to check if it's running
   const jobs = await agenda.jobs({});
   console.log(`📋 Found ${jobs.length} jobs:`);
-  jobs.forEach((job, i) => {
+  jobs.forEach(async (job: Job, i) => {
     console.log(
       `[${i + 1}] ${job.attrs.name} | nextRunAt: ${job.attrs.nextRunAt}`
     );
+    if (job.attrs.nextRunAt && job.attrs.nextRunAt < new Date()) {
+      console.log(`🔄 Running overdue job: ${job.attrs.name}`);
+      await job.run();
+    }
   });
 };
 

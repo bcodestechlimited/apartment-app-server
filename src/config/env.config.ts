@@ -16,4 +16,6 @@ export const env = cleanEnv(Bun.env, {
   CLOUDINARY_NAME: str(),
   CLOUDINARY_API_KEY: str(),
   CLOUDINARY_API_SECRET: str(),
+  PAYSTACK_SECRET_KEY: str(),
+  PAYSTACK_PUBLIC_KEY: str(),
 });

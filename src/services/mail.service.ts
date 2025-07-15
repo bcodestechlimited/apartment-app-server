@@ -54,21 +54,21 @@ class MailService {
         html,
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
-      console.log("Email sent:", info.response);
-      console.log({ info });
-
-      return info;
+      const sentMessageInfo = await this.transporter.sendMail(mailOptions);
+      return sentMessageInfo;
     } catch (error) {
       logger.fatal("Error sending email:", error);
       throw error;
     }
   }
 
-  public async sendOTPViaEmail(
-    email: string,
-    userName: string
-  ): Promise<SentMessageInfo> {
+  public async sendOTPViaEmail({
+    email,
+    userName,
+  }: {
+    email: string;
+    userName: string;
+  }): Promise<SentMessageInfo> {
     await OTP.findOneAndDelete({ email });
 
     const otp = generateOTP();
@@ -86,6 +86,181 @@ class MailService {
 
     return await this.sendEmail({
       to: email,
+      subject,
+      text: emailText,
+      html,
+    });
+  }
+
+  public async sendBookingRequestEmailToLandlord({
+    landlordName,
+    landlordEmail,
+    propertyName,
+    moveInDate,
+    landlordDashboardUrl,
+  }: {
+    landlordName: string;
+    landlordEmail: string;
+    propertyName: string;
+    moveInDate: string;
+    landlordDashboardUrl: string;
+  }): Promise<SentMessageInfo> {
+    const subject = `Booking Request - ${propertyName}`;
+    const date = new Date().getFullYear().toString();
+    // const date = new Date().toLocaleString(); // shown in the footer
+
+    // Plain‑text fallback
+    const emailText = [
+      `Dear ${landlordName},`,
+      ``,
+      `A prospective tenant has requested to book a viewing for your property "${propertyName}".`,
+      `Preferred move-in date: ${moveInDate}`,
+      ``,
+      `You have 24 hours to accept or decline this request.`,
+      `Respond here: ${landlordDashboardUrl}`,
+      ``,
+      `If accepted, the tenant will be prompted to pay their booking fee.`,
+      ``,
+      `— Heaven Lease Team`,
+    ].join("\n");
+
+    // HTML body (handlebars template in /templates/BookingRequestTemplate.html)
+    const html = MailService.loadTemplate("BookingRequestToLandlord", {
+      landlordName: !landlordName ? "There" : landlordName,
+      propertyName,
+      moveInDate,
+      landlordDashboardUrl,
+      date,
+    });
+
+    return await this.sendEmail({
+      to: landlordEmail,
+      subject,
+      text: emailText,
+      html,
+    });
+  }
+
+  public async sendBookingRequestEmailToTenant({
+    tenantName,
+    tenantEmail,
+    propertyName,
+    moveInDate,
+    tenantDashboardUrl,
+  }: {
+    tenantName: string;
+    tenantEmail: string;
+    propertyName: string;
+    moveInDate: string;
+    tenantDashboardUrl: string;
+  }): Promise<SentMessageInfo> {
+    const subject = `Booking Request Received - ${propertyName}`;
+    const date = new Date().getFullYear().toString();
+
+    const emailText = [
+      `Dear ${tenantName},`,
+      ``,
+      `Your booking request for "${propertyName}" has been sent successfully.`,
+      `Preferred move-in date: ${moveInDate}`,
+      ``,
+      `The landlord has 24 hours to respond to your request.`,
+      `You can track the status here: ${tenantDashboardUrl}`,
+      ``,
+      `If your request is accepted, you’ll be prompted to pay your booking fee to secure the property.`,
+      ``,
+      `— Heaven Lease Team`,
+    ].join("\n");
+
+    const html = MailService.loadTemplate("BookingRequestToTenant", {
+      tenantName: !tenantName ? "There" : tenantName,
+      propertyName,
+      moveInDate,
+      tenantDashboardUrl,
+      date,
+    });
+
+    return await this.sendEmail({
+      to: tenantEmail,
+      subject,
+      text: emailText,
+      html,
+    });
+  }
+
+  public async sendBookingRequestDeclinedEmailToTenant({
+    tenantEmail,
+    tenantName,
+    propertyName,
+  }: {
+    tenantEmail: string;
+    tenantName: string;
+    propertyName: string;
+  }): Promise<SentMessageInfo> {
+    const subject = `Booking Request Declined - ${propertyName}`;
+    const date = new Date().getFullYear().toString(); // for footer
+
+    const emailText = [
+      `Dear ${tenantName},`,
+      ``,
+      `Unfortunately, your booking request for "${propertyName}" was declined by the landlord.`,
+      ``,
+      `You may explore other listings on Heaven Lease.`,
+      ``,
+      `— Heaven Lease Team`,
+    ].join("\n");
+
+    const html = MailService.loadTemplate("BookingDeclined", {
+      tenantName: !tenantName ? "There" : tenantName,
+      propertyName,
+      date,
+    });
+
+    return await this.sendEmail({
+      to: tenantEmail,
+      subject,
+      text: emailText,
+      html,
+    });
+  }
+
+  public async sendPaymentReminderEmailToTenant({
+    tenantEmail,
+    tenantName,
+    propertyName,
+    tenantDashboardUrl,
+    // bookingRequestId,
+    paymentDue,
+  }: {
+    tenantEmail: string;
+    tenantName: string;
+    propertyName: string;
+    bookingRequestId: string;
+    tenantDashboardUrl: string;
+    paymentDue: Date;
+  }): Promise<SentMessageInfo> {
+    const subject = `Payment Reminder for ${propertyName}`;
+    const date = new Date().toLocaleString();
+
+    const emailText = [
+      `Dear ${tenantName},`,
+      ``,
+      `This is a friendly reminder that your payment for the booking request "${propertyName}" is due on ${paymentDue.toLocaleDateString()}.`,
+      `Please ensure you complete the payment to secure your booking.`,
+      ``,
+      `— Heaven Lease Team`,
+    ].join("\n");
+
+    const html = MailService.loadTemplate("PaymentReminder", {
+      tenantName: !tenantName ? "There" : tenantName,
+      propertyName,
+      tenantDashboardUrl,
+      // bookingRequestId,
+      paymentDue: paymentDue.toLocaleDateString(),
+      date,
+    });
+
+    return await this.sendEmail({
+      to: tenantEmail,
       subject,
       text: emailText,
       html,

@@ -13,10 +13,12 @@ import { paginate } from "../../utils/paginate.js";
 
 export class PropertyService {
   static async getPropertyDocumentById(propertyId: string | ObjectId) {
-    const property = await Property.findOne({ _id: propertyId }).populate(
-      "user",
-      "-password"
-    );
+    const property = await Property.findOne({ _id: propertyId }).populate([
+      {
+        path: "user",
+        select: "-password",
+      },
+    ]);
     if (!property) {
       throw ApiError.notFound("Property not found");
     }
@@ -50,10 +52,16 @@ export class PropertyService {
     propertyData.amenities = parsedAmenities;
     propertyData.facilities = parsedFacilities;
 
+    const isAvailable = new Date(propertyData.availabilityDate) <= new Date();
+
     console.log({ propertyData });
 
     const { pictures } = files;
-    const property = new Property({ ...propertyData, user: userId });
+    const property = new Property({
+      ...propertyData,
+      user: userId,
+      isAvailable: isAvailable,
+    });
 
     const uploadedPictures = await Promise.all(
       pictures.map(async (picture: UploadedFile) => {
@@ -100,19 +108,16 @@ export class PropertyService {
     query: IQueryParams
   ) {
     const { limit = 10, page = 1, type } = query;
-
-    const filterQuery: Record<string, any> = {};
+    const filterQuery: Record<string, any> = { user: userId };
 
     if (type) {
       const propertyType = PropertyService.getActualTypeFromParam(type);
-      console.log({ propertyType });
-
       if (propertyType) {
         filterQuery.type = propertyType;
       }
     }
 
-    filterQuery.user = userId;
+    // filterQuery.user = userId;
 
     const { documents: properties, pagination } = await paginate({
       model: Property,
@@ -130,29 +135,26 @@ export class PropertyService {
 
   // Get single property by ID
   static async getPropertyById(id: string) {
-    console.log({ id });
-
     const property = await Property.findById(id).populate("user", "-password");
     if (!property) {
       throw ApiError.notFound("Property not found");
     }
-
     return ApiSuccess.ok("Property retrieved successfully", { property });
   }
 
   // Update property
   static async updateProperty(
-    id: string,
-    updateData: UpdatePropertyDTO,
-    userId: ObjectId
+    propertyId: string,
+    updateData: Partial<UpdatePropertyDTO>,
+    userId: ObjectId | string
   ) {
-    const property = await Property.findById(id);
+    const property = await Property.findById(propertyId);
     if (!property) {
       throw ApiError.notFound("Property not found");
     }
 
     // Optionally enforce ownership
-    if (property.user.toString() !== userId.toString()) {
+    if (String(property.user._id) !== userId.toString()) {
       throw ApiError.forbidden(
         "You do not have permission to update this property"
       );

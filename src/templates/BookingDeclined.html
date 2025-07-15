@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Booking Request Declined</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Inter", sans-serif;
+        background-color: #f9f9f9;
+        color: #333333;
+        font-size: 16px;
+        line-height: 1.5;
+        text-align: left;
+      }
+
+      .email-container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+      }
+
+      .email-header {
+        background-color: #004542;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .email-header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+        color: #ffffff;
+      }
+
+      .email-body {
+        padding: 30px;
+      }
+
+      .email-body h2 {
+        font-size: 22px;
+        font-weight: 500;
+        margin-bottom: 15px;
+        color: #333333;
+      }
+
+      .email-body p {
+        margin: 0 0 20px;
+        font-size: 16px;
+        color: #555555;
+      }
+
+      .email-footer {
+        padding: 20px;
+        background: #f1f5f9;
+        text-align: center;
+        font-size: 14px;
+        color: #777777;
+      }
+
+      .email-footer p {
+        margin: 5px 0;
+      }
+
+      .email-footer strong {
+        font-weight: 500;
+        color: #333333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <!-- Header -->
+      <div class="email-header">
+        <h1>City Lights Realty</h1>
+      </div>
+
+      <!-- Body -->
+      <div class="email-body">
+        <h2>Booking Request Declined</h2>
+        <p>Hi {{tenantName}},</p>
+        <p>
+          We regret to inform you that your booking request for
+          <strong>{{propertyName}}</strong> has been declined by the landlord.
+        </p>
+        <p>
+          This could be due to unavailability, scheduling conflicts, or other
+          reasons.
+        </p>
+        <p>
+          We encourage you to explore other listings available on our platform.
+        </p>
+        <p>
+          If you have any questions, feel free to reach out to our support team.
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div class="email-footer">
+        <p>
+          &copy; {{date}} <strong>City Lights Realty</strong>. All rights
+          reserved.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

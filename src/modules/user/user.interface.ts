@@ -3,6 +3,7 @@ import type { Document, ObjectId } from "mongoose";
 export type UserRolesEnum = ("user" | "landlord" | "tenant" | "admin")[];
 
 export interface IUser extends Document {
+  _id: ObjectId | string;
   firstName: string;
   lastName: string;
   email: string;

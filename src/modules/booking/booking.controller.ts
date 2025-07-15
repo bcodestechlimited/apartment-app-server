@@ -6,11 +6,11 @@ export class BookingController {
   // Create new booking
   static async createBooking(req: Request, res: Response) {
     const bookingData = req.body;
-    const files = req.files
+    const files = req.files;
     const { userId } = req.user as AuthenticatedUser;
     const result = await BookingService.createBooking(
       bookingData,
-    //   files,
+      //   files,
       userId
     );
     res.status(201).json(result);
@@ -36,7 +36,7 @@ export class BookingController {
     const { userId } = req.user as AuthenticatedUser;
     const result = await BookingService.updateBooking(
       bookingId as string,
-    //   bookingData,
+      //   bookingData,
       userId
     );
     res.status(200).json(result);
@@ -52,5 +52,20 @@ export class BookingController {
     );
     res.status(200).json(result);
   }
-}
 
+  // Payment verification for booking request
+  static async verifyBookingPayment(req: Request, res: Response) {
+    const { bookingRequestId, trxref } = req.query;
+
+    const result = await BookingService.handlePaymentSuccess(
+      bookingRequestId as string,
+      trxref as string
+    );
+
+    res.redirect(
+      `${process.env.CLIENT_BASE_URL}/dashboard/tenant/bookings?bookingRequestId=${bookingRequestId}`
+    );
+
+    res.status(200).json(result);
+  }
+}

@@ -12,7 +12,7 @@ router
   .get(BookingController.getAllBookings) // public or protected as needed
   .post(
     isAuth,
-    validateBody(BookingSchemas.create), // Assuming you have a create schema in BookingSchemas
+    validateBody(BookingSchemas.createBooking),
     // validateBody(PropertySchemas.create),
     BookingController.createBooking
   )
@@ -20,13 +20,19 @@ router
 
 router
   .route("/:id")
-  .get(BookingController.getBookingById) // public or protected as needed
+  .get(isAuth, BookingController.getBookingById) // public or protected as needed
   //   .patch(
   //     isAuth,
   //     validateBody(),
   //     BookingController.updateBooking
   //   )
   //   .delete(isAuth, BookingController.deleteBooking) // protected
+  .all(methodNotAllowed);
+
+// Verify payment for booking request
+router
+  .route("/request/paystack/verify")
+  .get(BookingController.verifyBookingPayment)
   .all(methodNotAllowed);
 
 export default router;
