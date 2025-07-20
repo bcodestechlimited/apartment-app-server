@@ -17,7 +17,10 @@ import { startAgenda } from "./lib/agenda";
 import propertyRoutes from "./modules/property/property.routes";
 import bookingRoutes from "./modules/booking/booking.routes";
 import bookingRequestRoutes from "./modules/booking-request/booking-request.routes";
+import transactionRoutes from "./modules/transaction/transaction.routes";
+import walletRoutes from "./modules/wallet/wallet.routes";
 import webookRoutes from "./modules/webhook/webhook.routes";
+import adminRoutes from "./modules/admin/admin.routes";
 
 const app = express();
 
@@ -48,7 +51,12 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/property", propertyRoutes);
 app.use("/api/v1/booking", bookingRoutes);
 app.use("/api/v1/booking-request", bookingRequestRoutes);
+app.use("/api/v1/transaction", transactionRoutes);
+app.use("/api/v1/wallet", walletRoutes);
 app.use("/api/v1/webhook", webookRoutes);
+app.use("/api/v1/admin", adminRoutes);
+
+// Admin routes
 
 app.use(helmet());
 app.use(notFound);

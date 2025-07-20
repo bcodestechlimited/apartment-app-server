@@ -9,18 +9,18 @@ const router = express.Router();
 
 router
   .route("/")
-  .get(PropertyController.getAllProperties) // public or protected as needed
+  .get(PropertyController.getProperties) // public or protected as needed
   .post(
     isAuth,
     PropertySchemas.validateImages,
-    validateBody(PropertySchemas.create),
+    validateBody(PropertySchemas.createPropertySchema),
     PropertyController.createProperty
   )
   .all(methodNotAllowed);
 
 router
   .route("/landlord")
-  .get(PropertyController.getAllProperties) // public or protected as needed
+  .get(isAuth, PropertyController.getAllLandlordProperties) // public or protected as needed
   .all(methodNotAllowed);
 
 router
@@ -28,7 +28,8 @@ router
   .get(PropertyController.getPropertyById) // public or protected as needed
   .patch(
     isAuth,
-    validateBody(PropertySchemas.update),
+    PropertySchemas.validateUpdateImages,
+    validateBody(PropertySchemas.updatePropertySchema),
     PropertyController.updateProperty
   )
   .delete(isAuth, PropertyController.deleteProperty)

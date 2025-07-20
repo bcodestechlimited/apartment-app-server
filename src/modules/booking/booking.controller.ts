@@ -17,8 +17,25 @@ export class BookingController {
   }
 
   // Get all bookings
-  static async getAllBookings(_req: Request, res: Response) {
-    const result = await BookingService.getAllBookings();
+  static async getAllBookings(req: Request, res: Response) {
+    const query = req.query;
+    const result = await BookingService.getAllBookings(query);
+    res.status(200).json(result);
+  }
+
+  // Get tenant bookings
+  static async getTenantBookings(req: Request, res: Response) {
+    const { userId } = req.user as AuthenticatedUser;
+    const query = req.query;
+    const result = await BookingService.getTenantBookings(userId, query);
+    res.status(200).json(result);
+  }
+
+  // Get landlord bookings
+  static async getLandlordBookings(req: Request, res: Response) {
+    const { userId } = req.user as AuthenticatedUser;
+    const query = req.query;
+    const result = await BookingService.getLandlordBookings(userId, query);
     res.status(200).json(result);
   }
 
@@ -42,30 +59,16 @@ export class BookingController {
     res.status(200).json(result);
   }
 
-  // Delete a booking
-  static async deleteBooking(req: Request, res: Response) {
-    const { bookingId } = req.params;
-    const { userId } = req.user as AuthenticatedUser;
-    const result = await BookingService.deleteBooking(
-      bookingId as string,
-      userId
-    );
-    res.status(200).json(result);
-  }
+  // // Delete a booking
+  // static async deleteBooking(req: Request, res: Response) {
+  //   const { bookingId } = req.params;
+  //   const { userId } = req.user as AuthenticatedUser;
+  //   const result = await BookingService.deleteBooking(
+  //     bookingId as string,
+  //     userId
+  //   );
+  //   res.status(200).json(result);
+  // }
 
-  // Payment verification for booking request
-  static async verifyBookingPayment(req: Request, res: Response) {
-    const { bookingRequestId, trxref } = req.query;
 
-    const result = await BookingService.handlePaymentSuccess(
-      bookingRequestId as string,
-      trxref as string
-    );
-
-    res.redirect(
-      `${process.env.CLIENT_BASE_URL}/dashboard/tenant/bookings?bookingRequestId=${bookingRequestId}`
-    );
-
-    res.status(200).json(result);
-  }
 }

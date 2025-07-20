@@ -1,5 +1,6 @@
 import type { Document, ObjectId } from "mongoose";
 import type { IUser } from "../user/user.interface";
+import type { number } from "zod";
 
 export enum PropertyType {
   SERVICED_APARTMENT = "serviced-apartment",
@@ -23,7 +24,7 @@ export interface IProperty extends Document {
   user: IUser;
   title: string;
   description: string;
-  price: string;
+  price: number;
   // location: string;
   address: string;
   state: string;
@@ -37,13 +38,14 @@ export interface IProperty extends Document {
   isVerified: boolean;
   isAvailable: boolean;
   status: string;
-  users: IUser[];
   // For standard-rental / serviced-apartment
-  availabilityDate: string;
-  numberOfBedRooms?: string;
-  numberOfBathrooms?: string;
+  availabilityDate: Date;
+  numberOfBedrooms?: number;
+  numberOfBathrooms?: number;
   // For workspaces
   seatingCapacity?: string;
+  requestedBy: IUser[];
+  bookedBy: IUser[];
 }
 
 export interface CreatePropertyDTO {
@@ -73,8 +75,8 @@ export interface UpdatePropertyDTO {
   description: string;
   price: string;
   location: string;
-  amenities: string[];
-  facilities: string[];
+  amenities: string;
+  facilities: string;
   type: PropertyType;
   pictures: string[];
   pricingModel: PricingModel;
@@ -83,9 +85,11 @@ export interface UpdatePropertyDTO {
   isAvailable: boolean;
 
   // For standard-rental / serviced-apartment
-  numberOfRooms?: string;
+  numberOfBathrooms?: string;
+  numberOfBedrooms?: string;
 
   // For workspaces
   availability?: string[];
   seatingCapacity?: string;
+  existingPictures: string;
 }

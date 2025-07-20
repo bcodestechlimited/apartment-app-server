@@ -10,7 +10,8 @@
     "start": "bun run build --target=bun && bun run dist/index.js | pino-pretty",
     "dev": "nodemon --watch src --ext ts --exec bun run /src/index.ts | pino-pretty",
     "test": "bun test",
-    "lint": "bun run lint"
+    "lint": "bun run lint",
+    "script:test": "bun run src/scripts/test.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"

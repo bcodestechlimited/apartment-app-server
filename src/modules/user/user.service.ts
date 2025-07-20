@@ -1,9 +1,11 @@
 import type { ObjectId } from "mongoose";
-import { ApiError } from "../../utils/responseHandler";
+import { ApiError, ApiSuccess } from "../../utils/responseHandler";
 import { hashPassword } from "../../utils/validationUtils";
 import type { RegisterDTO } from "../auth/auth.interface";
 import type { IUser, updateUserDTO } from "./user.interface";
 import User from "./user.model";
+import type { IQueryParams } from "@/shared/interfaces/query.interface";
+import { paginate } from "@/utils/paginate";
 
 class UserService {
   static async createUser(userData: Partial<IUser>): Promise<IUser> {
@@ -55,7 +57,7 @@ class UserService {
     }
     return user;
   }
-  static async findUserById(userId: ObjectId): Promise<IUser> {
+  static async findUserById(userId: ObjectId | string): Promise<IUser> {
     const user = await User.findById(userId);
 
     if (!user) {
@@ -70,6 +72,32 @@ class UserService {
     if (user) {
       throw ApiError.badRequest("User with this email exists");
     }
+  }
+
+  static async getAllUsers(query: IQueryParams) {
+    const { page, limit } = query;
+    const filterQuery = {};
+    const sort = { createdAt: -1 };
+    const populateOptions = [{ path: "user" }];
+
+    const { documents: users, pagination } = await paginate({
+      model: User,
+      query: filterQuery,
+      page,
+      limit,
+      sort,
+      populateOptions,
+    });
+
+    return ApiSuccess.ok("Users retrieved successfully", {
+      users,
+      pagination,
+    });
+  }
+
+  static async getUserById(userId: string) {
+    const user = await this.findUserById(userId);
+    return ApiSuccess.ok("User retrieved successfully", { user });
   }
 }
 

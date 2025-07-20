@@ -1,7 +1,6 @@
 import { ApiError, ApiSuccess } from "../../utils/responseHandler.js";
 import type { ObjectId } from "mongoose";
 import { PropertyService } from "../property/property.service.js";
-import agenda from "../../lib/agenda.js";
 import { PaymentService } from "../../services/payment.service.js";
 import { calculateBookingPeriod } from "../../utils/calculationUtils.js";
 import { paginate } from "../../utils/paginate.js";
@@ -11,6 +10,9 @@ import { scheduleBookingRequest } from "../../jobs/sendBookingRequest.js";
 import { scheduleBookingRequestDeclined } from "../../jobs/sendBookingRequestDeclined.js";
 import { scheduleTenantPaymentReminder } from "../../jobs/sendPaymentReminder.job.js";
 import { env } from "../../config/env.config.js";
+import { schedulePaymentSuccessEmail } from "@/jobs/sendPaymentSuccess.js";
+import { clientURLs } from "@/utils/clientURL.js";
+import Booking from "../booking/booking.model.js";
 
 export class BookingRequestService {
   // ----------------- Booking Requests -----------------
@@ -39,7 +41,7 @@ export class BookingRequestService {
       property: propertyId,
       landlord: landlordId,
       basePrice: property.price,
-      netPrice: Number(property.price) + 10000,
+      netPrice: Number(property.price) + 10000, // Add service charge from admin
       serviceChargeAmount: 10000,
       moveInDate,
       startDate,
@@ -356,35 +358,34 @@ export class BookingRequestService {
     await bookingRequest.save();
 
     // Create the actual booking
-    // const booking = new Booking({
-    //   tenant: bookingRequest.tenant,
-    //   landlord: bookingRequest.landlord,
-    //   property: bookingRequest.property,
-    //   moveInDate: bookingRequest.moveInDate,
-    //   startDate: bookingRequest.startDate,
-    //   endDate: bookingRequest.endDate,
-    //   totalPrice: bookingRequest.totalPrice,
-    //   netPrice: bookingRequest.netPrice,
-    //   serviceChargeAmount: bookingRequest.serviceChargeAmount,
-    //   paymentMethod: bookingRequest.paymentMethod,
-    //   paymentProvider: bookingRequest.paymentProvider,
-    //   paymentReference: transactionReference,
-    // });
-
-    // await booking.save();
-
-    // Notify tenant about successful payment
-    agenda.now("send_payment_success_email_to_tenant", {
-      tenantEmail: bookingRequest.tenant.email,
-      tenantName: bookingRequest.tenant.firstName,
-      propertyName: bookingRequest.property.description, // Change to title later
+    const booking = new Booking({
+      tenant: bookingRequest.tenant,
+      landlord: bookingRequest.landlord,
+      property: bookingRequest.property,
+      moveInDate: bookingRequest.moveInDate,
+      startDate: bookingRequest.startDate,
+      endDate: bookingRequest.endDate,
+      basePrice: bookingRequest.basePrice,
+      netPrice: bookingRequest.netPrice,
+      serviceChargeAmount: bookingRequest.serviceChargeAmount,
+      paymentStatus: "success",
+      paymentMethod: bookingRequest.paymentMethod,
+      paymentProvider: bookingRequest.paymentProvider,
+      paymentReference: transactionReference,
+      paymentDue: bookingRequest.endDate, // set it to a day before and send reminder base on pricing model
     });
 
-    // Notify landlord about successful payment
-    agenda.now("send_payment_success_email_to_landlord", {
-      landlordEmail: bookingRequest.landlord.email,
+    await booking.save();
+
+    await schedulePaymentSuccessEmail({
       landlordName: bookingRequest.landlord.firstName,
-      propertyName: bookingRequest.property.description, // Change to title later
+      landlordEmail: bookingRequest.landlord.email,
+      tenantName: bookingRequest.tenant.firstName,
+      tenantEmail: bookingRequest.tenant.email,
+      propertyName: bookingRequest.property.description,
+      moveInDate: bookingRequest.moveInDate,
+      landlordDashboardUrl: clientURLs.landlord.dashboardURL,
+      tenantDashboardUrl: clientURLs.tenant.dashboardURL,
     });
 
     return ApiSuccess.ok("Payment successful", { bookingRequest });

@@ -13,7 +13,7 @@ export class UploadService {
           tempFilePath,
           {
             use_filename: true,
-            folder: "apartment-app",
+            folder: "Haven-Lease",
             resource_type: "auto",
           }
         );

@@ -39,3 +39,16 @@ export function calculateBookingPeriod(
     durationMs: end.getTime() - start.getTime(),
   };
 }
+
+export function toISODate(input: string): string | null {
+  const parts = input.split("-");
+  if (parts.length !== 3) return null;
+
+  const [month, day, year] = parts;
+  if (!month || !day || !year) return null;
+
+  const isoDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  const parsed = new Date(isoDate);
+
+  return isNaN(parsed.getTime()) ? null : isoDate;
+}

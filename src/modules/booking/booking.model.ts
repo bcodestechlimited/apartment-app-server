@@ -1,20 +1,72 @@
 import mongoose, { Schema } from "mongoose";
-import type { IBooking } from "./booking.interface";
+import type { IBooking, IBookingHistory } from "./booking.interface";
+
+const BookingHistorySchema: Schema<IBookingHistory> = new Schema({
+  booking: {
+    type: Schema.Types.ObjectId,
+    ref: "Booking",
+    required: true,
+  },
+  startDate: {
+    type: Date,
+    required: true,
+  },
+  endDate: {
+    type: Date,
+    required: true,
+  },
+  basePrice: {
+    type: Number,
+    min: [0, "Base price must be a positive number"],
+    default: 0,
+  },
+  netPrice: {
+    type: Number,
+    min: [0, "Net price must be a positive number"],
+    default: 0,
+  },
+  serviceChargeAmount: {
+    type: Number,
+    min: [0, "Service charge amount must be a positive number"],
+    default: 0,
+  },
+  paymentStatus: {
+    type: String,
+    enum: ["pending", "success", "failed"],
+  },
+  paymentMethod: {
+    type: String,
+    enum: ["cash", "card", "bank_transfer"],
+  },
+  paymentProvider: {
+    type: String,
+    enum: ["paystack", "flutterwave"],
+  },
+  paymentReference: String,
+  status: {
+    type: String,
+    enum: ["active", "expired", "cancelled"],
+  },
+  movedToHistoryAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
 const BookingSchema: Schema<IBooking> = new Schema(
   {
     tenant: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
     landlord: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
     property: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "Property",
       required: true,
     },
@@ -30,10 +82,10 @@ const BookingSchema: Schema<IBooking> = new Schema(
       type: Date,
       required: true,
     },
-    totalPrice: {
+    basePrice: {
       type: Number,
-      required: true,
-      min: [0, "Total price must be a positive number"],
+      min: [0, "Base price must be a positive number"],
+      default: 0,
     },
     netPrice: {
       type: Number,
@@ -70,8 +122,17 @@ const BookingSchema: Schema<IBooking> = new Schema(
       enum: ["active", "expired", "cancelled"],
       default: "active",
     },
+    canRenew: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
 
 export default mongoose.model<IBooking>("Booking", BookingSchema);
+
+export const BookingHistory = mongoose.model<IBookingHistory>(
+  "BookingHistory",
+  BookingHistorySchema
+);

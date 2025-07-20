@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { ZodError, ZodSchema } from "zod";
 import { ApiError } from "../utils/responseHandler";
+import logger from "@/utils/logger";
 
 // Middleware to validate request body using Zod
 export const validateBody =
@@ -20,6 +21,7 @@ export const validateBody =
               ? `Unrecognized key(s): ${err.keys?.join(", ")}`
               : err.message,
         }));
+        logger.error({ errors });
         throw ApiError.unprocessableEntity("Validation Error", errors);
       }
 

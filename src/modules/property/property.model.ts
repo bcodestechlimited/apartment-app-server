@@ -5,8 +5,6 @@ import {
   type IProperty,
 } from "./property.interface.js";
 
-// Define possible pricing models
-
 const PropertySchema: Schema<IProperty> = new Schema(
   {
     user: {
@@ -40,9 +38,10 @@ const PropertySchema: Schema<IProperty> = new Schema(
       trim: true,
     },
     price: {
-      type: String,
+      type: Number,
       required: [true, "Please provide a property price"],
-      trim: true,
+      min: [0, "Price must be a positive number"],
+      default: 0,
     },
     amenities: {
       type: [String],
@@ -63,17 +62,19 @@ const PropertySchema: Schema<IProperty> = new Schema(
     },
 
     // Other specific fields
-    numberOfBedRooms: {
-      type: String,
+    numberOfBedrooms: {
+      type: Number,
+      min: [1, "Number of bedrooms must be at least 1"],
+      default: 1,
     },
     numberOfBathrooms: {
-      type: String,
+      type: Number,
+      min: [1, "Number of bathrooms must be at least 1"],
+      default: 1,
     },
-
-    // Co-working-space-specific fields
     availabilityDate: {
-      type: String, // e.g., ['Monday', 'Tuesday']
-      default: "",
+      type: Date,
+      required: [true, "Please provide a property availability date"],
     },
     pricingModel: {
       type: String,
@@ -102,7 +103,12 @@ const PropertySchema: Schema<IProperty> = new Schema(
       enum: ["available", "unavailable"],
       default: "available",
     },
-    users: {
+    requestedBy: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+    },
+    bookedBy: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "User",
       default: [],

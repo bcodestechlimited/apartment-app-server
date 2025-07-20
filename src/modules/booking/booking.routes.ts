@@ -9,18 +9,28 @@ const router = express.Router();
 
 router
   .route("/")
-  .get(BookingController.getAllBookings) // public or protected as needed
-  .post(
-    isAuth,
-    validateBody(BookingSchemas.createBooking),
-    // validateBody(PropertySchemas.create),
-    BookingController.createBooking
-  )
+  .get(BookingController.getAllBookings)
+  // .post(
+  //   isAuth,
+  //   validateBody(BookingSchemas.createBooking),
+  //   // validateBody(PropertySchemas.create),
+  //   BookingController.createBooking
+  // )
+  .all(methodNotAllowed);
+
+router
+  .route("/tenant")
+  .get(isAuth, BookingController.getTenantBookings)
+  .all(methodNotAllowed);
+
+router
+  .route("/landlord")
+  .get(isAuth, BookingController.getLandlordBookings)
   .all(methodNotAllowed);
 
 router
   .route("/:id")
-  .get(isAuth, BookingController.getBookingById) // public or protected as needed
+  .get(isAuth, BookingController.getBookingById)
   //   .patch(
   //     isAuth,
   //     validateBody(),
@@ -30,9 +40,9 @@ router
   .all(methodNotAllowed);
 
 // Verify payment for booking request
-router
-  .route("/request/paystack/verify")
-  .get(BookingController.verifyBookingPayment)
-  .all(methodNotAllowed);
+// router
+//   .route("/:bookingId/verify")
+//   .get(BookingController.verifyBookingPayment)
+//   .all(methodNotAllowed);
 
 export default router;

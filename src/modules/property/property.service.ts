@@ -10,6 +10,7 @@ import { UploadService } from "../../services/upload.service.js";
 import type { UploadedFile } from "express-fileupload";
 import type { IQueryParams } from "../../shared/interfaces/query.interface.js";
 import { paginate } from "../../utils/paginate.js";
+import { toISODate } from "@/utils/calculationUtils.js";
 
 export class PropertyService {
   static async getPropertyDocumentById(propertyId: string | ObjectId) {
@@ -25,26 +26,31 @@ export class PropertyService {
 
     return property;
   }
-  static getActualTypeFromParam(type: string): string | undefined {
+  static getActualTypeFromParam(type: string | undefined): string | undefined {
     if (!type || type.toLowerCase() === "all") {
       return undefined;
     }
 
     const propertyTypes: Record<string, PropertyType> = {
       serviced: PropertyType.SERVICED_APARTMENT,
+      "serviced-apartment": PropertyType.SERVICED_APARTMENT,
       shared: PropertyType.SHARED_APARTMENT,
+      "shared-apartment": PropertyType.SHARED_APARTMENT,
       standard: PropertyType.STANDARD_RENTAL,
+      "standard-rental": PropertyType.STANDARD_RENTAL,
       "short-let": PropertyType.SHORT_LETS,
       "co-working-space": PropertyType.CO_WORKING_SPACE,
     };
 
-    return propertyTypes[type];
+    return (
+      propertyTypes[type] || propertyTypes[type.toLowerCase().replace(" ", "-")]
+    );
   }
 
   // Create new property
   static async createProperty(
     propertyData: CreatePropertyDTO,
-    files: any,
+    files: { pictures: UploadedFile[] },
     userId: ObjectId
   ) {
     const parsedAmenities = JSON.parse(propertyData.amenities);
@@ -53,8 +59,6 @@ export class PropertyService {
     propertyData.facilities = parsedFacilities;
 
     const isAvailable = new Date(propertyData.availabilityDate) <= new Date();
-
-    console.log({ propertyData });
 
     const { pictures } = files;
     const property = new Property({
@@ -76,19 +80,65 @@ export class PropertyService {
     await property.save();
     return ApiSuccess.created("Property created successfully", { property });
   }
-  // Get all properties
+  // Get all properties (admin)
   static async getAllProperties(query: IQueryParams) {
-    const { limit = 10, page = 1, type } = query;
+    const {
+      limit = 10,
+      page = 1,
+      propertyType,
+      minPrice,
+      maxPrice,
+      state,
+      lga,
+      numberOfBedrooms,
+      numberOfBathrooms,
+    } = query;
+
+    console.log({ numberOfBedrooms, numberOfBathrooms });
 
     const filterQuery: Record<string, any> = {};
-    if (type) {
-      const propertyType = PropertyService.getActualTypeFromParam(type);
-      console.log({ propertyType });
 
-      if (propertyType) {
-        filterQuery.type = propertyType;
+    // const filterQuery: Record<string, any> = {
+    //   isAvailable: true,
+    //   isApproved: true,
+    // };
+
+    if (propertyType) {
+      const actualPropertyType =
+        PropertyService.getActualTypeFromParam(propertyType);
+
+      console.log({ actualPropertyType });
+
+      if (actualPropertyType) {
+        filterQuery.type = actualPropertyType;
       }
     }
+
+    if (minPrice) {
+      filterQuery.price = { $gte: Number(minPrice) };
+    }
+
+    if (maxPrice) {
+      filterQuery.price = { ...filterQuery.price, $lte: Number(maxPrice) };
+    }
+
+    if (state) {
+      filterQuery.state = state;
+    }
+
+    if (lga) {
+      filterQuery.lga = lga;
+    }
+
+    if (numberOfBedrooms) {
+      filterQuery.numberOfBedRooms = numberOfBedrooms;
+    }
+
+    if (numberOfBathrooms) {
+      filterQuery.numberOfBathrooms = numberOfBathrooms;
+    }
+
+    console.log({ filterQuery });
 
     const { documents: properties, pagination } = await paginate({
       model: Property,
@@ -103,6 +153,101 @@ export class PropertyService {
       pagination,
     });
   }
+  // Get all properties
+  static async getProperties(query: IQueryParams) {
+    const {
+      limit = 10,
+      page = 1,
+      search,
+      propertyType,
+      minPrice,
+      maxPrice,
+      state,
+      lga,
+      numberOfBedrooms,
+      numberOfBathrooms,
+      pricingModel,
+      availableFrom,
+    } = query;
+
+    const filterQuery: Record<string, any> = {};
+
+    // const filterQuery: Record<string, any> = {
+    //   isAvailable: true,
+    //   isApproved: true,
+    // };
+
+    if (propertyType) {
+      const actualPropertyType =
+        PropertyService.getActualTypeFromParam(propertyType);
+
+      console.log({ actualPropertyType });
+
+      if (actualPropertyType) {
+        filterQuery.type = actualPropertyType;
+      }
+    }
+
+    if (minPrice) {
+      filterQuery.price = { $gte: Number(minPrice) };
+    }
+
+    if (maxPrice) {
+      filterQuery.price = { ...filterQuery.price, $lte: Number(maxPrice) };
+    }
+
+    if (state) {
+      filterQuery.state = state;
+    }
+
+    if (lga) {
+      filterQuery.lga = lga;
+    }
+
+    if (numberOfBedrooms) {
+      filterQuery.numberOfBedRooms = numberOfBedrooms;
+    }
+
+    if (numberOfBathrooms) {
+      filterQuery.numberOfBathrooms = numberOfBathrooms;
+    }
+
+    if (pricingModel) {
+      filterQuery.pricingModel = pricingModel.toLowerCase();
+    }
+
+    if (search) {
+      filterQuery.title = { $regex: search, $options: "i" };
+    }
+
+    // if (availableFrom) {
+    //   const isoDate = toISODate(availableFrom as string);
+
+    //   console.log({ isoDate });
+
+    //   if (isoDate) {
+    //     filterQuery.availabilityDate = {
+    //       $gte: isoDate,
+    //     };
+    //   }
+    // }
+
+    console.log({ filterQuery });
+
+    const { documents: properties, pagination } = await paginate({
+      model: Property,
+      query: filterQuery,
+      page,
+      limit,
+      sort: { createdAt: -1 },
+    });
+
+    return ApiSuccess.ok("Properties retrieved successfully", {
+      properties,
+      pagination,
+    });
+  }
+
   static async getLandlordProperties(
     userId: string | ObjectId,
     query: IQueryParams
@@ -116,8 +261,6 @@ export class PropertyService {
         filterQuery.type = propertyType;
       }
     }
-
-    // filterQuery.user = userId;
 
     const { documents: properties, pagination } = await paginate({
       model: Property,
@@ -146,8 +289,11 @@ export class PropertyService {
   static async updateProperty(
     propertyId: string,
     updateData: Partial<UpdatePropertyDTO>,
+    files: { newPictures: UploadedFile | UploadedFile[] },
     userId: ObjectId | string
   ) {
+    const { newPictures } = files;
+
     const property = await Property.findById(propertyId);
     if (!property) {
       throw ApiError.notFound("Property not found");
@@ -160,7 +306,49 @@ export class PropertyService {
       );
     }
 
-    Object.assign(property, updateData);
+    const existingPictures = JSON.parse(updateData.existingPictures as string);
+    const parsedAmenities = JSON.parse(updateData.amenities as string);
+    const parsedFacilities = JSON.parse(updateData.facilities as string);
+
+    let updatePropertyPayload = {
+      ...updateData,
+      amenities: parsedAmenities,
+      facilities: parsedFacilities,
+      pictures: existingPictures,
+    };
+
+    if (newPictures && Array.isArray(newPictures) && newPictures.length > 0) {
+      const length = newPictures.length;
+      if (existingPictures.length + length > 5) {
+        throw ApiError.badRequest("You can only upload a maximum of 5 images");
+      }
+      const newlyUploadedPictures = await Promise.all(
+        newPictures.map(async (picture: UploadedFile) => {
+          const { secure_url } = await UploadService.uploadToCloudinary(
+            picture.tempFilePath
+          );
+          return secure_url;
+        })
+      );
+
+      updatePropertyPayload.pictures = [
+        ...existingPictures,
+        ...newlyUploadedPictures,
+      ];
+    }
+
+    if (newPictures && !Array.isArray(newPictures)) {
+      if (existingPictures.length + 1 > 5) {
+        throw ApiError.badRequest("You can only upload a maximum of 5 images");
+      }
+
+      const { secure_url } = await UploadService.uploadToCloudinary(
+        newPictures.tempFilePath
+      );
+      updatePropertyPayload.pictures = [...existingPictures, secure_url];
+    }
+
+    Object.assign(property, updatePropertyPayload);
     await property.save();
 
     return ApiSuccess.ok("Property updated successfully", { property });

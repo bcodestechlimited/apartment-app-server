@@ -3,7 +3,6 @@ import { ApiError, ApiSuccess } from "../../utils/responseHandler.js";
 import type { CreateBookingDTO } from "./booking.interface.js";
 import type { ObjectId } from "mongoose";
 import { PropertyService } from "../property/property.service.js";
-import agenda from "../../lib/agenda.js";
 import { PaymentService } from "../../services/payment.service.js";
 import { calculateBookingPeriod } from "../../utils/calculationUtils.js";
 import { paginate } from "../../utils/paginate.js";
@@ -74,9 +73,81 @@ export class BookingService {
   }
 
   // Get all bookings
-  static async getAllBookings() {
-    const bookings = await Booking.find().populate("user", "-password");
-    return ApiSuccess.ok("Bookings retrieved successfully", { bookings });
+  static async getAllBookings(query: IQueryParams) {
+    const { page, limit } = query;
+    const filterQuery = {};
+    const sort = { createdAt: -1 };
+    const populateOptions = [
+      { path: "tenant" },
+      { path: "landlord" },
+      { path: "property" },
+    ];
+
+    const { documents: bookings, pagination } = await paginate({
+      model: Booking,
+      query: filterQuery,
+      page,
+      limit,
+      sort,
+      populateOptions,
+    });
+
+    return ApiSuccess.ok("Bookings retrieved successfully", {
+      bookings,
+      pagination,
+    });
+  }
+
+  // Get tenant bookings
+  static async getTenantBookings(userId: ObjectId, query: IQueryParams) {
+    const { page, limit } = query;
+    const filterQuery = { tenant: userId };
+    const sort = { createdAt: -1 };
+    const populateOptions = [
+      { path: "tenant" },
+      { path: "landlord" },
+      { path: "property" },
+    ];
+
+    const { documents: bookings, pagination } = await paginate({
+      model: Booking,
+      query: filterQuery,
+      page,
+      limit,
+      sort,
+      populateOptions,
+    });
+
+    return ApiSuccess.ok("Bookings retrieved successfully", {
+      bookings,
+      pagination,
+    });
+  }
+
+  // Get landlord bookings
+  static async getLandlordBookings(userId: ObjectId, query: IQueryParams) {
+    const { page, limit } = query;
+    const filterQuery = { landlord: userId };
+    const sort = { createdAt: -1 };
+    const populateOptions = [
+      { path: "tenant" },
+      { path: "landlord" },
+      { path: "property" },
+    ];
+
+    const { documents: bookings, pagination } = await paginate({
+      model: Booking,
+      query: filterQuery,
+      page,
+      limit,
+      sort,
+      populateOptions,
+    });
+
+    return ApiSuccess.ok("Bookings retrieved successfully", {
+      bookings,
+      pagination,
+    });
   }
 
   // Get single booking by ID
@@ -110,105 +181,104 @@ export class BookingService {
   }
 
   // Delete booking
-  static async deleteBooking(id: string, userId: ObjectId) {
-    const booking = await Booking.findById(id);
-    if (!booking) {
-      throw ApiError.notFound("Booking not found");
-    }
+  // static async deleteBooking(id: string, userId: ObjectId) {
+  //   const booking = await Booking.findById(id);
+  //   if (!booking) {
+  //     throw ApiError.notFound("Booking not found");
+  //   }
 
-    // if (booking.user.toString() !== userId.toString()) {
-    //   throw ApiError.forbidden(
-    //     "You do not have permission to delete this booking"
-    //   );
-    // }
+  //   // if (booking.user.toString() !== userId.toString()) {
+  //   //   throw ApiError.forbidden(
+  //   //     "You do not have permission to delete this booking"
+  //   //   );
+  //   // }
 
-    await booking.deleteOne();
+  //   await booking.deleteOne();
 
-    return ApiSuccess.ok("Booking deleted successfully");
-  }
+  //   return ApiSuccess.ok("Booking deleted successfully");
+  // }
 
+  // static async generatePaymentLink(bookingRequestId: string) {
+  //   const bookingRequest = await BookingRequest.findById(bookingRequestId);
+  //   if (!bookingRequest) {
+  //     throw ApiError.notFound("Booking request not found");
+  //   }
 
-  static async generatePaymentLink(bookingRequestId: string) {
-    const bookingRequest = await BookingRequest.findById(bookingRequestId);
-    if (!bookingRequest) {
-      throw ApiError.notFound("Booking request not found");
-    }
+  //   if (bookingRequest.status !== "pending") {
+  //     throw ApiError.badRequest(
+  //       "Payment link can only be generated for pending booking requests"
+  //     );
+  //   }
 
-    if (bookingRequest.status !== "pending") {
-      throw ApiError.badRequest(
-        "Payment link can only be generated for pending booking requests"
-      );
-    }
+  //   return ApiSuccess.ok("Payment link generated successfully", {});
+  // }
 
-    return ApiSuccess.ok("Payment link generated successfully", {});
-  }
+  // static async handlePaymentSuccess(
+  //   bookingRequestId: string,
+  //   transactionReference: string
+  // ) {
+  //   const existingPaymentReference = await BookingRequest.findOne({
+  //     paymentReference: transactionReference,
+  //   });
 
-  static async handlePaymentSuccess(
-    bookingRequestId: string,
-    transactionReference: string
-  ) {
-    const existingPaymentReference = await BookingRequest.findOne({
-      paymentReference: transactionReference,
-    });
+  //   if (existingPaymentReference) {
+  //     throw ApiError.badRequest("Payment reference has already been used.");
+  //   }
 
-    if (existingPaymentReference) {
-      throw ApiError.badRequest("Payment reference has already been used.");
-    }
+  //   const bookingRequest = await BookingRequest.findById(bookingRequestId);
 
-    const bookingRequest = await BookingRequest.findById(bookingRequestId);
+  //   if (!bookingRequest) throw ApiError.notFound("Booking request not found");
 
-    if (!bookingRequest) throw ApiError.notFound("Booking request not found");
+  //   const { data } = await PaymentService.verifyPayStackPayment(
+  //     transactionReference
+  //   );
 
-    const { data } = await PaymentService.verifyPayStackPayment(
-      transactionReference
-    );
+  //   if (data?.status !== "success") {
+  //     throw ApiError.badRequest("Transasction Reference Invalid");
+  //   }
 
-    if (data?.status !== "success") {
-      throw ApiError.badRequest("Transasction Reference Invalid");
-    }
+  //   if (data?.amount && data?.amount / 100 !== bookingRequest.totalPrice) {
+  //     throw ApiError.badRequest("Reference amount Mismatch");
+  //   }
 
-    if (data?.amount && data?.amount / 100 !== bookingRequest.totalPrice) {
-      throw ApiError.badRequest("Reference amount Mismatch");
-    }
+  //   bookingRequest.paymentStatus = "success";
+  //   bookingRequest.paymentReference = transactionReference;
+  //   await bookingRequest.save();
 
-    bookingRequest.paymentStatus = "success";
-    bookingRequest.paymentReference = transactionReference;
-    await bookingRequest.save();
+  //   // Create the actual booking
+  //   // const booking = new Booking({
+  //   //   tenant: bookingRequest.tenant,
+  //   //   landlord: bookingRequest.landlord,
+  //   //   property: bookingRequest.property,
+  //   //   moveInDate: bookingRequest.moveInDate,
+  //   //   startDate: bookingRequest.startDate,
+  //   //   endDate: bookingRequest.endDate,
+  //   //   totalPrice: bookingRequest.totalPrice,
+  //   //   netPrice: bookingRequest.netPrice,
+  //   //   serviceChargeAmount: bookingRequest.serviceChargeAmount,
+  //   //   paymentMethod: bookingRequest.paymentMethod,
+  //   //   paymentProvider: bookingRequest.paymentProvider,
+  //   //   paymentReference: transactionReference,
+  //   // });
 
-    // Create the actual booking
-    // const booking = new Booking({
-    //   tenant: bookingRequest.tenant,
-    //   landlord: bookingRequest.landlord,
-    //   property: bookingRequest.property,
-    //   moveInDate: bookingRequest.moveInDate,
-    //   startDate: bookingRequest.startDate,
-    //   endDate: bookingRequest.endDate,
-    //   totalPrice: bookingRequest.totalPrice,
-    //   netPrice: bookingRequest.netPrice,
-    //   serviceChargeAmount: bookingRequest.serviceChargeAmount,
-    //   paymentMethod: bookingRequest.paymentMethod,
-    //   paymentProvider: bookingRequest.paymentProvider,
-    //   paymentReference: transactionReference,
-    // });
+  //   // await booking.save();
 
-    // await booking.save();
+  //   // Notify tenant about successful payment
+  //   agenda.now("send_payment_success_email_to_tenant", {
+  //     tenantEmail: bookingRequest.tenant.email,
+  //     tenantName: bookingRequest.tenant.firstName,
+  //     propertyName: bookingRequest.property.description, // Change to title later
+  //   });
 
-    // Notify tenant about successful payment
-    agenda.now("send_payment_success_email_to_tenant", {
-      tenantEmail: bookingRequest.tenant.email,
-      tenantName: bookingRequest.tenant.firstName,
-      propertyName: bookingRequest.property.description, // Change to title later
-    });
+  //   // Notify landlord about successful payment
+  //   agenda.now("send_payment_success_email_to_landlord", {
+  //     landlordEmail: bookingRequest.landlord.email,
+  //     landlordName: bookingRequest.landlord.firstName,
+  //     propertyName: bookingRequest.property.description, // Change to title later
+  //   });
 
-    // Notify landlord about successful payment
-    agenda.now("send_payment_success_email_to_landlord", {
-      landlordEmail: bookingRequest.landlord.email,
-      landlordName: bookingRequest.landlord.firstName,
-      propertyName: bookingRequest.property.description, // Change to title later
-    });
-
-    return ApiSuccess.ok("Payment successful", { bookingRequest });
-  }
+  //   return ApiSuccess.ok("Payment successful", { bookingRequest });
+  // }
 }
 
 export const bookingService = new BookingService();

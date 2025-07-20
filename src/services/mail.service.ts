@@ -266,6 +266,96 @@ class MailService {
       html,
     });
   }
+
+  public async sendPaymentConfirmationToTenant({
+    tenantEmail,
+    tenantName,
+    propertyName,
+    moveInDate,
+    tenantDashboardUrl,
+  }: {
+    tenantEmail: string;
+    tenantName: string;
+    propertyName: string;
+    moveInDate: string;
+    tenantDashboardUrl: string;
+  }): Promise<SentMessageInfo> {
+    const subject = `Payment Successful - ${propertyName}`;
+    const date = new Date().getFullYear().toString();
+
+    const emailText = [
+      `Dear ${tenantName},`,
+      ``,
+      `Your payment for "${propertyName}" has been received successfully.`,
+      `Move-in date: ${moveInDate}`,
+      ``,
+      `Your booking is now confirmed.`,
+      `You can view your booking details here: ${tenantDashboardUrl}`,
+      ``,
+      `— Heaven Lease Team`,
+    ].join("\n");
+
+    const html = MailService.loadTemplate("TenantPaymentConfirmation", {
+      tenantName: !tenantName ? "There" : tenantName,
+      propertyName,
+      moveInDate,
+      tenantDashboardUrl,
+      date,
+    });
+
+    return await this.sendEmail({
+      to: tenantEmail,
+      subject,
+      text: emailText,
+      html,
+    });
+  }
+
+  public async sendPaymentReceivedNotificationToLandlord({
+    landlordName,
+    landlordEmail,
+    propertyName,
+    moveInDate,
+    tenantName,
+    landlordDashboardUrl,
+  }: {
+    landlordEmail: string;
+    landlordName: string;
+    propertyName: string;
+    moveInDate: string;
+    tenantName: string;
+    landlordDashboardUrl: string;
+  }): Promise<SentMessageInfo> {
+    const subject = `Payment Received for ${propertyName}`;
+    const date = new Date().getFullYear().toString();
+
+    const emailText = [
+      `Dear ${landlordName},`,
+      ``,
+      `The tenant ${tenantName} has completed payment for the property "${propertyName}".`,
+      `Move-in date: ${moveInDate}`,
+      ``,
+      `You can view booking details here: ${landlordDashboardUrl}`,
+      ``,
+      `— Heaven Lease Team`,
+    ].join("\n");
+
+    const html = MailService.loadTemplate("LandlordPaymentReceived", {
+      landlordName: !landlordName ? "There" : landlordName,
+      tenantName,
+      propertyName,
+      moveInDate,
+      landlordDashboardUrl,
+      date,
+    });
+
+    return await this.sendEmail({
+      to: landlordEmail,
+      subject,
+      text: emailText,
+      html,
+    });
+  }
 }
 
 export const mailService = new MailService();

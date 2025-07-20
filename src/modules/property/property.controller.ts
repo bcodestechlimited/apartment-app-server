@@ -2,12 +2,13 @@ import type { Request, Response } from "express";
 import { PropertyService } from "./property.service.js";
 import type { AuthenticatedUser } from "../user/user.interface.js";
 import type { IQueryParams } from "../../shared/interfaces/query.interface.js";
+import type { FileArray, UploadedFile } from "express-fileupload";
 
 export class PropertyController {
   // Create new property
   static async createProperty(req: Request, res: Response) {
     const propertyData = req.body;
-    const files = req.files;
+    const files = req.files as { pictures: UploadedFile[] };
     const { userId } = req.user as AuthenticatedUser;
     const result = await PropertyService.createProperty(
       propertyData,
@@ -18,6 +19,13 @@ export class PropertyController {
   }
 
   // Get all properties
+  static async getProperties(req: Request, res: Response) {
+    const query = req.query as IQueryParams;
+    const result = await PropertyService.getProperties(query);
+    res.status(200).json(result);
+  }
+
+  // Get all properties (admin)
   static async getAllProperties(req: Request, res: Response) {
     const query = req.query as IQueryParams;
     const result = await PropertyService.getAllProperties(query);
@@ -42,10 +50,12 @@ export class PropertyController {
   static async updateProperty(req: Request, res: Response) {
     const { propertyId } = req.params;
     const propertyData = req.body;
+    const files = req.files as { newPictures: UploadedFile | UploadedFile[] };
     const { userId } = req.user as AuthenticatedUser;
     const result = await PropertyService.updateProperty(
       propertyId as string,
       propertyData,
+      files,
       userId
     );
     res.status(200).json(result);

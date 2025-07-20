@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment Confirmation</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* same styling as previous email... */
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="email-header">
+        <h1>City Lights Realty</h1>
+      </div>
+
+      <div class="email-body">
+        <h2>Your Payment Was Successful</h2>
+        <p>Hi {{tenantName}},</p>
+        <p>
+          Great news! Your payment for the booking request has been received
+          successfully.
+        </p>
+
+        <div class="highlight-box">
+          <strong>{{propertyName}}</strong>
+          <span>Move-in date: <strong>{{moveInDate}}</strong></span>
+        </div>
+
+        <p>
+          You can now consider your booking confirmed. The landlord has also
+          been notified.
+        </p>
+
+        <p>Track or manage your booking below:</p>
+
+        <a href="{{tenantDashboardUrl}}" class="email-button">
+          Go to Dashboard
+        </a>
+
+        <p>
+          If you need help with anything, don’t hesitate to reach out to our
+          team.
+        </p>
+      </div>
+
+      <div class="email-footer">
+        <p>
+          &copy; {{date}} <strong>City Lights Realty</strong>. All rights
+          reserved.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

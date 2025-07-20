@@ -1,10 +1,11 @@
-import { number, z } from "zod";
+import { z } from "zod";
 import { PropertyType, PricingModel } from "./property.interface";
 import type { NextFunction, Request, Response } from "express";
 import { ApiError } from "../../utils/responseHandler";
+import type { UploadedFile } from "express-fileupload";
 
 export class PropertySchemas {
-  static create = z
+  static createPropertySchema = z
     .object({
       title: z
         .string({ required_error: "Title is required" })
@@ -62,18 +63,25 @@ export class PropertySchemas {
             try {
               const parsed = JSON.parse(val);
 
-              if (
-                Array.isArray(parsed) &&
-                parsed.every((v) => typeof v === "string")
-              ) {
-                return parsed;
-              } else {
+              if (!Array.isArray(parsed)) {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: "Amenities must be a JSON array",
+                });
+                return z.NEVER;
+              }
+
+              const isStringArray = parsed.every((v) => typeof v === "string");
+
+              if (!isStringArray) {
                 ctx.addIssue({
                   code: z.ZodIssueCode.custom,
                   message: "Amenities must be a JSON array of strings",
                 });
                 return z.NEVER;
               }
+
+              return parsed;
             } catch {
               ctx.addIssue({
                 code: z.ZodIssueCode.custom,
@@ -94,18 +102,26 @@ export class PropertySchemas {
           if (typeof val === "string") {
             try {
               const parsed = JSON.parse(val);
-              if (
-                Array.isArray(parsed) &&
-                parsed.every((v) => typeof v === "string")
-              ) {
-                return parsed;
-              } else {
+
+              if (!Array.isArray(parsed)) {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: "Facilities must be a JSON array",
+                });
+                return z.NEVER;
+              }
+
+              const isStringArray = parsed.every((v) => typeof v === "string");
+
+              if (!isStringArray) {
                 ctx.addIssue({
                   code: z.ZodIssueCode.custom,
                   message: "Facilities must be a JSON array of strings",
                 });
                 return z.NEVER;
               }
+
+              return parsed;
             } catch {
               ctx.addIssue({
                 code: z.ZodIssueCode.custom,
@@ -156,33 +172,145 @@ export class PropertySchemas {
       }
     });
 
-  static update = z
-    .object({
-      numberOfRooms: z
-        .string()
-        .min(1, "There must be at least one room")
-        .optional(),
-      availability: z.array(z.string()).optional(),
-      pricingModel: z.nativeEnum(PricingModel).optional(),
-      seatingCapacity: z
-        .number()
-        .min(1, "Seating capacity must be at least 1")
-        .optional(),
-      amenities: z
-        .array(z.string())
-        .nonempty("Please provide at least one amenity")
-        .optional(),
-      description: z
-        .string()
-        .min(10, "Description must be at least 10 characters long")
-        .optional(),
-      type: z.nativeEnum(PropertyType).optional(),
-      pictures: z
-        .array(z.string().url("Each picture must be a valid URL"))
-        .nonempty("Please provide at least one picture")
-        .optional(),
-    })
-    .strict();
+  static updatePropertySchema = z.object({
+    address: z
+      .string({ required_error: "Address is required" })
+      .min(10, "Address must be at least 10 characters long"),
+    state: z.string({ required_error: "State is required" }),
+    // .min(10, "State must be at least 10 characters long"),
+    lga: z.string({ required_error: "LGA is required" }),
+    // .min(5, "LGA must be at least 10 characters long"),
+    numberOfBedrooms: z
+      .string({ required_error: "Number of bedrooms is required" })
+      .min(1, "There must be at least one room")
+      .optional(),
+    numberOfBathrooms: z
+      .string({ required_error: "Number of bathrooms is required" })
+      .min(1, "There must be at least one room")
+      .optional(),
+    price: z
+      .string({ required_error: "Price is required" })
+      .min(1, "Price must be at least 1")
+      .optional(),
+    availabilityDate: z
+      .string({
+        invalid_type_error: "Please provide a valid availability time slot",
+      })
+      .nonempty("Please provide at least one availability time slot")
+      .optional(),
+
+    pricingModel: z.nativeEnum(PricingModel).optional(),
+    seatingCapacity: z
+      .number()
+      .min(1, "Seating capacity must be at least 1")
+      .optional(),
+    amenities: z
+      .any()
+      .optional()
+      .transform((val, ctx) => {
+        if (typeof val === "string") {
+          try {
+            const parsed = JSON.parse(val);
+
+            if (!Array.isArray(parsed)) {
+              return val;
+            }
+
+            const isStringArray = parsed.every((v) => typeof v === "string");
+
+            if (!isStringArray) {
+              return val;
+            }
+
+            return parsed;
+          } catch {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Invalid JSON format for amenities",
+            });
+            return z.NEVER;
+          }
+        }
+
+        return val;
+      })
+      .pipe(
+        z.array(z.string()).nonempty("Please provide at least one amenity")
+      ),
+    facilities: z
+      .any()
+      .optional()
+      .transform((val, ctx) => {
+        if (typeof val === "string") {
+          try {
+            const parsed = JSON.parse(val);
+
+            if (!Array.isArray(parsed)) {
+              return val;
+            }
+
+            const isStringArray = parsed.every((v) => typeof v === "string");
+
+            if (!isStringArray) {
+              return val;
+            }
+
+            return parsed;
+          } catch {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Invalid JSON format for facilities",
+            });
+            return z.NEVER;
+          }
+        }
+
+        return val;
+      })
+      .pipe(
+        z.array(z.string()).nonempty("Please provide at least one facility")
+      ),
+    description: z
+      .string()
+      .min(10, "Description must be at least 10 characters long")
+      .optional(),
+    type: z.nativeEnum(PropertyType).optional(),
+    pictures: z
+      .array(z.string().url("Each picture must be a valid URL"))
+      .nonempty("Please provide at least one picture")
+      .optional(),
+    existingPictures: z
+      .string()
+      .optional()
+      .transform((val, ctx) => {
+        if (typeof val === "string") {
+          try {
+            const parsed = JSON.parse(val);
+            if (!Array.isArray(parsed)) {
+              return val;
+            }
+
+            const isStringArray = parsed.every((v) => typeof v === "string");
+            if (!isStringArray) {
+              return val;
+            }
+
+            return parsed;
+          } catch {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Invalid JSON format for existingPictures",
+            });
+            return z.NEVER;
+          }
+        }
+
+        return val;
+      })
+      .pipe(
+        z.array(z.string()).nonempty("Please provide at least one picture")
+      ),
+  });
 
   static validateImages = (req: Request, res: Response, next: NextFunction) => {
     if (!req.files) {
@@ -205,6 +333,35 @@ export class PropertySchemas {
     // Optional: Validate each file is an image
     const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp"];
     for (const picture of pictures) {
+      if (!allowedMimeTypes.includes(picture.mimetype)) {
+        throw ApiError.badRequest(`Invalid file type: ${picture.mimetype})`);
+      }
+    }
+
+    next();
+  };
+
+  static validateUpdateImages = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    if (!req.files) {
+      return next();
+    }
+
+    const newPictures = req.files as { newPictures: UploadedFile[] };
+
+    // console.log({ newPictures });
+
+    // Validate files are present
+    if (!newPictures || !Array.isArray(newPictures)) {
+      return next();
+    }
+
+    // Optional: Validate each file is an image
+    const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp"];
+    for (const picture of newPictures) {
       if (!allowedMimeTypes.includes(picture.mimetype)) {
         throw ApiError.badRequest(`Invalid file type: ${picture.mimetype})`);
       }
