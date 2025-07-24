@@ -119,4 +119,6 @@ const PropertySchema: Schema<IProperty> = new Schema(
   }
 );
 
-export default mongoose.model<IProperty>("Property", PropertySchema);
+const Property = mongoose.model<IProperty>("Property", PropertySchema);
+
+export default Property;

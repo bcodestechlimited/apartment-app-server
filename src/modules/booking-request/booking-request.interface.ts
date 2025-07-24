@@ -5,9 +5,8 @@ export interface IBookingRequest {
   property: IProperty;
   tenant: IUser;
   landlord: IUser;
-  moveInDate: string;
-  startDate: Date;
-  endDate: Date;
+  moveInDate: Date;
+  moveOutDate: Date;
   basePrice: number;
   netPrice: number; // Price after discounts or fees
   serviceChargeAmount: number; // Additional fees for the booking

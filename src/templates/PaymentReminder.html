@@ -115,7 +115,7 @@
     <div class="email-container">
       <!-- Header -->
       <div class="email-header">
-        <h1>City Lights Realty</h1>
+        <h1>Haven Lease</h1>
       </div>
 
       <!-- Body -->
@@ -124,13 +124,13 @@
         <p>Hi {{tenantName}},</p>
         <p>
           This is a friendly reminder that payment is due for the booking
-          request for <strong>{{propertyName}}</strong>.
+          request for <strong>{{propertyTitle}}</strong>.
         </p>
 
         <p>
-          You have <strong>{{paymentDue}}</strong> to make the payment. If
-          payment is not received, the booking request will be automatically
-          expire.
+          You have <strong>{{hoursLeft}}</strong> hours left to make the
+          payment. If payment is not received, the booking request will
+          automatically expire.
         </p>
 
         <p>
@@ -148,7 +148,7 @@
       <!-- Footer -->
       <div class="email-footer">
         <p>
-          &copy; {{date}} <strong>City Lights Realty</strong>. All rights
+          &copy; {{date}} <strong>Haven Lease Team</strong>. All rights
           reserved.
         </p>
       </div>

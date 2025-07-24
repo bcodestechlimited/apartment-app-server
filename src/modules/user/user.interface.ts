@@ -14,7 +14,12 @@ export interface IUser extends Document {
   preferences: string[];
   isActive: boolean;
   isVerified: boolean;
+  onboarded: boolean;
+  // onboardingStep: "not_started" | "profile_completed" | "documents_uploaded" | "completed";
   roles: UserRolesEnum;
+  provider: string;
+  googleId: string | null;
+  facebookId: string | null;
 }
 
 export interface updateUserDTO {

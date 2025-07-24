@@ -8,7 +8,7 @@ export interface SendBookingRequestDeclinedData {
   //   landlordEmail: string;
   tenantName: string;
   tenantEmail: string;
-  propertyName: string;
+  propertyTitle: string;
   //   moveInDate: string;
   //   landlordDashboardUrl: string;
   //   tenantDashboardUrl: string;
@@ -19,13 +19,13 @@ export const sendBookingRequestDeclinedEmailToTenant = async (
   job: Job<SendBookingRequestDeclinedData>,
   done: (error?: Error) => void
 ) => {
-  const { tenantEmail, tenantName, propertyName } = job.attrs.data;
+  const { tenantEmail, tenantName, propertyTitle } = job.attrs.data;
 
   try {
     const result = await mailService.sendBookingRequestDeclinedEmailToTenant({
       tenantEmail,
       tenantName,
-      propertyName,
+      propertyTitle,
     });
     logger.info(
       `Booking request declined email sent to tenant email: ${tenantEmail}`,

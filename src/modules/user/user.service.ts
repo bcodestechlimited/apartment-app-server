@@ -1,7 +1,6 @@
 import type { ObjectId } from "mongoose";
 import { ApiError, ApiSuccess } from "../../utils/responseHandler";
 import { hashPassword } from "../../utils/validationUtils";
-import type { RegisterDTO } from "../auth/auth.interface";
 import type { IUser, updateUserDTO } from "./user.interface";
 import User from "./user.model";
 import type { IQueryParams } from "@/shared/interfaces/query.interface";
@@ -9,7 +8,13 @@ import { paginate } from "@/utils/paginate";
 
 class UserService {
   static async createUser(userData: Partial<IUser>): Promise<IUser> {
-    const { firstName, lastName, password, email } = userData;
+    const { firstName, lastName, password, email, avatar, provider } = userData;
+
+    if (provider === "google") {
+      const googleUser = new User(userData);
+      await googleUser.save();
+      return googleUser;
+    }
 
     const hashedPassword = await hashPassword(password as string);
 
@@ -18,6 +23,7 @@ class UserService {
       lastName: lastName || "",
       email,
       password: hashedPassword,
+      avatar: avatar || undefined,
     });
 
     await user.save();
@@ -32,6 +38,7 @@ class UserService {
 
     const updatedFields = {
       ...otherFields,
+      onboarded: true,
       $addToSet: {
         documents: userData.document,
         preferences: userData.preferences,
@@ -72,6 +79,14 @@ class UserService {
     if (user) {
       throw ApiError.badRequest("User with this email exists");
     }
+  }
+
+  static async getUserOrNull(email: string): Promise<IUser | null> {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return null;
+    }
+    return user;
   }
 
   static async getAllUsers(query: IQueryParams) {

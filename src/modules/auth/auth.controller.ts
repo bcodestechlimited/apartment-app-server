@@ -1,7 +1,8 @@
 import type { Request, Response } from "express";
 import { AuthService } from "./auth.service.js";
-import type { AuthenticatedUser } from "../user/user.interface.js";
+import type { AuthenticatedUser, IUser } from "../user/user.interface.js";
 import type { UploadedFile } from "express-fileupload";
+import { clientURLs } from "@/utils/clientURL.js";
 
 export class AuthController {
   // Register user
@@ -28,6 +29,41 @@ export class AuthController {
     result.data.token = undefined;
 
     res.status(200).json(result);
+  }
+
+  // Generate Goolge Link
+  static async generateGoogleLoginLink(req: Request, res: Response) {
+    const result = await AuthService.loginWithGoogle();
+    res.status(200).json(result);
+  }
+
+  // Google Login
+  static async googleCallback(req: Request, res: Response) {
+    const query = req.query;
+    const result = await AuthService.handleGoogleCallback(query);
+    const { token, user } = result.data as { token: string; user: IUser };
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 3 * 24 * 60 * 60 * 1000,
+      path: "/",
+    });
+
+    result.data.token = undefined;
+
+    if (!user.onboarded) {
+      return res.redirect(clientURLs.onboarding.roleSelectionURL);
+    }
+    if (user.roles.includes("landlord")) {
+      return res.redirect(clientURLs.landlord.dashboardURL);
+    }
+    if (user.roles.includes("tenant")) {
+      return res.redirect(clientURLs.tenant.dashboardURL);
+    }
+
+    return res.redirect(clientURLs.landingPageURL);
   }
 
   static async logout(req: Request, res: Response) {

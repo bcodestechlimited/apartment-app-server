@@ -10,7 +10,7 @@ export interface SendBookingRequestData {
   landlordEmail: string;
   tenantName: string;
   tenantEmail: string;
-  propertyName: string;
+  propertyTitle: string;
   moveInDate: string;
   landlordDashboardUrl: string;
   tenantDashboardUrl: string;
@@ -30,7 +30,7 @@ export const sendBookingRequestToLandlord = async (
   const {
     landlordName,
     landlordEmail,
-    propertyName,
+    propertyTitle,
     moveInDate,
     landlordDashboardUrl,
     retriesLeft = MAX_RETRIES,
@@ -46,7 +46,7 @@ export const sendBookingRequestToLandlord = async (
     const result = await mailService.sendBookingRequestEmailToLandlord({
       landlordName,
       landlordEmail,
-      propertyName,
+      propertyTitle,
       moveInDate,
       landlordDashboardUrl,
     });
@@ -94,7 +94,7 @@ export const sendBookingRequestToTenant = async (
   const {
     tenantName,
     tenantEmail,
-    propertyName,
+    propertyTitle,
     moveInDate,
     tenantDashboardUrl,
     retriesLeft = MAX_RETRIES,
@@ -112,7 +112,7 @@ export const sendBookingRequestToTenant = async (
     const result = await mailService.sendBookingRequestEmailToTenant({
       tenantName,
       tenantEmail,
-      propertyName,
+      propertyTitle,
       moveInDate,
       tenantDashboardUrl,
     });

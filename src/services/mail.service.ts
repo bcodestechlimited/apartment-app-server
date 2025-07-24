@@ -47,7 +47,7 @@ class MailService {
   }: EmailOptions): Promise<SentMessageInfo> {
     try {
       const mailOptions = {
-        from: from || "Admin@BCT.com",
+        from: from || '"Haven Lease" <info@bcodestech.com>',
         to,
         subject,
         text,
@@ -95,17 +95,17 @@ class MailService {
   public async sendBookingRequestEmailToLandlord({
     landlordName,
     landlordEmail,
-    propertyName,
+    propertyTitle,
     moveInDate,
     landlordDashboardUrl,
   }: {
     landlordName: string;
     landlordEmail: string;
-    propertyName: string;
+    propertyTitle: string;
     moveInDate: string;
     landlordDashboardUrl: string;
   }): Promise<SentMessageInfo> {
-    const subject = `Booking Request - ${propertyName}`;
+    const subject = `Booking Request - ${propertyTitle}`;
     const date = new Date().getFullYear().toString();
     // const date = new Date().toLocaleString(); // shown in the footer
 
@@ -113,7 +113,7 @@ class MailService {
     const emailText = [
       `Dear ${landlordName},`,
       ``,
-      `A prospective tenant has requested to book a viewing for your property "${propertyName}".`,
+      `A prospective tenant has requested to book a viewing for your property "${propertyTitle}".`,
       `Preferred move-in date: ${moveInDate}`,
       ``,
       `You have 24 hours to accept or decline this request.`,
@@ -127,7 +127,7 @@ class MailService {
     // HTML body (handlebars template in /templates/BookingRequestTemplate.html)
     const html = MailService.loadTemplate("BookingRequestToLandlord", {
       landlordName: !landlordName ? "There" : landlordName,
-      propertyName,
+      propertyTitle,
       moveInDate,
       landlordDashboardUrl,
       date,
@@ -144,23 +144,23 @@ class MailService {
   public async sendBookingRequestEmailToTenant({
     tenantName,
     tenantEmail,
-    propertyName,
+    propertyTitle,
     moveInDate,
     tenantDashboardUrl,
   }: {
     tenantName: string;
     tenantEmail: string;
-    propertyName: string;
+    propertyTitle: string;
     moveInDate: string;
     tenantDashboardUrl: string;
   }): Promise<SentMessageInfo> {
-    const subject = `Booking Request Received - ${propertyName}`;
+    const subject = `Booking Request Received - ${propertyTitle}`;
     const date = new Date().getFullYear().toString();
 
     const emailText = [
       `Dear ${tenantName},`,
       ``,
-      `Your booking request for "${propertyName}" has been sent successfully.`,
+      `Your booking request for "${propertyTitle}" has been sent successfully.`,
       `Preferred move-in date: ${moveInDate}`,
       ``,
       `The landlord has 24 hours to respond to your request.`,
@@ -173,7 +173,51 @@ class MailService {
 
     const html = MailService.loadTemplate("BookingRequestToTenant", {
       tenantName: !tenantName ? "There" : tenantName,
-      propertyName,
+      propertyTitle,
+      moveInDate,
+      tenantDashboardUrl,
+      date,
+    });
+
+    return await this.sendEmail({
+      to: tenantEmail,
+      subject,
+      text: emailText,
+      html,
+    });
+  }
+
+  public async sendBookingRequestApprovalEmailToTenant({
+    tenantName,
+    tenantEmail,
+    propertyTitle,
+    moveInDate,
+    tenantDashboardUrl,
+  }: {
+    tenantName: string;
+    tenantEmail: string;
+    propertyTitle: string;
+    moveInDate: string;
+    tenantDashboardUrl: string;
+  }): Promise<SentMessageInfo> {
+    const subject = `Booking Request Approved`;
+    const date = new Date().getFullYear().toString();
+
+    const emailText = [
+      `Dear ${tenantName},`,
+      ``,
+      `Your booking request for "${propertyTitle}" has been approved.`,
+      `Preferred move-in date: ${moveInDate}`,
+      ``,
+      `Please proceed with payment to secure your booking.`,
+      `You can do this here: ${tenantDashboardUrl}`,
+      ``,
+      `— Heaven Lease Team`,
+    ].join("\n");
+
+    const html = MailService.loadTemplate("BookingApprovalEmailToTenant", {
+      tenantName: !tenantName ? "There" : tenantName,
+      propertyTitle,
       moveInDate,
       tenantDashboardUrl,
       date,
@@ -190,19 +234,19 @@ class MailService {
   public async sendBookingRequestDeclinedEmailToTenant({
     tenantEmail,
     tenantName,
-    propertyName,
+    propertyTitle,
   }: {
     tenantEmail: string;
     tenantName: string;
-    propertyName: string;
+    propertyTitle: string;
   }): Promise<SentMessageInfo> {
-    const subject = `Booking Request Declined - ${propertyName}`;
+    const subject = `Booking Request Declined - ${propertyTitle}`;
     const date = new Date().getFullYear().toString(); // for footer
 
     const emailText = [
       `Dear ${tenantName},`,
       ``,
-      `Unfortunately, your booking request for "${propertyName}" was declined by the landlord.`,
+      `Unfortunately, your booking request for "${propertyTitle}" was declined by the landlord.`,
       ``,
       `You may explore other listings on Heaven Lease.`,
       ``,
@@ -211,7 +255,7 @@ class MailService {
 
     const html = MailService.loadTemplate("BookingDeclined", {
       tenantName: !tenantName ? "There" : tenantName,
-      propertyName,
+      propertyTitle,
       date,
     });
 
@@ -226,36 +270,38 @@ class MailService {
   public async sendPaymentReminderEmailToTenant({
     tenantEmail,
     tenantName,
-    propertyName,
+    propertyTitle,
     tenantDashboardUrl,
     // bookingRequestId,
-    paymentDue,
+    hoursLeft,
   }: {
     tenantEmail: string;
     tenantName: string;
-    propertyName: string;
+    propertyTitle: string;
     bookingRequestId: string;
     tenantDashboardUrl: string;
-    paymentDue: Date;
+    hoursLeft: string;
   }): Promise<SentMessageInfo> {
-    const subject = `Payment Reminder for ${propertyName}`;
-    const date = new Date().toLocaleString();
+    const subject = `Payment Reminder for ${propertyTitle}`;
+    const date = new Date().getFullYear().toString();
 
     const emailText = [
-      `Dear ${tenantName},`,
+      `Hi ${tenantName},`,
       ``,
-      `This is a friendly reminder that your payment for the booking request "${propertyName}" is due on ${paymentDue.toLocaleDateString()}.`,
-      `Please ensure you complete the payment to secure your booking.`,
+      `This is a friendly reminder that payment is due for your booking request for "${propertyTitle}".`,
+      `You have ${hoursLeft} hours left to make the payment. If payment is not received, the booking request will automatically expire.`,
+      `Please access your dashboard to make the payment as soon as possible to ensure a smooth booking experience.`,
       ``,
-      `— Heaven Lease Team`,
+      `Best regards,`,
+      `Haven Lease Team`,
     ].join("\n");
 
     const html = MailService.loadTemplate("PaymentReminder", {
       tenantName: !tenantName ? "There" : tenantName,
-      propertyName,
+      propertyTitle,
       tenantDashboardUrl,
       // bookingRequestId,
-      paymentDue: paymentDue.toLocaleDateString(),
+      hoursLeft: hoursLeft,
       date,
     });
 
@@ -270,23 +316,23 @@ class MailService {
   public async sendPaymentConfirmationToTenant({
     tenantEmail,
     tenantName,
-    propertyName,
+    propertyTitle,
     moveInDate,
     tenantDashboardUrl,
   }: {
     tenantEmail: string;
     tenantName: string;
-    propertyName: string;
+    propertyTitle: string;
     moveInDate: string;
     tenantDashboardUrl: string;
   }): Promise<SentMessageInfo> {
-    const subject = `Payment Successful - ${propertyName}`;
+    const subject = `Payment Successful - ${propertyTitle}`;
     const date = new Date().getFullYear().toString();
 
     const emailText = [
       `Dear ${tenantName},`,
       ``,
-      `Your payment for "${propertyName}" has been received successfully.`,
+      `Your payment for "${propertyTitle}" has been received successfully.`,
       `Move-in date: ${moveInDate}`,
       ``,
       `Your booking is now confirmed.`,
@@ -297,7 +343,7 @@ class MailService {
 
     const html = MailService.loadTemplate("TenantPaymentConfirmation", {
       tenantName: !tenantName ? "There" : tenantName,
-      propertyName,
+      propertyTitle,
       moveInDate,
       tenantDashboardUrl,
       date,
@@ -314,25 +360,25 @@ class MailService {
   public async sendPaymentReceivedNotificationToLandlord({
     landlordName,
     landlordEmail,
-    propertyName,
+    propertyTitle,
     moveInDate,
     tenantName,
     landlordDashboardUrl,
   }: {
     landlordEmail: string;
     landlordName: string;
-    propertyName: string;
+    propertyTitle: string;
     moveInDate: string;
     tenantName: string;
     landlordDashboardUrl: string;
   }): Promise<SentMessageInfo> {
-    const subject = `Payment Received for ${propertyName}`;
+    const subject = `Payment Received for ${propertyTitle}`;
     const date = new Date().getFullYear().toString();
 
     const emailText = [
       `Dear ${landlordName},`,
       ``,
-      `The tenant ${tenantName} has completed payment for the property "${propertyName}".`,
+      `The tenant ${tenantName} has completed payment for the property "${propertyTitle}".`,
       `Move-in date: ${moveInDate}`,
       ``,
       `You can view booking details here: ${landlordDashboardUrl}`,
@@ -343,7 +389,7 @@ class MailService {
     const html = MailService.loadTemplate("LandlordPaymentReceived", {
       landlordName: !landlordName ? "There" : landlordName,
       tenantName,
-      propertyName,
+      propertyTitle,
       moveInDate,
       landlordDashboardUrl,
       date,

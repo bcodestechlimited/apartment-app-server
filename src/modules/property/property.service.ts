@@ -11,6 +11,7 @@ import type { UploadedFile } from "express-fileupload";
 import type { IQueryParams } from "../../shared/interfaces/query.interface.js";
 import { paginate } from "../../utils/paginate.js";
 import { toISODate } from "@/utils/calculationUtils.js";
+import { parse } from "path";
 
 export class PropertyService {
   static async getPropertyDocumentById(propertyId: string | ObjectId) {
@@ -289,10 +290,10 @@ export class PropertyService {
   static async updateProperty(
     propertyId: string,
     updateData: Partial<UpdatePropertyDTO>,
-    files: { newPictures: UploadedFile | UploadedFile[] },
-    userId: ObjectId | string
+    userId: ObjectId | string,
+    files?: { newPictures: UploadedFile | UploadedFile[] }
   ) {
-    const { newPictures } = files;
+    const { newPictures } = files ?? {};
 
     const property = await Property.findById(propertyId);
     if (!property) {
@@ -306,20 +307,36 @@ export class PropertyService {
       );
     }
 
-    const existingPictures = JSON.parse(updateData.existingPictures as string);
-    const parsedAmenities = JSON.parse(updateData.amenities as string);
-    const parsedFacilities = JSON.parse(updateData.facilities as string);
+    console.log({ updateData });
+
+    let parsedExistingPictures: string[] = [];
+    let parsedAmenities: string[] = [];
+    let parsedFacilities: string[] = [];
+
+    if (updateData.existingPictures) {
+      parsedExistingPictures = JSON.parse(
+        updateData.existingPictures as string
+      );
+    }
+
+    if (updateData.amenities) {
+      parsedAmenities = JSON.parse(updateData.amenities as string);
+    }
+
+    if (updateData.facilities) {
+      parsedFacilities = JSON.parse(updateData.facilities as string);
+    }
 
     let updatePropertyPayload = {
       ...updateData,
       amenities: parsedAmenities,
       facilities: parsedFacilities,
-      pictures: existingPictures,
+      pictures: parsedExistingPictures,
     };
 
     if (newPictures && Array.isArray(newPictures) && newPictures.length > 0) {
       const length = newPictures.length;
-      if (existingPictures.length + length > 5) {
+      if (parsedExistingPictures.length + length > 5) {
         throw ApiError.badRequest("You can only upload a maximum of 5 images");
       }
       const newlyUploadedPictures = await Promise.all(
@@ -332,20 +349,24 @@ export class PropertyService {
       );
 
       updatePropertyPayload.pictures = [
-        ...existingPictures,
-        ...newlyUploadedPictures,
+        ...parsedExistingPictures,
+        ...newlyUploadedPictures.filter((picture) => picture !== undefined),
       ];
     }
 
     if (newPictures && !Array.isArray(newPictures)) {
-      if (existingPictures.length + 1 > 5) {
+      if (parsedExistingPictures.length + 1 > 5) {
         throw ApiError.badRequest("You can only upload a maximum of 5 images");
       }
 
       const { secure_url } = await UploadService.uploadToCloudinary(
         newPictures.tempFilePath
       );
-      updatePropertyPayload.pictures = [...existingPictures, secure_url];
+
+      updatePropertyPayload.pictures = [
+        ...parsedExistingPictures,
+        secure_url as string,
+      ];
     }
 
     Object.assign(property, updatePropertyPayload);

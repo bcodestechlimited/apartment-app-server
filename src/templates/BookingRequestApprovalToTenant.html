@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Booking Request Confirmation</title>
+    <title>Booking Request Approved</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
@@ -110,6 +110,7 @@
       }
     </style>
   </head>
+
   <body>
     <div class="email-container">
       <!-- Header -->
@@ -119,29 +120,20 @@
 
       <!-- Body -->
       <div class="email-body">
-        <h2>Booking Request Sent Successfully</h2>
+        <h2>Payment Reminder</h2>
         <p>Hi {{tenantName}},</p>
         <p>
-          Your booking request for the property listed below has been sent
-          successfully.
+          Your booking request for <span>{{propertyTitle}}</span> has been
+          approved. You have 24 hours to proceed with the payment before it
+          expires. Kindly log on to your dashboard to complete the process.
         </p>
-
-        <div class="highlight-box">
-          <strong>{{propertyTitle}}</strong>
-          <span>Preferred move-in date: <strong>{{moveInDate}}</strong></span>
-        </div>
 
         <p>
-          The landlord has <strong>24 hours</strong> to respond to your request.
-          Once accepted, you'll be prompted to proceed with payment to secure
-          the booking.
+          Please access your dashboard to make the payment as soon as possible
+          to ensure a smooth booking experience.
         </p>
 
-        <p>You can track the status of your request below:</p>
-
-        <a href="{{tenantDashboardUrl}}" class="email-button"
-          >View Your Booking</a
-        >
+        <a href="{{tenantDashboardUrl}}" class="email-button">Dashboard</a>
 
         <p>
           If you have any questions, feel free to reach out to our support team.

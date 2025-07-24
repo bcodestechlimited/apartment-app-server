@@ -7,14 +7,13 @@ export interface IBooking {
   property: IProperty;
   tenant: IUser;
   landlord: IUser;
-  startDate: Date;
-  endDate: Date;
-  moveInDate: string;
+  moveInDate: Date;
+  moveOutDate: Date;
   basePrice: number;
   netPrice: number; // Price after discounts or fees
   serviceChargeAmount: number; // Additional fees for the booking
   paymentDue: Date; // Date when payment is due
-  status: "active" | "overdue";
+  status: "active" | "expired";
   paymentStatus: "pending" | "success" | "failed";
   paymentMethod: string; // e.g., "card", "bank_transfer"
   paymentAmount: number;

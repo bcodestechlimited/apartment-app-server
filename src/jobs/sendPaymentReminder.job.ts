@@ -11,7 +11,7 @@ const SECONDS = 60; // 1 minute
 export interface RemindTenantToPayJobData {
   tenantEmail: string;
   tenantName: string;
-  propertyName: string;
+  propertyTitle: string;
   bookingRequestId: string;
   paymentDue: Date;
   tenantDashboardUrl: string;
@@ -25,7 +25,7 @@ export const sendPaymentReminderToTenant = async (
   const {
     tenantEmail,
     tenantName,
-    propertyName,
+    propertyTitle,
     bookingRequestId,
     paymentDue,
     tenantDashboardUrl,
@@ -79,19 +79,19 @@ export const sendPaymentReminderToTenant = async (
   }
 
   try {
+    const timeLeft = paymentDue.getTime() - new Date().getTime();
+    const hoursLeft = Math.ceil(timeLeft / (60 * 60 * 1000));
+
     const result = await mailService.sendPaymentReminderEmailToTenant({
       tenantEmail,
       tenantName,
-      propertyName,
+      propertyTitle,
       bookingRequestId,
-      paymentDue,
+      hoursLeft: String(hoursLeft),
       tenantDashboardUrl,
     });
 
     logger.info(`Payment reminder email sent to ${tenantEmail}`);
-
-    const timeLeft = paymentDue.getTime() - new Date().getTime();
-    const hoursLeft = Math.ceil(timeLeft / (60 * 60 * 1000));
 
     if (hoursLeft > 4) {
       logger.info(

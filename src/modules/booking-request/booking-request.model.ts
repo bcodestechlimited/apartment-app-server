@@ -19,14 +19,10 @@ const BookingRequestSchema: Schema<IBookingRequest> = new Schema(
       required: true,
     },
     moveInDate: {
-      type: String,
-      required: true,
-    },
-    startDate: {
       type: Date,
       required: true,
     },
-    endDate: {
+    moveOutDate: {
       type: Date,
       required: true,
     },

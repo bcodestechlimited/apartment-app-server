@@ -55,8 +55,8 @@ export class PropertyController {
     const result = await PropertyService.updateProperty(
       propertyId as string,
       propertyData,
-      files,
-      userId
+      userId,
+      files
     );
     res.status(200).json(result);
   }

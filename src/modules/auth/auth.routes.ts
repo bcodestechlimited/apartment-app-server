@@ -54,4 +54,14 @@ router
   .post(validateBody(AuthSchemas.resetPassword), AuthController.resetPassword)
   .all(methodNotAllowed);
 
+router
+  .route("/google")
+  .get(AuthController.generateGoogleLoginLink)
+  .all(methodNotAllowed);
+
+router
+  .route("/google/callback")
+  .get(AuthController.googleCallback)
+  .all(methodNotAllowed);
+
 export default router;

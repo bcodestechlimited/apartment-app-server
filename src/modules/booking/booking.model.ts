@@ -71,14 +71,10 @@ const BookingSchema: Schema<IBooking> = new Schema(
       required: true,
     },
     moveInDate: {
-      type: String,
-      required: true,
-    },
-    startDate: {
       type: Date,
       required: true,
     },
-    endDate: {
+    moveOutDate: {
       type: Date,
       required: true,
     },
@@ -130,7 +126,9 @@ const BookingSchema: Schema<IBooking> = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IBooking>("Booking", BookingSchema);
+const Booking = mongoose.model<IBooking>("Booking", BookingSchema);
+
+export default Booking;
 
 export const BookingHistory = mongoose.model<IBookingHistory>(
   "BookingHistory",

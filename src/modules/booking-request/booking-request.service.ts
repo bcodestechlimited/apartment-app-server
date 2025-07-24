@@ -8,11 +8,13 @@ import type { IQueryParams } from "../../shared/interfaces/query.interface.js";
 import BookingRequest from "./booking-request.model.js";
 import { scheduleBookingRequest } from "../../jobs/sendBookingRequest.js";
 import { scheduleBookingRequestDeclined } from "../../jobs/sendBookingRequestDeclined.js";
-import { scheduleTenantPaymentReminder } from "../../jobs/sendPaymentReminder.job.js";
 import { env } from "../../config/env.config.js";
 import { schedulePaymentSuccessEmail } from "@/jobs/sendPaymentSuccess.js";
 import { clientURLs } from "@/utils/clientURL.js";
 import Booking from "../booking/booking.model.js";
+import { TenantService } from "../tenant/tenant.service.js";
+import { formatDate, formatPrettyDate } from "@/utils/formatUtils.js";
+import { scheduleBookingRequestApprovalEmailToTenant } from "@/jobs/sendBookingRequestApproved.js";
 
 export class BookingRequestService {
   // ----------------- Booking Requests -----------------
@@ -43,9 +45,8 @@ export class BookingRequestService {
       basePrice: property.price,
       netPrice: Number(property.price) + 10000, // Add service charge from admin
       serviceChargeAmount: 10000,
-      moveInDate,
-      startDate,
-      endDate,
+      moveInDate: startDate,
+      moveOutDate: endDate,
       status: "pending",
     });
 
@@ -60,7 +61,7 @@ export class BookingRequestService {
       landlordEmail: bookingRequest.landlord.email,
       tenantName: bookingRequest.tenant.firstName,
       tenantEmail: bookingRequest.tenant.email,
-      propertyName: property.description, // Change to title later
+      propertyTitle: property.title,
       moveInDate,
       landlordDashboardUrl: `${env.CLIENT_BASE_URL}/dashboard/landlord/bookings/requests`,
       tenantDashboardUrl: `${env.CLIENT_BASE_URL}/dashboard/tenant/bookings/requests`,
@@ -187,14 +188,18 @@ export class BookingRequestService {
         String(bookingRequest.landlord._id)
       );
 
-      // Set schedule to remind tenant to pay every 4 hours until payment is made
-      await scheduleTenantPaymentReminder({
+      await scheduleBookingRequestApprovalEmailToTenant({
+        landlordName: bookingRequest.landlord.firstName,
+        landlordEmail: bookingRequest.landlord.email,
         tenantName: bookingRequest.tenant.firstName,
         tenantEmail: bookingRequest.tenant.email,
-        propertyName: bookingRequest.property.description, // Change to title later
+        propertyTitle: bookingRequest.property.title,
+        moveInDate: formatDate(bookingRequest.moveInDate),
+        tenantDashboardUrl: clientURLs.tenant.dashboardURL,
+        landlordDashboardUrl: clientURLs.landlord.dashboardURL,
         bookingRequestId: bookingRequest._id.toString(),
-        paymentDue: bookingRequest.paymentDue,
-        tenantDashboardUrl: `${env.CLIENT_BASE_URL}/dashboard/tenant`,
+        propertyId: bookingRequest.property._id as string,
+        tenantUserId: bookingRequest.tenant._id as string,
       });
 
       // Get all pending booking requests for the same property
@@ -209,7 +214,7 @@ export class BookingRequestService {
           await scheduleBookingRequestDeclined({
             tenantEmail: request.tenant.email,
             tenantName: request.tenant.firstName,
-            propertyName: bookingRequest.property.description, // Change to title later
+            propertyTitle: bookingRequest.property.title,
           });
         }
 
@@ -232,7 +237,7 @@ export class BookingRequestService {
       await scheduleBookingRequestDeclined({
         tenantEmail: bookingRequest.tenant.email,
         tenantName: bookingRequest.tenant.firstName,
-        propertyName: bookingRequest.property.description, // Change to title later
+        propertyTitle: bookingRequest.property.title,
       });
     }
 
@@ -363,8 +368,7 @@ export class BookingRequestService {
       landlord: bookingRequest.landlord,
       property: bookingRequest.property,
       moveInDate: bookingRequest.moveInDate,
-      startDate: bookingRequest.startDate,
-      endDate: bookingRequest.endDate,
+      moveOutDate: bookingRequest.moveOutDate,
       basePrice: bookingRequest.basePrice,
       netPrice: bookingRequest.netPrice,
       serviceChargeAmount: bookingRequest.serviceChargeAmount,
@@ -372,7 +376,17 @@ export class BookingRequestService {
       paymentMethod: bookingRequest.paymentMethod,
       paymentProvider: bookingRequest.paymentProvider,
       paymentReference: transactionReference,
-      paymentDue: bookingRequest.endDate, // set it to a day before and send reminder base on pricing model
+      paymentDue: bookingRequest.moveOutDate, // set it to a day before and send reminder base on pricing model
+    });
+
+    // Create Tenant
+    await TenantService.createTenant({
+      user: bookingRequest.tenant._id,
+      landlord: bookingRequest.landlord._id,
+      property: bookingRequest.property._id,
+      moveInDate: bookingRequest.moveInDate,
+      moveOutDate: bookingRequest.moveOutDate,
+      isActive: true,
     });
 
     await booking.save();
@@ -383,7 +397,7 @@ export class BookingRequestService {
       tenantName: bookingRequest.tenant.firstName,
       tenantEmail: bookingRequest.tenant.email,
       propertyName: bookingRequest.property.description,
-      moveInDate: bookingRequest.moveInDate,
+      moveInDate: formatPrettyDate(bookingRequest.moveInDate),
       landlordDashboardUrl: clientURLs.landlord.dashboardURL,
       tenantDashboardUrl: clientURLs.tenant.dashboardURL,
     });

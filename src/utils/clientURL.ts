@@ -13,4 +13,11 @@ export const clientURLs = {
     bookingsURL: `${CLIENT_BASE_URL}/dashboard/tenant/bookings`,
     bookingRequestsURL: `${CLIENT_BASE_URL}/dashboard/bookings/requests`,
   },
+  admin: {
+    dashboardURL: `${CLIENT_BASE_URL}/dashboard/admin`,
+  },
+  onboarding: {
+    roleSelectionURL: `${CLIENT_BASE_URL}/onboarding/role-selection`,
+  },
+  landingPageURL: `${CLIENT_BASE_URL}/`,
 };

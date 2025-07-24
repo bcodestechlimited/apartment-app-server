@@ -15,12 +15,18 @@ import agenda from "../../lib/agenda.js";
 import type { IUser, updateUserDTO } from "../user/user.interface.js";
 import type { FileArray, UploadedFile } from "express-fileupload";
 import { UploadService } from "../../services/upload.service.js";
+import type { IQueryParams } from "@/shared/interfaces/query.interface.js";
+import {
+  generateGoogleAuthURL,
+  getGoogleUserData,
+} from "@/lib/google-oauth.js";
 
 export class AuthService {
   static async register(userData: RegisterDTO) {
     const { email } = userData;
     const user = await UserService.createUser({
       ...userData,
+      provider: "local",
     });
 
     await user.save();
@@ -57,6 +63,42 @@ export class AuthService {
       user,
       token,
     });
+  }
+
+  static async loginWithGoogle() {
+    const redirectURL = generateGoogleAuthURL();
+    return ApiSuccess.ok("Login successful", { redirectURL });
+  }
+
+  static async handleGoogleCallback(query: IQueryParams) {
+    const { code } = query;
+    if (!code) {
+      throw ApiError.badRequest("Code is required");
+    }
+    const googleUser = await getGoogleUserData(code as string);
+
+    if (!googleUser || !googleUser.email) {
+      throw ApiError.badRequest("Google user not found");
+    }
+
+    let user = await UserService.getUserOrNull(googleUser.email);
+
+    if (!user) {
+      const newUser = await UserService.createUser({
+        email: googleUser.email,
+        firstName: googleUser.given_name || "",
+        lastName: googleUser.family_name || "",
+        avatar: googleUser.picture || "",
+        googleId: googleUser.id,
+        provider: "google",
+      });
+
+      user = newUser;
+    }
+
+    const token = generateToken({ userId: user._id });
+
+    return ApiSuccess.ok("Login successful", { user, token });
   }
 
   static async getUser(userId: ObjectId) {

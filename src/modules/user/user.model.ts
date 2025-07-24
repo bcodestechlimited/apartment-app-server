@@ -31,9 +31,6 @@ const UserSchema: Schema<IUser> = new Schema(
     },
     password: {
       type: String,
-      required: [true, "Please provide a password"],
-      minlength: [5, "Password must be at least 5 characters long"],
-      select: false,
     },
     documents: {
       type: [
@@ -78,6 +75,30 @@ const UserSchema: Schema<IUser> = new Schema(
     isVerified: {
       type: Boolean,
       default: false,
+    },
+    onboarded: {
+      type: Boolean,
+      default: false,
+    },
+    // onboardingStep: {
+    //   type: String,
+    //   enum: [
+    //     "not_started",
+    //     "profile_completed",
+    //     "documents_uploaded",
+    //     "completed",
+    //   ],
+    //   default: "not_started",
+    // },
+    provider: {
+      type: String,
+      enum: ["local", "google", "facebook"],
+      default: "local",
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, // allows multiple nulls
     },
   },
   {
