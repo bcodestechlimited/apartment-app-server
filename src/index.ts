@@ -7,7 +7,6 @@ import cookieParser from "cookie-parser";
 import fileUpload from "express-fileupload";
 import { createServer } from "http";
 
-import { env } from "./config/env.config";
 import connectDB from "./config/connectDB";
 import notFound from "./middleware/notFound";
 import authRoutes from "./modules/auth/auth.routes";
@@ -28,6 +27,7 @@ import { initializeSocket } from "./lib/socket";
 
 const app = express();
 const server = createServer(app);
+const port = process.env.PORT || 3000;
 
 app.use(cookieParser());
 app.use(express.json());
@@ -73,8 +73,8 @@ const startServer = async () => {
   try {
     console.log(`Connecting.....`);
     await connectDB();
-    server.listen(env.PORT || 3000, async () => {
-      logger.info(`Server is listening on PORT:${env.PORT}`);
+    server.listen(port, async () => {
+      logger.info(`Server is listening on PORT:${port}`);
     });
     initializeSocket(server);
     startAgenda();
