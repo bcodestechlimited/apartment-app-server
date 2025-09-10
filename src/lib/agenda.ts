@@ -46,15 +46,15 @@ export const startAgenda = async () => {
   // Log all jobs to check if it's running
   const jobs = await agenda.jobs({});
   console.log(`📋 Found ${jobs.length} jobs:`);
-  jobs.forEach(async (job: Job, i) => {
-    console.log(
-      `[${i + 1}] ${job.attrs.name} | nextRunAt: ${job.attrs.nextRunAt}`
-    );
-    if (job.attrs.nextRunAt && job.attrs.nextRunAt < new Date()) {
-      console.log(`🔄 Running overdue job: ${job.attrs.name}`);
-      await job.run();
-    }
-  });
+  // jobs.forEach(async (job: Job, i) => {
+  //   console.log(
+  //     `[${i + 1}] ${job.attrs.name} | nextRunAt: ${job.attrs.nextRunAt}`
+  //   );
+  //   if (job.attrs.nextRunAt && job.attrs.nextRunAt < new Date()) {
+  //     console.log(`🔄 Running overdue job: ${job.attrs.name}`);
+  //     await job.run();
+  //   }
+  // });
 };
 
 export default agenda;

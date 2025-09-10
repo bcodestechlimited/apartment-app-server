@@ -15,6 +15,7 @@ import Booking from "../booking/booking.model.js";
 import { TenantService } from "../tenant/tenant.service.js";
 import { formatDate, formatPrettyDate } from "@/utils/formatUtils.js";
 import { scheduleBookingRequestApprovalEmailToTenant } from "@/jobs/sendBookingRequestApproved.js";
+import { MessageService } from "../message/message.service.js";
 
 export class BookingRequestService {
   // ----------------- Booking Requests -----------------
@@ -388,6 +389,12 @@ export class BookingRequestService {
       moveOutDate: bookingRequest.moveOutDate,
       isActive: true,
     });
+
+    // Create Chat between tenant and landlord
+    await MessageService.getOrCreateConversation(
+      bookingRequest.tenant._id,
+      bookingRequest.landlord._id
+    );
 
     await booking.save();
 

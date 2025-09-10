@@ -5,6 +5,7 @@ export function calculateBookingPeriod(
   pricingModel: string
 ) {
   const start = new Date(moveInDate);
+
   if (Number.isNaN(start.getTime())) {
     throw ApiError.badRequest("Invalid move-in date");
   }

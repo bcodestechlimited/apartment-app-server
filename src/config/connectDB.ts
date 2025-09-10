@@ -6,7 +6,8 @@ const connectDB = async () => {
   try {
     logger.info("Connecting...");
     await mongoose.connect(env.MONGODB_URI, {
-      dbName: "citylights",
+      // dbName: "citylights",
+      dbName: "Haven-Lease",
     });
     logger.info("DB Connected!");
   } catch (error) {

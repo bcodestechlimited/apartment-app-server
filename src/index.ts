@@ -5,6 +5,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import fileUpload from "express-fileupload";
+import { createServer } from "http";
 
 import { env } from "./config/env.config";
 import connectDB from "./config/connectDB";
@@ -20,10 +21,13 @@ import bookingRequestRoutes from "./modules/booking-request/booking-request.rout
 import transactionRoutes from "./modules/transaction/transaction.routes";
 import walletRoutes from "./modules/wallet/wallet.routes";
 import tenantRoutes from "./modules/tenant/tenant.routes";
+import messageRoutes from "./modules/message/message.routes";
 import webookRoutes from "./modules/webhook/webhook.routes";
 import adminRoutes from "./modules/admin/admin.routes";
+import { initializeSocket } from "./lib/socket";
 
 const app = express();
+const server = createServer(app);
 
 app.use(cookieParser());
 app.use(express.json());
@@ -55,6 +59,7 @@ app.use("/api/v1/booking-request", bookingRequestRoutes);
 app.use("/api/v1/transaction", transactionRoutes);
 app.use("/api/v1/wallet", walletRoutes);
 app.use("/api/v1/tenants", tenantRoutes);
+app.use("/api/v1/message", messageRoutes);
 app.use("/api/v1/webhook", webookRoutes);
 app.use("/api/v1/admin", adminRoutes);
 
@@ -67,9 +72,10 @@ app.use(errorMiddleware);
 const startServer = async () => {
   try {
     await connectDB();
-    app.listen(env.PORT, async () => {
+    server.listen(env.PORT, async () => {
       logger.info(`Server is listening on PORT:${env.PORT}`);
     });
+    initializeSocket(server);
     startAgenda();
   } catch (error) {
     logger.error(error);

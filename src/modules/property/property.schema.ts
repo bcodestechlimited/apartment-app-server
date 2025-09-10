@@ -27,7 +27,7 @@ export class PropertySchemas {
       // .min(10, "State must be at least 10 characters long"),
       lga: z.string({ required_error: "LGA is required" }),
       // .min(5, "LGA must be at least 10 characters long"),
-      numberOfBedRooms: z
+      numberOfBedrooms: z
         .string({ required_error: "Number of bedrooms is required" })
         .min(1, "There must be at least one room")
         .optional(),
@@ -162,7 +162,7 @@ export class PropertySchemas {
           });
         }
       } else {
-        if (!data.numberOfBedRooms) {
+        if (!data.numberOfBedrooms) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "Number of rooms is required for non-workspace properties",
@@ -275,10 +275,6 @@ export class PropertySchemas {
       .min(10, "Description must be at least 10 characters long")
       .optional(),
     type: z.nativeEnum(PropertyType).optional(),
-    pictures: z
-      .array(z.string().url("Each picture must be a valid URL"))
-      .nonempty("Please provide at least one picture")
-      .optional(),
     existingPictures: z
       .string()
       .optional()
@@ -308,7 +304,7 @@ export class PropertySchemas {
         return val;
       })
       .pipe(
-        z.array(z.string()).nonempty("Please provide at least one picture")
+        z.array(z.string())
       ),
   });
 
