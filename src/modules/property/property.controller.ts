@@ -10,6 +10,9 @@ export class PropertyController {
     const propertyData = req.body;
     const files = req.files as { pictures: UploadedFile[] };
     const { userId } = req.user as AuthenticatedUser;
+
+    console.log({ propertyData, files, userId });
+
     const result = await PropertyService.createProperty(
       propertyData,
       files,
