@@ -73,7 +73,7 @@ const startServer = async () => {
   try {
     console.log(`Connecting.....`);
     await connectDB();
-    server.listen(env.PORT, async () => {
+    server.listen(env.PORT || 3000, async () => {
       logger.info(`Server is listening on PORT:${env.PORT}`);
     });
     initializeSocket(server);
