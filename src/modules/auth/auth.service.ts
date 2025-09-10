@@ -52,6 +52,11 @@ export class AuthService {
   static async login(userData: LoginDTO) {
     const { email, password } = userData;
     const user = await UserService.findUserByEmail(email);
+    if (user.provider !== "local") {
+      throw ApiError.conflict(
+        "This account was created with Google. Please sign in using Google."
+      );
+    }
     await comparePassword(password, user.password as string);
 
     if (!user.isVerified) {

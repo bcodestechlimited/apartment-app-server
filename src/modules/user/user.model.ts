@@ -31,6 +31,8 @@ const UserSchema: Schema<IUser> = new Schema(
     },
     password: {
       type: String,
+      trim: true,
+      select: false,
     },
     documents: {
       type: [
