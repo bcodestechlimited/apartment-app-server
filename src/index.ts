@@ -48,6 +48,7 @@ app.use(
       "http://localhost:5174",
       "https://apartment-app-client.vercel.app/",
       "https://www.havenlease.com/",
+      "https://havenlease.com/",
     ],
     credentials: true,
   })
