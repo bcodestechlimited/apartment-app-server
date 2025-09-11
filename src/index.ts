@@ -46,9 +46,9 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://localhost:5174",
-      "https://apartment-app-client.vercel.app/",
-      "https://www.havenlease.com/",
-      "https://havenlease.com/",
+      "https://apartment-app-client.vercel.app",
+      "https://www.havenlease.com",
+      "https://havenlease.com",
     ],
     credentials: true,
   })
