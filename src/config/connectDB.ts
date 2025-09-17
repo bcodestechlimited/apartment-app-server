@@ -3,11 +3,17 @@ import { env } from "./env.config";
 import logger from "../utils/logger";
 
 const connectDB = async () => {
+  if (mongoose.connection.readyState === 1) {
+    logger.info("DB already connected");
+    return;
+  }
+
   try {
     logger.info("Connecting...");
     await mongoose.connect(env.MONGODB_URI, {
-      // dbName: "citylights",
-      dbName: "Haven-Lease",
+      dbName:
+        env.NODE_ENV === "production" ? "Haven-Lease" : "Haven-Lease-Staging",
+      // "Haven-Lease",
     });
     logger.info("DB Connected!");
   } catch (error) {

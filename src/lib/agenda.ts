@@ -1,4 +1,4 @@
-import { Agenda, Job } from "agenda";
+import { Agenda } from "agenda";
 import { env } from "../config/env.config";
 import { sentOTPEmailJob } from "../jobs/sendOTPEmail";
 import {
@@ -17,7 +17,10 @@ function addDbToUri(uri: string, dbName: string): string {
 
 const agenda = new Agenda({
   db: {
-    address: addDbToUri(env.MONGODB_URI, "citylights"),
+    address: addDbToUri(
+      env.MONGODB_URI,
+      env.NODE_ENV === "production" ? "Haven-Lease" : "Haven-Lease-Staging"
+    ),
     collection: "agendaJobs",
   },
   processEvery: "5 seconds",

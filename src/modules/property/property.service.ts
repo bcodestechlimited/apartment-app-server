@@ -10,8 +10,6 @@ import { UploadService } from "../../services/upload.service.js";
 import type { UploadedFile } from "express-fileupload";
 import type { IQueryParams } from "../../shared/interfaces/query.interface.js";
 import { paginate } from "../../utils/paginate.js";
-import { toISODate } from "@/utils/calculationUtils.js";
-import { parse } from "path";
 
 export class PropertyService {
   static async getPropertyDocumentById(propertyId: string | ObjectId) {
@@ -309,23 +307,17 @@ export class PropertyService {
 
     console.log({ updateData });
 
-    let parsedExistingPictures: string[] = [];
-    let parsedAmenities: string[] = [];
-    let parsedFacilities: string[] = [];
+    const parsedExistingPictures = updateData.existingPictures
+      ? JSON.parse(updateData.existingPictures as string)
+      : property.pictures || [];
 
-    if (updateData.existingPictures) {
-      parsedExistingPictures = JSON.parse(
-        updateData.existingPictures as string
-      );
-    }
+    const parsedAmenities = updateData.amenities
+      ? JSON.parse(updateData.amenities as string)
+      : property.amenities || [];
 
-    if (updateData.amenities) {
-      parsedAmenities = JSON.parse(updateData.amenities as string);
-    }
-
-    if (updateData.facilities) {
-      parsedFacilities = JSON.parse(updateData.facilities as string);
-    }
+    const parsedFacilities = updateData.facilities
+      ? JSON.parse(updateData.facilities as string)
+      : property.facilities || [];
 
     let updatePropertyPayload = {
       ...updateData,
