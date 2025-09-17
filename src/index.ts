@@ -81,9 +81,9 @@ const startServer = async () => {
     await connectDB();
     server.listen(port, async () => {
       logger.info(`Server is listening on PORT:${port}`);
+      initializeSocket(server);
+      startAgenda();
     });
-    initializeSocket(server);
-    startAgenda();
   } catch (error) {
     logger.error(error);
   }
