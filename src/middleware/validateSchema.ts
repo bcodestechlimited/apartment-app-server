@@ -8,7 +8,7 @@ export const validateBody =
   (schema: ZodSchema<any>) =>
   (req: Request, res: Response, next: NextFunction): void => {
     try {
-      // console.log({ body: req.body });
+      console.log({ body: req.body });
 
       schema.parse(req.body);
       return next();

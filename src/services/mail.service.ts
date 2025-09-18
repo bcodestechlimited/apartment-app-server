@@ -47,7 +47,7 @@ class MailService {
   }: EmailOptions): Promise<SentMessageInfo> {
     try {
       const mailOptions = {
-        from: from || '"Haven Lease" <info@bcodestech.com>',
+        from: from || "Haven Lease <no-reply@havenlease.com>",
         to,
         subject,
         text,

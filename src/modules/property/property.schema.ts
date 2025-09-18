@@ -53,8 +53,21 @@ export class PropertySchemas {
         })
         .optional(),
       seatingCapacity: z
-        .number({ required_error: "Seating capacity is required" })
-        .min(1, "Seating capacity must be at least 1")
+        .string({ required_error: "Seating capacity is required" })
+        .refine(
+          (val) => {
+            const parsed = Number.parseInt(val);
+            return Number.isNaN(parsed) ? false : parsed >= 1;
+          },
+          {
+            message:
+              "Seating capacity must be a valid number greater than or equal to 1",
+          }
+        )
+        .transform((val, ctx) => {
+          const parsed = Number.parseInt(val);
+          return parsed;
+        })
         .optional(),
       amenities: z
         .any()
@@ -303,9 +316,7 @@ export class PropertySchemas {
 
         return val;
       })
-      .pipe(
-        z.array(z.string())
-      ),
+      .pipe(z.array(z.string())),
   });
 
   static validateImages = (req: Request, res: Response, next: NextFunction) => {
