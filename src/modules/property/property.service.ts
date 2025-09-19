@@ -62,7 +62,7 @@ export class PropertyService {
     const { pictures } = files;
     const property = new Property({
       ...propertyData,
-      seatingCapacity: Number(propertyData.seatingCapacity),
+      seatingCapacity: Number(propertyData.seatingCapacity) || 1,
       user: userId,
       isAvailable: isAvailable,
     });
