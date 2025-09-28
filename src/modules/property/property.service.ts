@@ -65,6 +65,7 @@ export class PropertyService {
       seatingCapacity: Number(propertyData.seatingCapacity) || 1,
       user: userId,
       isAvailable: isAvailable,
+      isVerified: false,
     });
 
     const uploadedPictures = await Promise.all(
@@ -307,6 +308,78 @@ export class PropertyService {
     }
 
     console.log({ updateData });
+
+    const parsedExistingPictures = updateData.existingPictures
+      ? JSON.parse(updateData.existingPictures as string)
+      : property.pictures || [];
+
+    const parsedAmenities = updateData.amenities
+      ? JSON.parse(updateData.amenities as string)
+      : property.amenities || [];
+
+    const parsedFacilities = updateData.facilities
+      ? JSON.parse(updateData.facilities as string)
+      : property.facilities || [];
+
+    let updatePropertyPayload = {
+      ...updateData,
+      amenities: parsedAmenities,
+      facilities: parsedFacilities,
+      pictures: parsedExistingPictures,
+      isVerified: false,
+    };
+
+    if (newPictures && Array.isArray(newPictures) && newPictures.length > 0) {
+      const length = newPictures.length;
+      if (parsedExistingPictures.length + length > 5) {
+        throw ApiError.badRequest("You can only upload a maximum of 5 images");
+      }
+      const newlyUploadedPictures = await Promise.all(
+        newPictures.map(async (picture: UploadedFile) => {
+          const { secure_url } = await UploadService.uploadToCloudinary(
+            picture.tempFilePath
+          );
+          return secure_url;
+        })
+      );
+
+      updatePropertyPayload.pictures = [
+        ...parsedExistingPictures,
+        ...newlyUploadedPictures.filter((picture) => picture !== undefined),
+      ];
+    }
+
+    if (newPictures && !Array.isArray(newPictures)) {
+      if (parsedExistingPictures.length + 1 > 5) {
+        throw ApiError.badRequest("You can only upload a maximum of 5 images");
+      }
+
+      const { secure_url } = await UploadService.uploadToCloudinary(
+        newPictures.tempFilePath
+      );
+
+      updatePropertyPayload.pictures = [
+        ...parsedExistingPictures,
+        secure_url as string,
+      ];
+    }
+
+    Object.assign(property, updatePropertyPayload);
+    await property.save();
+
+    return ApiSuccess.ok("Property updated successfully", { property });
+  }
+  static async adminUpdateProperty(
+    propertyId: string,
+    updateData: Partial<UpdatePropertyDTO>,
+    files?: { newPictures: UploadedFile | UploadedFile[] }
+  ) {
+    const { newPictures } = files ?? {};
+
+    const property = await Property.findById(propertyId);
+    if (!property) {
+      throw ApiError.notFound("Property not found");
+    }
 
     const parsedExistingPictures = updateData.existingPictures
       ? JSON.parse(updateData.existingPictures as string)

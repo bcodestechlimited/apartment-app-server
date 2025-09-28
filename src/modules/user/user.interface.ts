@@ -14,6 +14,7 @@ export interface IUser extends Document {
   preferences: string[];
   isActive: boolean;
   isVerified: boolean;
+  isEmailVerified: boolean;
   onboarded: boolean;
   // onboardingStep: "not_started" | "profile_completed" | "documents_uploaded" | "completed";
   roles: UserRolesEnum;

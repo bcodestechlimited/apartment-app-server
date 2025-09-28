@@ -9,11 +9,10 @@ import UserService from "../user/user.service.js";
 import { comparePassword, hashPassword } from "../../utils/validationUtils.js";
 import { ApiError, ApiSuccess } from "../../utils/responseHandler.js";
 import { generateToken } from "../../config/token.js";
-import { mailService } from "../../services/mail.service.js";
 import type { ObjectId } from "mongoose";
 import agenda from "../../lib/agenda.js";
-import type { IUser, updateUserDTO } from "../user/user.interface.js";
-import type { FileArray, UploadedFile } from "express-fileupload";
+import type { updateUserDTO } from "../user/user.interface.js";
+import type { UploadedFile } from "express-fileupload";
 import { UploadService } from "../../services/upload.service.js";
 import type { IQueryParams } from "@/shared/interfaces/query.interface.js";
 import {
@@ -53,9 +52,7 @@ export class AuthService {
     const { email, password } = userData;
     const user = await UserService.findUserByEmail(email);
     if (user.provider !== "local") {
-      throw ApiError.conflict(
-        "This account was created with Google. Please sign in using Google."
-      );
+      throw ApiError.conflict("Unauthorized");
     }
     await comparePassword(password, user.password as string);
 
@@ -96,6 +93,7 @@ export class AuthService {
         avatar: googleUser.picture || "",
         googleId: googleUser.id,
         provider: "google",
+        isEmailVerified: true,
       });
 
       user = newUser;

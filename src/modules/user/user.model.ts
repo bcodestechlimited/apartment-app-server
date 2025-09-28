@@ -59,6 +59,7 @@ const UserSchema: Schema<IUser> = new Schema(
     },
     phoneNumber: {
       type: String,
+      default: "",
       // required: [true, "Please provide a phone number"],
       // match: [
       //   /^(0)(7|8|9){1}(0|1){1}[0-9]{8}$/,
@@ -75,6 +76,10 @@ const UserSchema: Schema<IUser> = new Schema(
       default: true,
     },
     isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    isEmailVerified: {
       type: Boolean,
       default: false,
     },

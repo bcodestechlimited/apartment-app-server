@@ -11,7 +11,8 @@
     "dev": "nodemon --watch src --ext ts --exec bun run /src/index.ts | pino-pretty",
     "test": "bun test",
     "lint": "bun run lint",
-    "script:test": "bun run src/scripts/test.ts"
+    "script:test": "bun run src/scripts/test.ts",
+    "scripts:create-module": "bun run /src/scripts/create-module.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"

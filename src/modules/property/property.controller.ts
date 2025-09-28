@@ -63,6 +63,17 @@ export class PropertyController {
     );
     res.status(200).json(result);
   }
+  static async adminUpdateProperty(req: Request, res: Response) {
+    const { propertyId } = req.params;
+    const propertyData = req.body;
+    const files = req.files as { newPictures: UploadedFile | UploadedFile[] };
+    const result = await PropertyService.adminUpdateProperty(
+      propertyId as string,
+      propertyData,
+      files
+    );
+    res.status(200).json(result);
+  }
 
   // Delete a property
   static async deleteProperty(req: Request, res: Response) {

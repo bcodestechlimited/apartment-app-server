@@ -49,4 +49,9 @@ router
   .get(isAuth, isAuthAdmin, PropertyController.getAllProperties)
   .all(methodNotAllowed);
 
+router
+  .route("/property/:propertyId")
+  .patch(isAuth, isAuthAdmin, PropertyController.adminUpdateProperty)
+  .all(methodNotAllowed);
+
 export default router;
