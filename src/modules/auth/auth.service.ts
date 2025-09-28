@@ -62,7 +62,7 @@ export class AuthService {
     if (!user.isVerified) {
       throw ApiError.forbidden("Email Not Verified");
     }
-    const token = generateToken({ userId: user._id });
+    const token = generateToken({ userId: user._id, roles: user.roles });
 
     return ApiSuccess.ok("Login Successful", {
       user,
@@ -101,7 +101,7 @@ export class AuthService {
       user = newUser;
     }
 
-    const token = generateToken({ userId: user._id });
+    const token = generateToken({ userId: user._id, roles: user.roles });
 
     return ApiSuccess.ok("Login successful", { user, token });
   }

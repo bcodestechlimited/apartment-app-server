@@ -56,6 +56,9 @@ export class AuthController {
     if (!user.onboarded) {
       return res.redirect(clientURLs.onboarding.roleSelectionURL);
     }
+    if (user.roles.includes("admin")) {
+      return res.redirect(clientURLs.admin.dashboardURL);
+    }
     if (user.roles.includes("landlord")) {
       return res.redirect(clientURLs.landlord.dashboardURL);
     }

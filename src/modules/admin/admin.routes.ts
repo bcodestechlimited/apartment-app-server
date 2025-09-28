@@ -1,5 +1,5 @@
 import express from "express";
-import { isAuth } from "@/middleware/auth.js";
+import { isAuth, isAuthAdmin } from "@/middleware/auth.js";
 import methodNotAllowed from "@/middleware/methodNotAllowed.js";
 import { WalletController } from "../wallet/wallet.controller";
 import { TransactionController } from "../transaction/transaction.controller";
@@ -46,7 +46,7 @@ router
 //Property
 router
   .route("/property")
-  .get(isAuth, PropertyController.getAllProperties)
+  .get(isAuth, isAuthAdmin, PropertyController.getAllProperties)
   .all(methodNotAllowed);
 
 export default router;
