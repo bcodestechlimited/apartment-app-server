@@ -97,6 +97,10 @@ export class MessageService {
     user2: string | ObjectId,
     content?: string
   ) {
+
+    console.log({ user1, user2 });
+    
+
     let conversation = await Conversation.findOne({
       participants: { $all: [user1, user2] },
     });

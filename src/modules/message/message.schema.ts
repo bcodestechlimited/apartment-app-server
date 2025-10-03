@@ -30,13 +30,11 @@ export class MessageSchemas {
   });
 
   static createConversationSchema = z.object({
-    participants: z
-      .array(
-        z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
-          message: "Each participant must be a valid ObjectId",
-        })
-      )
-      .min(2, "A conversation must have at least two participants"),
+    receiverId: z
+      .string({ required_error: "Receiver ID is required" })
+      .refine((val) => mongoose.Types.ObjectId.isValid(val), {
+        message: "Invalid receiver ID",
+      }),
     isGroup: z.boolean().optional(),
   });
 }

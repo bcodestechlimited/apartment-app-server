@@ -5,7 +5,7 @@ import { isAuth } from "@/middleware/auth.js";
 
 const router = express.Router();
 
-// router.route("/").get(TenantController.getAllTenants).all(methodNotAllowed);
+router.route("/").get(TenantController.getAllTenants).all(methodNotAllowed);
 
 router
   .route("/landlord")

@@ -1,4 +1,4 @@
-import { Document, Model, type PopulateOptions } from "mongoose";
+import { Document, type PopulateOptions } from "mongoose";
 
 interface PaginateOptions {
   // model: Model<Document>;

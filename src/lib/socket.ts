@@ -28,7 +28,7 @@ const handleAddNewUser = (
     });
   }
 
-  console.log({ onlineUsers });
+  console.log({ OU: onlineUsers });
 
   io.emit("get_online_users", onlineUsers);
 };
@@ -46,6 +46,8 @@ const handleSendMessage = async (
   logger.info("Socket message", data);
   try {
     const { conversationId, senderId, receiverId, text } = data;
+
+    console.log({ conversationId, senderId, receiverId, text });
 
     const newMessage = new Message({
       conversationId,
@@ -73,9 +75,18 @@ const handleSendMessage = async (
     });
 
     const user = onlineUsers.find((user) => user.userId === receiverId);
+    const sender = onlineUsers.find((user) => user.userId === senderId);
+
+    console.log({ user, sender });
+
     if (user) {
       io.to(user.socketId).to(socket.id).emit("receive_message", newMessage);
-      logger.info("Message delivered successfully");
+      logger.info("Message delivered to user successfully");
+    }
+
+    if (sender) {
+      io.to(sender.socketId).to(socket.id).emit("receive_message", newMessage);
+      logger.info("Message delivered to sender successfully");
     }
 
     // io.to(conversationId).emit("receive_message", newMessage);
@@ -100,14 +111,20 @@ const handleUserTyping = (
 export const initializeSocket = (server: HTTPServer) => {
   io = new SocketIOServer(server, {
     cors: {
-      origin: ["http://localhost:5173", "http://localhost:5174"],
+      origin: [
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "https://apartment-app-client.vercel.app",
+        "https://www.havenlease.com",
+        "https://havenlease.com",
+      ],
       credentials: true,
     },
   });
 
   io.on("connection", (socket: Socket) => {
     logger.info(`🧠 New client connected: ${socket.id}`);
-    logger.info({ onlineUsers });
+    // logger.info({ onlineUsers });
 
     socket.on("add_online_user", (user: { userId: string }) => {
       handleAddNewUser(io, socket, user);

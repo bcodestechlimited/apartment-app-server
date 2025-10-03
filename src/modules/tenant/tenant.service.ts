@@ -20,13 +20,21 @@ export class TenantService {
   }
 
   static async getAllTenants(query: IQueryParams) {
-    const { page, limit } = query;
-    const filterQuery = {};
+    const { page, limit, search } = query;
+    const filterQuery: Record<string, any> = {};
+
+    // if (search) {
+    //   filterQuery.$or = [
+    //     { "user.firstName": { $regex: search, $options: "i" } },
+    //     { "user.lastName": { $regex: search, $options: "i" } },
+    //     { "user.email": { $regex: search, $options: "i" } },
+    //   ];
+    // }
 
     const sort = { createdAt: -1 };
     const populateOptions = [
       { path: "landlord" },
-      { path: "tenant" },
+      { path: "user" },
       { path: "property" },
     ];
 
