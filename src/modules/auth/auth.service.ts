@@ -194,6 +194,198 @@ export class AuthService {
     await user.save();
     return ApiSuccess.ok("Password Updated");
   }
+
+  //Profile
+  static async updateUserPersonalInfo(
+    userId: ObjectId,
+    userData: Partial<updateUserDTO>
+  ) {
+
+    const personalInfo = await UserService.updateUserInformation(
+      userId,
+      userData
+    );
+
+    return ApiSuccess.ok("Personal Info Updated Successfully", {
+      personalInfo,
+    });
+  }
+
+  static async updateUserEmployment(
+    userId: ObjectId,
+    userData: Partial<updateUserDTO>,
+    files?: { document?: UploadedFile; avatar?: UploadedFile }
+  ) {
+    const UpdatedUserData = {
+      ...userData,
+    };
+
+    if (files && files.document) {
+      const { document } = files;
+      const { secure_url, resource_type } =
+        await UploadService.uploadToCloudinary(document.tempFilePath);
+
+      UpdatedUserData.document = {
+        type: resource_type === "image" ? "image" : "file",
+        url: secure_url as string,
+      };
+    }
+
+    if (files && files.avatar) {
+      const { secure_url } = await UploadService.uploadToCloudinary(
+        files.avatar.tempFilePath
+      );
+      UpdatedUserData.avatar = secure_url as string;
+    }
+
+    console.log({ UpdatedUserData, files });
+
+    const user = await UserService.updateUser(userId, UpdatedUserData);
+    user.password = undefined;
+    return ApiSuccess.ok("Profile Updated Successfully", {
+      user,
+    });
+  }
+  static async updateUserDocuments(
+    userId: ObjectId,
+    userData: Partial<updateUserDTO>,
+    files?: { document?: UploadedFile; avatar?: UploadedFile }
+  ) {
+    const UpdatedUserData = {
+      ...userData,
+    };
+
+    if (files && files.document) {
+      const { document } = files;
+      const { secure_url, resource_type } =
+        await UploadService.uploadToCloudinary(document.tempFilePath);
+
+      UpdatedUserData.document = {
+        type: resource_type === "image" ? "image" : "file",
+        url: secure_url as string,
+      };
+    }
+
+    if (files && files.avatar) {
+      const { secure_url } = await UploadService.uploadToCloudinary(
+        files.avatar.tempFilePath
+      );
+      UpdatedUserData.avatar = secure_url as string;
+    }
+
+    console.log({ UpdatedUserData, files });
+
+    const user = await UserService.updateUser(userId, UpdatedUserData);
+    user.password = undefined;
+    return ApiSuccess.ok("Profile Updated Successfully", {
+      user,
+    });
+  }
+  static async updateUserNextOfKin(
+    userId: ObjectId,
+    userData: Partial<updateUserDTO>,
+    files?: { document?: UploadedFile; avatar?: UploadedFile }
+  ) {
+    const UpdatedUserData = {
+      ...userData,
+    };
+
+    if (files && files.document) {
+      const { document } = files;
+      const { secure_url, resource_type } =
+        await UploadService.uploadToCloudinary(document.tempFilePath);
+
+      UpdatedUserData.document = {
+        type: resource_type === "image" ? "image" : "file",
+        url: secure_url as string,
+      };
+    }
+
+    if (files && files.avatar) {
+      const { secure_url } = await UploadService.uploadToCloudinary(
+        files.avatar.tempFilePath
+      );
+      UpdatedUserData.avatar = secure_url as string;
+    }
+
+    console.log({ UpdatedUserData, files });
+
+    const user = await UserService.updateUser(userId, UpdatedUserData);
+    user.password = undefined;
+    return ApiSuccess.ok("Profile Updated Successfully", {
+      user,
+    });
+  }
+  static async updateUserGuarantor(
+    userId: ObjectId,
+    userData: Partial<updateUserDTO>,
+    files?: { document?: UploadedFile; avatar?: UploadedFile }
+  ) {
+    const UpdatedUserData = {
+      ...userData,
+    };
+
+    if (files && files.document) {
+      const { document } = files;
+      const { secure_url, resource_type } =
+        await UploadService.uploadToCloudinary(document.tempFilePath);
+
+      UpdatedUserData.document = {
+        type: resource_type === "image" ? "image" : "file",
+        url: secure_url as string,
+      };
+    }
+
+    if (files && files.avatar) {
+      const { secure_url } = await UploadService.uploadToCloudinary(
+        files.avatar.tempFilePath
+      );
+      UpdatedUserData.avatar = secure_url as string;
+    }
+
+    console.log({ UpdatedUserData, files });
+
+    const user = await UserService.updateUser(userId, UpdatedUserData);
+    user.password = undefined;
+    return ApiSuccess.ok("Profile Updated Successfully", {
+      user,
+    });
+  }
+  static async updateUserNotification(
+    userId: ObjectId,
+    userData: Partial<updateUserDTO>,
+    files?: { document?: UploadedFile; avatar?: UploadedFile }
+  ) {
+    const UpdatedUserData = {
+      ...userData,
+    };
+
+    if (files && files.document) {
+      const { document } = files;
+      const { secure_url, resource_type } =
+        await UploadService.uploadToCloudinary(document.tempFilePath);
+
+      UpdatedUserData.document = {
+        type: resource_type === "image" ? "image" : "file",
+        url: secure_url as string,
+      };
+    }
+
+    if (files && files.avatar) {
+      const { secure_url } = await UploadService.uploadToCloudinary(
+        files.avatar.tempFilePath
+      );
+      UpdatedUserData.avatar = secure_url as string;
+    }
+
+    console.log({ UpdatedUserData, files });
+
+    const user = await UserService.updateUser(userId, UpdatedUserData);
+    user.password = undefined;
+    return ApiSuccess.ok("Profile Updated Successfully", {
+      user,
+    });
+  }
 }
 
 export const authService = new AuthService();

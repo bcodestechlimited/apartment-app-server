@@ -86,6 +86,7 @@ export class AuthController {
     res.status(200).json(result);
   }
 
+  //
   static async updateUser(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
@@ -121,6 +122,84 @@ export class AuthController {
   static async resetPassword(req: Request, res: Response) {
     const { email, otp, password } = req.body;
     const result = await AuthService.resetPassword({ email, otp, password });
+    res.status(200).json(result);
+  }
+
+  //Profile
+  static async updatePersonalInfo(req: Request, res: Response) {
+    const { userId } = req.user as AuthenticatedUser;
+    const userData = req.body;
+    const result = await AuthService.updateUserPersonalInfo(userId, userData);
+    res.status(200).json(result);
+  }
+
+  static async updateEmployment(req: Request, res: Response) {
+    const { userId } = req.user as AuthenticatedUser;
+    const userData = req.body;
+    const files = req.files as
+      | { document?: UploadedFile; avatar?: UploadedFile }
+      | undefined;
+    const result = await AuthService.updateUserEmployment(
+      userId,
+      userData,
+      files
+    );
+    res.status(200).json(result);
+  }
+
+  static async updateDocuments(req: Request, res: Response) {
+    const { userId } = req.user as AuthenticatedUser;
+    const userData = req.body;
+    const files = req.files as
+      | { document?: UploadedFile; avatar?: UploadedFile }
+      | undefined;
+    const result = await AuthService.updateUserDocuments(
+      userId,
+      userData,
+      files
+    );
+    res.status(200).json(result);
+  }
+
+  static async updateNextOfKin(req: Request, res: Response) {
+    const { userId } = req.user as AuthenticatedUser;
+    const userData = req.body;
+    const files = req.files as
+      | { document?: UploadedFile; avatar?: UploadedFile }
+      | undefined;
+    const result = await AuthService.updateUserNextOfKin(
+      userId,
+      userData,
+      files
+    );
+    res.status(200).json(result);
+  }
+
+  static async updateGuarantor(req: Request, res: Response) {
+    const { userId } = req.user as AuthenticatedUser;
+    const userData = req.body;
+    const files = req.files as
+      | { document?: UploadedFile; avatar?: UploadedFile }
+      | undefined;
+    const result = await AuthService.updateUserGuarantor(
+      userId,
+      userData,
+      files
+    );
+    res.status(200).json(result);
+  }
+
+  static async updateNotification(req: Request, res: Response) {
+    const { userId } = req.user as AuthenticatedUser;
+    const userData = req.body;
+    const files = req.files as
+      | { document?: UploadedFile; avatar?: UploadedFile }
+      | undefined;
+    const result = await AuthService.updateUserNotification(
+      userId,
+      userData,
+      files
+    );
     res.status(200).json(result);
   }
 }

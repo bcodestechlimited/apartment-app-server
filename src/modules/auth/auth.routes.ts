@@ -3,8 +3,8 @@ import methodNotAllowed from "../../middleware/methodNotAllowed.js";
 import { AuthController } from "./auth.controller.js";
 import { isAuth } from "../../middleware/auth.js";
 import { userSchema } from "../user/user.schema.js";
-import { AuthSchemas } from "./auth.schema.js";
 import { validateBody } from "../../middleware/validateSchema.js";
+import { authSchemas } from "./auth.schema.js";
 
 const router = express.Router();
 
@@ -13,8 +13,8 @@ router
   .get(isAuth, AuthController.getUser)
   .patch(
     isAuth,
-    validateBody(AuthSchemas.update),
-    AuthSchemas.validateFiles,
+    validateBody(authSchemas.update),
+    authSchemas.validateFiles,
     AuthController.updateUser
   )
   .all(methodNotAllowed);
@@ -26,7 +26,7 @@ router
 
 router
   .route("/signin")
-  .post(validateBody(AuthSchemas.login), AuthController.login)
+  .post(validateBody(authSchemas.login), AuthController.login)
   .all(methodNotAllowed);
 
 router
@@ -36,22 +36,22 @@ router
 
 router
   .route("/send-otp")
-  .post(validateBody(AuthSchemas.sendOTP), AuthController.sendOTP)
+  .post(validateBody(authSchemas.sendOTP), AuthController.sendOTP)
   .all(methodNotAllowed);
 
 router
   .route("/verify-otp")
-  .post(validateBody(AuthSchemas.verifyOTP), AuthController.verifyOTP)
+  .post(validateBody(authSchemas.verifyOTP), AuthController.verifyOTP)
   .all(methodNotAllowed);
 
 router
   .route("/forgot-password")
-  .post(validateBody(AuthSchemas.forgotPassword), AuthController.forgotPassword)
+  .post(validateBody(authSchemas.forgotPassword), AuthController.forgotPassword)
   .all(methodNotAllowed);
 
 router
   .route("/reset-password")
-  .post(validateBody(AuthSchemas.resetPassword), AuthController.resetPassword)
+  .post(validateBody(authSchemas.resetPassword), AuthController.resetPassword)
   .all(methodNotAllowed);
 
 router
@@ -62,6 +62,41 @@ router
 router
   .route("/google/callback")
   .get(AuthController.googleCallback)
+  .all(methodNotAllowed);
+
+//Updates
+router
+  .route("/profile/personal-info")
+  .patch(
+    isAuth,
+    validateBody(authSchemas.updatePersonalInfo),
+    AuthController.updatePersonalInfo
+  )
+  .all(methodNotAllowed);
+
+router
+  .route("/profile/guarantor")
+  .patch(isAuth, AuthController.updateEmployment)
+  .all(methodNotAllowed);
+
+router
+  .route("/profile/guarantor")
+  .patch(isAuth, AuthController.updateDocuments)
+  .all(methodNotAllowed);
+
+router
+  .route("/profile/next-of-kin")
+  .patch(isAuth, AuthController.updateNextOfKin)
+  .all(methodNotAllowed);
+
+router
+  .route("/profile/guarantor")
+  .patch(isAuth, AuthController.updateGuarantor)
+  .all(methodNotAllowed);
+
+router
+  .route("/profile/notifications")
+  .patch(isAuth, AuthController.updateNotification)
   .all(methodNotAllowed);
 
 export default router;

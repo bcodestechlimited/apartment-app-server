@@ -1,10 +1,11 @@
 import type { ObjectId } from "mongoose";
 import { ApiError, ApiSuccess } from "../../utils/responseHandler";
 import { hashPassword } from "../../utils/validationUtils";
-import type { IUser, updateUserDTO } from "./user.interface";
-import User from "./user.model";
+import type { IPersonalInfo, IUser, updateUserDTO } from "./user.interface";
+import User from "./model/user.model";
 import type { IQueryParams } from "@/shared/interfaces/query.interface";
 import { paginate } from "@/utils/paginate";
+import PersonalInfo from "./model/profile/user.personal-info";
 
 class UserService {
   static async createUser(userData: Partial<IUser>): Promise<IUser> {
@@ -113,6 +114,27 @@ class UserService {
   static async getUserById(userId: string) {
     const user = await this.findUserById(userId);
     return ApiSuccess.ok("User retrieved successfully", { user });
+  }
+
+  //Profile
+  static async updateUserInformation(
+    userId: ObjectId,
+    userData: Partial<updateUserDTO>
+  ): Promise<IPersonalInfo> {
+    let personalInfo = await PersonalInfo.findOneAndUpdate(
+      { _id: userId },
+      userData,
+      {
+        // new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!personalInfo) {
+      personalInfo = await PersonalInfo.create({ ...userData, user: userId });
+    }
+
+    return personalInfo;
   }
 }
 
