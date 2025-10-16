@@ -64,9 +64,10 @@ router
   .get(AuthController.googleCallback)
   .all(methodNotAllowed);
 
-//Updates
+// Profile
 router
   .route("/profile/personal-info")
+  .get(isAuth, AuthController.getPersonalInfo)
   .patch(
     isAuth,
     validateBody(authSchemas.updatePersonalInfo),
@@ -75,28 +76,53 @@ router
   .all(methodNotAllowed);
 
 router
-  .route("/profile/guarantor")
-  .patch(isAuth, AuthController.updateEmployment)
+  .route("/profile/employment")
+  .get(isAuth, AuthController.getUserEmployment)
+  .patch(
+    isAuth,
+    validateBody(authSchemas.updateUserEmployment),
+    AuthController.updateUserEmployment
+  )
   .all(methodNotAllowed);
 
-router
-  .route("/profile/guarantor")
-  .patch(isAuth, AuthController.updateDocuments)
-  .all(methodNotAllowed);
+// router
+//   .route("/profile/documents")
+//   .get(isAuth, AuthController.getUserEmployment)
+//   .patch(
+//     isAuth,
+//     validateBody(authSchemas.updateUserEmployment),
+//     AuthController.updateUserEmployment
+//   )
+//   .all(methodNotAllowed);
 
 router
   .route("/profile/next-of-kin")
-  .patch(isAuth, AuthController.updateNextOfKin)
+  .get(isAuth, AuthController.getUserNextOfKin)
+  .patch(
+    isAuth,
+    validateBody(authSchemas.updateNextOfKin),
+    AuthController.updateUserNextOfKin
+  )
   .all(methodNotAllowed);
 
 router
   .route("/profile/guarantor")
-  .patch(isAuth, AuthController.updateGuarantor)
+  .get(isAuth, AuthController.getUserGuarantor)
+  .patch(
+    isAuth,
+    validateBody(authSchemas.updateNextOfKin),
+    AuthController.updateUserGuarantor
+  )
   .all(methodNotAllowed);
 
-router
-  .route("/profile/notifications")
-  .patch(isAuth, AuthController.updateNotification)
-  .all(methodNotAllowed);
+// router
+//   .route("/profile/notification")
+//   .get(isAuth, AuthController.getUserGuarantor)
+//   .patch(
+//     isAuth,
+//     validateBody(authSchemas.updateNextOfKin),
+//     AuthController.updateUserGuarantor
+//   )
+//   .all(methodNotAllowed);
 
 export default router;

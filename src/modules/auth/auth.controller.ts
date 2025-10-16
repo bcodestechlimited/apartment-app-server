@@ -125,7 +125,12 @@ export class AuthController {
     res.status(200).json(result);
   }
 
-  //Profile
+  // Profile - Personal Info
+  static async getPersonalInfo(req: Request, res: Response) {
+    const { userId } = req.user as AuthenticatedUser;
+    const result = await AuthService.getUserPersonalInfo(userId);
+    res.status(200).json(result);
+  }
   static async updatePersonalInfo(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
@@ -133,73 +138,42 @@ export class AuthController {
     res.status(200).json(result);
   }
 
-  static async updateEmployment(req: Request, res: Response) {
+  // Profile - Employment
+  static async getUserEmployment(req: Request, res: Response) {
+    const { userId } = req.user as AuthenticatedUser;
+    const result = await AuthService.getUserEmployment(userId);
+    res.status(200).json(result);
+  }
+  static async updateUserEmployment(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
-    const files = req.files as
-      | { document?: UploadedFile; avatar?: UploadedFile }
-      | undefined;
-    const result = await AuthService.updateUserEmployment(
-      userId,
-      userData,
-      files
-    );
+    const result = await AuthService.updateUserEmployment(userId, userData);
     res.status(200).json(result);
   }
 
-  static async updateDocuments(req: Request, res: Response) {
+  // Profile - Next Of Kin
+  static async getUserNextOfKin(req: Request, res: Response) {
+    const { userId } = req.user as AuthenticatedUser;
+    const result = await AuthService.getUserNextOfKin(userId);
+    res.status(200).json(result);
+  }
+  static async updateUserNextOfKin(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
-    const files = req.files as
-      | { document?: UploadedFile; avatar?: UploadedFile }
-      | undefined;
-    const result = await AuthService.updateUserDocuments(
-      userId,
-      userData,
-      files
-    );
+    const result = await AuthService.updateUserNextOfKin(userId, userData);
     res.status(200).json(result);
   }
 
-  static async updateNextOfKin(req: Request, res: Response) {
+  // Profile - Guarantor
+  static async getUserGuarantor(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
-    const userData = req.body;
-    const files = req.files as
-      | { document?: UploadedFile; avatar?: UploadedFile }
-      | undefined;
-    const result = await AuthService.updateUserNextOfKin(
-      userId,
-      userData,
-      files
-    );
+    const result = await AuthService.getUserGuarantor(userId);
     res.status(200).json(result);
   }
-
-  static async updateGuarantor(req: Request, res: Response) {
+  static async updateUserGuarantor(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
-    const files = req.files as
-      | { document?: UploadedFile; avatar?: UploadedFile }
-      | undefined;
-    const result = await AuthService.updateUserGuarantor(
-      userId,
-      userData,
-      files
-    );
-    res.status(200).json(result);
-  }
-
-  static async updateNotification(req: Request, res: Response) {
-    const { userId } = req.user as AuthenticatedUser;
-    const userData = req.body;
-    const files = req.files as
-      | { document?: UploadedFile; avatar?: UploadedFile }
-      | undefined;
-    const result = await AuthService.updateUserNotification(
-      userId,
-      userData,
-      files
-    );
+    const result = await AuthService.updateUserEmployment(userId, userData);
     res.status(200).json(result);
   }
 }

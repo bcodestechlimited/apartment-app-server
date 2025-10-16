@@ -4,13 +4,15 @@ import type { IEmployment } from "../../user.interface";
 const employmentSchema: Schema<IEmployment> = new Schema(
   {
     user: { type: Types.ObjectId, ref: "User", required: true },
-    employmentStatus: { type: String, required: true },
-    companyName: { type: String, required: true },
-    jobTitle: { type: String, required: true },
-    monthlyIncome: { type: Number, required: true },
-    companyAddress: { type: String, required: true },
+    employmentStatus: { type: String, default: "" },
+    companyName: { type: String, default: "" },
+    jobTitle: { type: String, default: "" },
+    monthlyIncome: { type: String, default: "" },
+    companyAddress: { type: String, default: "" },
   },
   { timestamps: true }
 );
 
-export const Employment = model("Employment", employmentSchema);
+const Employment = model("Employment", employmentSchema);
+
+export default Employment;

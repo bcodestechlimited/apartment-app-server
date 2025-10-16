@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 import type { IUser } from "../user.interface";
 
 const UserSchema: Schema<IUser> = new Schema(
@@ -34,25 +34,25 @@ const UserSchema: Schema<IUser> = new Schema(
       trim: true,
       select: false,
     },
-    documents: {
-      type: [
-        {
-          type: {
-            type: String,
-            required: true,
-          },
-          url: {
-            type: String,
-            required: true,
-          },
-          createdAt: {
-            type: Date,
-            default: Date.now,
-          },
-        },
-      ],
-      default: [],
-    },
+    // documents: {
+    //   type: [
+    //     {
+    //       type: {
+    //         type: String,
+    //         required: true,
+    //       },
+    //       url: {
+    //         type: String,
+    //         required: true,
+    //       },
+    //       createdAt: {
+    //         type: Date,
+    //         default: Date.now,
+    //       },
+    //     },
+    //   ],
+    //   default: [],
+    // },
     preferences: {
       type: [String],
       default: [],
@@ -106,6 +106,58 @@ const UserSchema: Schema<IUser> = new Schema(
       type: String,
       unique: true,
       sparse: true, // allows multiple nulls
+    },
+    personalInfo: {
+      type: Types.ObjectId,
+      ref: "PersonalInfo",
+      unique: true,
+    },
+    employment: {
+      type: Types.ObjectId,
+      ref: "Employment",
+      unique: true,
+    },
+    documents: {
+      type: [
+        {
+          user: {
+            type: Types.ObjectId,
+            ref: "User",
+          },
+          name: {
+            type: String,
+          },
+          fileUrl: {
+            type: String,
+          },
+          mimeType: {
+            type: String,
+          },
+          uploadedAt: {
+            type: Date,
+            default: Date.now,
+          },
+          createdAt: {
+            type: Date,
+            default: Date.now,
+          },
+        },
+      ],
+    },
+    guarantor: {
+      type: Types.ObjectId,
+      ref: "Guarantor",
+      unique: true,
+    },
+    nextOfKin: {
+      type: Types.ObjectId,
+      ref: "NextOfKin",
+      unique: true,
+    },
+    notificationPreference: {
+      type: Types.ObjectId,
+      ref: "NotificationPreference",
+      unique: true,
     },
   },
   {

@@ -4,15 +4,19 @@ import type { IPersonalInfo } from "../../user.interface";
 const personalInfoSchema: Schema<IPersonalInfo> = new Schema(
   {
     user: { type: Types.ObjectId, ref: "User", required: true },
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
-    email: { type: String, required: true },
-    phoneNumber: { type: String, required: true },
-    gender: { type: String, enum: ["male", "female", "other"], required: true },
-    dob: { type: String, required: true },
-    address: { type: String, required: true },
-    state: { type: String, required: true },
-    city: { type: String, required: true },
+    firstName: { type: String, default: "" },
+    lastName: { type: String, default: "" },
+    email: { type: String, default: "" },
+    phoneNumber: { type: String, default: "" },
+    gender: {
+      type: String,
+      enum: ["male", "female", "other", ""],
+      default: "",
+    },
+    dob: { type: String, default: "" },
+    address: { type: String, default: "" },
+    state: { type: String, default: "" },
+    city: { type: String, default: "" },
   },
   { timestamps: true }
 );

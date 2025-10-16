@@ -196,11 +196,13 @@ export class AuthService {
   }
 
   //Profile
-  static async updateUserPersonalInfo(
-    userId: ObjectId,
-    userData: Partial<updateUserDTO>
-  ) {
-
+  static async getUserPersonalInfo(userId: ObjectId) {
+    const personalInfo = await UserService.getUserPersonalInfo(userId);
+    return ApiSuccess.ok("Personal info retrieved successfully", {
+      personalInfo,
+    });
+  }
+  static async updateUserPersonalInfo(userId: ObjectId, userData: any) {
     const personalInfo = await UserService.updateUserInformation(
       userId,
       userData
@@ -211,41 +213,57 @@ export class AuthService {
     });
   }
 
-  static async updateUserEmployment(
-    userId: ObjectId,
-    userData: Partial<updateUserDTO>,
-    files?: { document?: UploadedFile; avatar?: UploadedFile }
-  ) {
-    const UpdatedUserData = {
-      ...userData,
-    };
-
-    if (files && files.document) {
-      const { document } = files;
-      const { secure_url, resource_type } =
-        await UploadService.uploadToCloudinary(document.tempFilePath);
-
-      UpdatedUserData.document = {
-        type: resource_type === "image" ? "image" : "file",
-        url: secure_url as string,
-      };
-    }
-
-    if (files && files.avatar) {
-      const { secure_url } = await UploadService.uploadToCloudinary(
-        files.avatar.tempFilePath
-      );
-      UpdatedUserData.avatar = secure_url as string;
-    }
-
-    console.log({ UpdatedUserData, files });
-
-    const user = await UserService.updateUser(userId, UpdatedUserData);
-    user.password = undefined;
-    return ApiSuccess.ok("Profile Updated Successfully", {
-      user,
+  //Employment
+  static async getUserEmployment(userId: ObjectId) {
+    const userEmployment = await UserService.getUserEmployment(userId);
+    return ApiSuccess.ok("User employment retrieved successfully", {
+      employment: userEmployment,
     });
   }
+
+  static async updateUserEmployment(userId: ObjectId, userData: any) {
+    const userEmployment = await UserService.updateUserEmployment(
+      userId,
+      userData
+    );
+
+    return ApiSuccess.ok("User employment Updated Successfully", {
+      userEmployment,
+    });
+  }
+
+  //Next Of Kin
+  static async getUserNextOfKin(userId: ObjectId) {
+    const nextOfKin = await UserService.getUserNextOfKin(userId);
+    return ApiSuccess.ok("User next of kin retrieved successfully", {
+      employment: nextOfKin,
+    });
+  }
+
+  static async updateUserNextOfKin(userId: ObjectId, userData: any) {
+    const nextOfKin = await UserService.updateUserNextOfKin(userId, userData);
+
+    return ApiSuccess.ok("User next of kin Updated Successfully", {
+      nextOfKin,
+    });
+  }
+
+  //Guarantor
+  static async getUserGuarantor(userId: ObjectId) {
+    const guarantor = await UserService.getUserGuarantor(userId);
+    return ApiSuccess.ok("User guarantor retrieved successfully", {
+      guarantor,
+    });
+  }
+
+  static async updateUserGuarantor(userId: ObjectId, userData: any) {
+    const guarantor = await UserService.updateUserGuarantor(userId, userData);
+
+    return ApiSuccess.ok("User guarantor Updated Successfully", {
+      guarantor,
+    });
+  }
+
   static async updateUserDocuments(
     userId: ObjectId,
     userData: Partial<updateUserDTO>,
@@ -281,76 +299,7 @@ export class AuthService {
       user,
     });
   }
-  static async updateUserNextOfKin(
-    userId: ObjectId,
-    userData: Partial<updateUserDTO>,
-    files?: { document?: UploadedFile; avatar?: UploadedFile }
-  ) {
-    const UpdatedUserData = {
-      ...userData,
-    };
 
-    if (files && files.document) {
-      const { document } = files;
-      const { secure_url, resource_type } =
-        await UploadService.uploadToCloudinary(document.tempFilePath);
-
-      UpdatedUserData.document = {
-        type: resource_type === "image" ? "image" : "file",
-        url: secure_url as string,
-      };
-    }
-
-    if (files && files.avatar) {
-      const { secure_url } = await UploadService.uploadToCloudinary(
-        files.avatar.tempFilePath
-      );
-      UpdatedUserData.avatar = secure_url as string;
-    }
-
-    console.log({ UpdatedUserData, files });
-
-    const user = await UserService.updateUser(userId, UpdatedUserData);
-    user.password = undefined;
-    return ApiSuccess.ok("Profile Updated Successfully", {
-      user,
-    });
-  }
-  static async updateUserGuarantor(
-    userId: ObjectId,
-    userData: Partial<updateUserDTO>,
-    files?: { document?: UploadedFile; avatar?: UploadedFile }
-  ) {
-    const UpdatedUserData = {
-      ...userData,
-    };
-
-    if (files && files.document) {
-      const { document } = files;
-      const { secure_url, resource_type } =
-        await UploadService.uploadToCloudinary(document.tempFilePath);
-
-      UpdatedUserData.document = {
-        type: resource_type === "image" ? "image" : "file",
-        url: secure_url as string,
-      };
-    }
-
-    if (files && files.avatar) {
-      const { secure_url } = await UploadService.uploadToCloudinary(
-        files.avatar.tempFilePath
-      );
-      UpdatedUserData.avatar = secure_url as string;
-    }
-
-    console.log({ UpdatedUserData, files });
-
-    const user = await UserService.updateUser(userId, UpdatedUserData);
-    user.password = undefined;
-    return ApiSuccess.ok("Profile Updated Successfully", {
-      user,
-    });
-  }
   static async updateUserNotification(
     userId: ObjectId,
     userData: Partial<updateUserDTO>,

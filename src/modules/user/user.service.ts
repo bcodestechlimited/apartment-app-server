@@ -1,11 +1,21 @@
 import type { ObjectId } from "mongoose";
 import { ApiError, ApiSuccess } from "../../utils/responseHandler";
 import { hashPassword } from "../../utils/validationUtils";
-import type { IPersonalInfo, IUser, updateUserDTO } from "./user.interface";
+import type {
+  IEmployment,
+  IGuarantor,
+  INextOfKin,
+  IPersonalInfo,
+  IUser,
+  updateUserDTO,
+} from "./user.interface";
 import User from "./model/user.model";
 import type { IQueryParams } from "@/shared/interfaces/query.interface";
 import { paginate } from "@/utils/paginate";
 import PersonalInfo from "./model/profile/user.personal-info";
+import Employment from "./model/profile/user.employment.model";
+import NextOfKin from "./model/profile/user.next-of-kin.model";
+import Guarantor from "./model/profile/user.guarantor.model";
 
 class UserService {
   static async createUser(userData: Partial<IUser>): Promise<IUser> {
@@ -116,13 +126,23 @@ class UserService {
     return ApiSuccess.ok("User retrieved successfully", { user });
   }
 
-  //Profile
+  // Personal Info
+  static async getUserPersonalInfo(userId: ObjectId): Promise<IPersonalInfo> {
+    let personalInfo = await PersonalInfo.findOne({ user: userId });
+
+    if (!personalInfo) {
+      personalInfo = await PersonalInfo.create({ user: userId });
+    }
+
+    return personalInfo;
+  }
+
   static async updateUserInformation(
     userId: ObjectId,
-    userData: Partial<updateUserDTO>
+    userData: any
   ): Promise<IPersonalInfo> {
     let personalInfo = await PersonalInfo.findOneAndUpdate(
-      { _id: userId },
+      { user: userId },
       userData,
       {
         // new: true,
@@ -132,9 +152,121 @@ class UserService {
 
     if (!personalInfo) {
       personalInfo = await PersonalInfo.create({ ...userData, user: userId });
+      const user = await this.findUserById(userId);
+      user.personalInfo = personalInfo._id;
+      await user.save();
     }
 
     return personalInfo;
+  }
+
+  // Employment
+  static async getUserEmployment(userId: ObjectId): Promise<IEmployment> {
+    let userEmployment = await Employment.findOne({ user: userId });
+
+    if (!userEmployment) {
+      userEmployment = await Employment.create({ user: userId });
+    }
+
+    return userEmployment;
+  }
+
+  static async updateUserEmployment(
+    userId: ObjectId,
+    userData: any
+  ): Promise<IEmployment> {
+    console.log({ userId, userData });
+
+    let employment = await Employment.findOneAndUpdate(
+      { user: userId },
+      userData,
+      {
+        // new: true,
+        runValidators: true,
+      }
+    );
+
+    console.log({ employment });
+
+    if (!employment) {
+      employment = await Employment.create({ ...userData, user: userId });
+      const user = await this.findUserById(userId);
+      user.employment = employment._id;
+      await user.save();
+    }
+
+    return employment;
+  }
+
+  // Next Of Kin
+  static async getUserNextOfKin(userId: ObjectId): Promise<INextOfKin> {
+    let nextOfKin = await NextOfKin.findOne({ user: userId });
+
+    if (!nextOfKin) {
+      nextOfKin = await NextOfKin.create({ user: userId });
+    }
+
+    return nextOfKin;
+  }
+
+  static async updateUserNextOfKin(
+    userId: ObjectId,
+    userData: any
+  ): Promise<INextOfKin> {
+
+    let nextOfKin = await NextOfKin.findOneAndUpdate(
+      { user: userId },
+      userData,
+      {
+        // new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!nextOfKin) {
+      nextOfKin = await NextOfKin.create({ ...userData, user: userId });
+      const user = await this.findUserById(userId);
+      user.nextOfKin = nextOfKin._id;
+      await user.save();
+    }
+
+    return nextOfKin;
+  }
+
+  // Guarantor
+  static async getUserGuarantor(userId: ObjectId): Promise<IGuarantor> {
+    let userGuarantor = await Guarantor.findOne({ user: userId });
+
+    if (!userGuarantor) {
+      userGuarantor = await Guarantor.create({ user: userId });
+    }
+
+    return userGuarantor;
+  }
+
+  static async updateUserGuarantor(
+    userId: ObjectId,
+    userData: any
+  ): Promise<IGuarantor> {
+    console.log({ userId, userData });
+
+    let userGuarantor = await Guarantor.findOneAndUpdate(
+      { user: userId },
+      userData,
+      {
+        // new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!userGuarantor) {
+      userGuarantor = await Guarantor.create({ ...userData, user: userId });
+      const user = await this.findUserById(userId);
+      user.guarantor = userGuarantor._id;
+      await user.save();
+    }
+
+    return userGuarantor;
   }
 }
 

@@ -187,24 +187,20 @@ class AuthSchemas {
     })
     .strict();
 
-  updateEmployment = z
+  updateUserEmployment = z
     .object({
       employmentStatus: z.string({ required_error: "Job title is required" }),
       companyName: z.string({ required_error: "Employer is required" }),
-      jobTitle: z.date({ required_error: "Start date is required" }),
-      monthlyIncome: z.date({ required_error: "End date is required" }),
+      jobTitle: z.string({ required_error: "Job title is required" }),
+      monthlyIncome: z.string({ required_error: "Monthly income is required" }),
       companyAddress: z.string({ required_error: "Description is required" }),
     })
     .strict();
 
   updateNextOfKin = z
     .object({
-      firstName: z
-        .string({ required_error: "First name is required" })
-        .email("Please provide a valid email address"),
-      lastName: z
-        .string({ required_error: "Last name is required" })
-        .email("Please provide a valid email address"),
+      firstName: z.string({ required_error: "First name is required" }),
+      lastName: z.string({ required_error: "Last name is required" }),
       email: z
         .string({ required_error: "Email is required" })
         .email("Please provide a valid email address"),
@@ -214,8 +210,7 @@ class AuthSchemas {
           /^(0)(7|8|9){1}(0|1){1}[0-9]{8}$/,
           "Please provide a valid Nigerian phone number"
         ),
-
-      relationship: z.string({ required_error: "City is required" }),
+      relationship: z.string({ required_error: "Relationship is required" }),
     })
     .strict();
 
@@ -236,7 +231,6 @@ class AuthSchemas {
           /^(0)(7|8|9){1}(0|1){1}[0-9]{8}$/,
           "Please provide a valid Nigerian phone number"
         ),
-
       relationship: z.string({ required_error: "City is required" }),
     })
     .strict();

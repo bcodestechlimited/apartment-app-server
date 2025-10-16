@@ -1,4 +1,4 @@
-import type { Document, ObjectId } from "mongoose";
+import type { Document, ObjectId, Types } from "mongoose";
 
 export type UserRolesEnum = ("user" | "landlord" | "tenant" | "admin")[];
 
@@ -10,7 +10,7 @@ export interface IUser extends Document {
   avatar: string | undefined;
   phoneNumber: string;
   password: string | undefined;
-  documents: { type: string; url: string; createdAt: Date }[] | null;
+  // documents: { type: string; url: string; createdAt: Date }[] | null;
   preferences: string[];
   isActive: boolean;
   isVerified: boolean;
@@ -21,6 +21,12 @@ export interface IUser extends Document {
   provider: string;
   googleId: string | null;
   facebookId: string | null;
+  personalInfo: IPersonalInfo | Types.ObjectId | null;
+  employment: IEmployment | Types.ObjectId | null;
+  documents: IDocument[] | null;
+  guarantor: IGuarantor | Types.ObjectId | null;
+  nextOfKin: INextOfKin | Types.ObjectId | null;
+  notificationPreference: INotificationPreference | Types.ObjectId | null;
 }
 
 export interface updateUserDTO {
@@ -52,7 +58,7 @@ export interface IPersonalInfo {
   lastName: string;
   email: string;
   phoneNumber: string;
-  gender: "male" | "female" | "other";
+  gender: "male" | "female" | "other" | "";
   dob: Date | string;
   address: string;
   state: string;
@@ -67,7 +73,7 @@ export interface IEmployment {
   employmentStatus: string; // e.g., "employed", "self-employed", "unemployed"
   companyName: string;
   jobTitle: string;
-  monthlyIncome: number;
+  monthlyIncome: string;
   companyAddress: string;
 }
 
@@ -90,7 +96,7 @@ export interface INextOfKin {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
+  phoneNumber: string;
   relationship: string; // e.g., "Brother", "Mother", "Friend"
 }
 
