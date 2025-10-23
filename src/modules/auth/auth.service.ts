@@ -22,10 +22,14 @@ import {
 
 export class AuthService {
   static async register(userData: RegisterDTO) {
-    const { email } = userData;
+    const { email, roles } = userData;
+
+    console.log({ roles });
+
     const user = await UserService.createUser({
       ...userData,
       provider: "local",
+      roles: roles,
     });
 
     await user.save();
@@ -166,9 +170,13 @@ export class AuthService {
     if (user.isVerified) {
       return ApiSuccess.ok("User Already Verified");
     }
+
+    console.log({ email, otp });
+
     const otpExists = await OTP.findOne({ email, otp });
+    console.log({ otpExists });
     if (!otpExists) {
-      throw ApiError.badRequest("Invalid or Expired OTP");
+      throw ApiError.notFound("Invalid or Expired OTP");
     }
     user.isVerified = true;
     await user.save();

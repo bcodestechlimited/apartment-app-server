@@ -19,7 +19,8 @@ import Guarantor from "./model/profile/user.guarantor.model";
 
 class UserService {
   static async createUser(userData: Partial<IUser>): Promise<IUser> {
-    const { firstName, lastName, password, email, avatar, provider } = userData;
+    const { firstName, lastName, password, email, avatar, provider, roles } =
+      userData;
 
     if (provider === "google") {
       const googleUser = new User(userData);
@@ -35,6 +36,8 @@ class UserService {
       email,
       password: hashedPassword,
       avatar: avatar || undefined,
+      provider: provider || "local",
+      roles: roles,
     });
 
     await user.save();
@@ -213,7 +216,6 @@ class UserService {
     userId: ObjectId,
     userData: any
   ): Promise<INextOfKin> {
-
     let nextOfKin = await NextOfKin.findOneAndUpdate(
       { user: userId },
       userData,

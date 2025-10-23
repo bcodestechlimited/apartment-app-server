@@ -21,7 +21,7 @@ router
 
 router
   .route("/signup")
-  .post(validateBody(userSchema), AuthController.register)
+  .post(validateBody(authSchemas.register), AuthController.register)
   .all(methodNotAllowed);
 
 router

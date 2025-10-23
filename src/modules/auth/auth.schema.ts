@@ -1,17 +1,37 @@
 import type { NextFunction, Request, Response } from "express";
 import * as z from "zod";
 import { ApiError } from "../../utils/responseHandler";
-import type { FileArray, UploadedFile } from "express-fileupload";
+import type { UploadedFile } from "express-fileupload";
 
 class AuthSchemas {
   register = z
     .object({
+      firstName: z
+        .string({ required_error: "First name is required" })
+        .min(2, "First name must be at least 2 characters long"),
+      lastName: z
+        .string({ required_error: "Last name is required" })
+        .min(2, "Last name must be at least 2 characters long"),
       email: z
         .string({ required_error: "Email is required" })
         .email("Please provide a valid email address"),
+      phoneNumber: z
+        .string({ required_error: "Phone number is required" })
+        .regex(
+          /^(0)(7|8|9){1}(0|1){1}[0-9]{8}$/,
+          "Please provide a valid Nigerian phone number"
+        ),
       password: z
         .string({ required_error: "Password is required" })
         .min(5, "Password must be at least 5 characters long"),
+      roles: z
+        .array(z.string())
+        .nonempty("Please provide at least one role")
+        .refine(
+          (roles) =>
+            roles.some((role) => ["tenant", "landlord"].includes(role)),
+          "Please provide a valid role (tenant or landlord)"
+        ),
     })
     .strict();
 

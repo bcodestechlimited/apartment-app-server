@@ -3,7 +3,7 @@ import logger from "../utils/logger";
 import { mailService } from "../services/mail.service";
 
 const MAX_RETRIES = 3;
-const SECONDS = 30;
+const SECONDS = 60;
 
 export interface OTPEmailJobData {
   email: string;
