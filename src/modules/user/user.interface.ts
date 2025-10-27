@@ -44,7 +44,7 @@ export interface updateUserDTO {
 }
 
 export interface AuthenticatedUser {
-  userId: ObjectId;
+  userId: Types.ObjectId;
   roles: UserRolesEnum;
   email?: string;
 }
