@@ -24,6 +24,9 @@ import messageRoutes from "./modules/message/message.routes";
 import webookRoutes from "./modules/webhook/webhook.routes";
 import adminRoutes from "./modules/admin/admin.routes";
 import { initializeSocket } from "./lib/socket";
+import landlordRatingRouter from "./modules/landlord-rating/landlord-rating.routes";
+import propertyRatingRouter from "./modules/property-rating/property-rating.routes";
+import tenantRatingRouter from "./modules/tenant-rating/tenant-rating.routes";
 
 const app = express();
 const server = createServer(app);
@@ -68,6 +71,9 @@ app.use("/api/v1/tenants", tenantRoutes);
 app.use("/api/v1/message", messageRoutes);
 app.use("/api/v1/webhook", webookRoutes);
 app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/landlord-rating", landlordRatingRouter);
+app.use("/api/v1/property-rating", propertyRatingRouter);
+app.use("/api/v1/tenant-rating", tenantRatingRouter);
 
 // Admin routes
 
