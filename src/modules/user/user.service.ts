@@ -2,6 +2,7 @@ import type { ObjectId } from "mongoose";
 import { ApiError, ApiSuccess } from "../../utils/responseHandler";
 import { hashPassword } from "../../utils/validationUtils";
 import type {
+  IDocument,
   IEmployment,
   IGuarantor,
   INextOfKin,
@@ -16,6 +17,9 @@ import PersonalInfo from "./model/profile/user.personal-info";
 import Employment from "./model/profile/user.employment.model";
 import NextOfKin from "./model/profile/user.next-of-kin.model";
 import Guarantor from "./model/profile/user.guarantor.model";
+import { Document } from "./model/profile/user.document.model";
+import type { UploadedFile } from "express-fileupload";
+import { UploadService } from "@/services/upload.service";
 
 class UserService {
   static async createUser(userData: Partial<IUser>): Promise<IUser> {
@@ -199,6 +203,50 @@ class UserService {
     }
 
     return employment;
+  }
+
+  // Documents
+  static async getUserDocuments(userId: ObjectId): Promise<IDocument[]> {
+    let userDocuments = await Document.find({ user: userId }).sort({
+      createdAt: -1,
+    });
+
+    return userDocuments;
+  }
+
+  static async uploadUserDocument(
+    userId: ObjectId,
+    files?: { document?: UploadedFile }
+  ): Promise<IDocument[]> {
+    console.log({ userId, files, document: files?.document });
+
+    let payload: Record<string, any> = {
+      user: userId,
+    };
+
+    if (files && files.document) {
+      const { document } = files;
+      const { secure_url } = await UploadService.uploadToCloudinary(
+        document.tempFilePath
+      );
+
+      payload.fileUrl = secure_url as string;
+      payload.uploadedAt = Date.now();
+      payload.name = document?.name.replaceAll(" ", "_") || "Document";
+    }
+
+    console.log({ payload });
+
+    const newDocument = await Document.create({ ...payload, user: userId });
+    const user = await this.findUserById(userId);
+    if (user.documents) {
+      user.documents.push(newDocument._id);
+    } else {
+      user.documents = [newDocument._id];
+    }
+    await user.save();
+
+    return [newDocument];
   }
 
   // Next Of Kin

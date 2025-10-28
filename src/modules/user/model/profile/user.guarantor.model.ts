@@ -7,7 +7,7 @@ const guarantorSchema: Schema<IGuarantor> = new Schema(
     firstName: { type: String, default: "" },
     lastName: { type: String, default: "" },
     email: { type: String, default: "" },
-    phone: { type: String, default: "" },
+    phoneNumber: { type: String, default: "" },
     occupation: { type: String, default: "" },
     workAddress: { type: String, default: "" },
     homeAddress: { type: String, default: "" },

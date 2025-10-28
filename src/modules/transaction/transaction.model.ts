@@ -8,9 +8,14 @@ const TransactionSchema: Schema<ITransaction> = new Schema(
       ref: "User",
       required: true,
     },
+    provider: {
+      type: String,
+      enum: ["paystack", "flutterwave"],
+      required: true,
+    },
     transactionType: {
       type: String,
-      enum: ["credit", "debit"],
+      enum: ["withdrawal", "deposit", "transfer", "payment"],
       required: true,
     },
     amount: {
@@ -68,6 +73,14 @@ TransactionSchema.pre("save", function (next) {
   if (this.adminApproval === "approved" && !this.approvalDate) {
     this.approvalDate = new Date();
   }
+  // if (
+  //   this.transactionType === "payment" ||
+  //   (this.transactionType === "deposit" && this.adminApproval !== "approved") ||
+  //   this.adminApproval === "pending"
+  // ) {
+  //   this.adminApproval = "approved";
+  //   this.approvalDate = new Date();
+  // }
   next();
 });
 

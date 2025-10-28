@@ -240,11 +240,27 @@ export class AuthService {
     });
   }
 
+  //Documents
+  static async getUserDocuments(userId: ObjectId) {
+    const userDocuments = await UserService.getUserDocuments(userId);
+    return ApiSuccess.ok("User documents retrieved successfully", {
+      documents: userDocuments,
+    });
+  }
+
+  static async uploadUserDocument(userId: ObjectId, files: any) {
+    const userEmployment = await UserService.uploadUserDocument(userId, files);
+
+    return ApiSuccess.ok("User employment Updated Successfully", {
+      userEmployment,
+    });
+  }
+
   //Next Of Kin
   static async getUserNextOfKin(userId: ObjectId) {
     const nextOfKin = await UserService.getUserNextOfKin(userId);
     return ApiSuccess.ok("User next of kin retrieved successfully", {
-      employment: nextOfKin,
+      nextOfKin,
     });
   }
 

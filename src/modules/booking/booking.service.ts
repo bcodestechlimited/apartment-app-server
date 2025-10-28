@@ -8,6 +8,7 @@ import { calculateBookingPeriod } from "../../utils/calculationUtils.js";
 import { paginate } from "../../utils/paginate.js";
 import type { IQueryParams } from "../../shared/interfaces/query.interface.js";
 import BookingRequest from "../booking-request/booking-request.model.js";
+import { MessageService } from "../message/message.service.js";
 
 export class BookingService {
   // Create new booking
@@ -69,6 +70,7 @@ export class BookingService {
       endDate,
     });
     await booking.save();
+
     return ApiSuccess.created("Booking created successfully", { booking });
   }
 

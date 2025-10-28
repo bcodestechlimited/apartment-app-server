@@ -458,6 +458,17 @@ export class PropertyService {
 
     return ApiSuccess.ok("Property deleted successfully");
   }
+
+  //Helpers
+
+  static async pullTenantFromPropertyRequestedById(
+    propertyId: string,
+    tenantId: string
+  ) {
+    await Property.findByIdAndUpdate(propertyId, {
+      $pull: { requestedBy: tenantId },
+    });
+  }
 }
 
 export const propertyService = new PropertyService();

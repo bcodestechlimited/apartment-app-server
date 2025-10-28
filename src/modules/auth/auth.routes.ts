@@ -2,7 +2,6 @@ import express from "express";
 import methodNotAllowed from "../../middleware/methodNotAllowed.js";
 import { AuthController } from "./auth.controller.js";
 import { isAuth } from "../../middleware/auth.js";
-import { userSchema } from "../user/user.schema.js";
 import { validateBody } from "../../middleware/validateSchema.js";
 import { authSchemas } from "./auth.schema.js";
 
@@ -85,15 +84,11 @@ router
   )
   .all(methodNotAllowed);
 
-// router
-//   .route("/profile/documents")
-//   .get(isAuth, AuthController.getUserEmployment)
-//   .patch(
-//     isAuth,
-//     validateBody(authSchemas.updateUserEmployment),
-//     AuthController.updateUserEmployment
-//   )
-//   .all(methodNotAllowed);
+router
+  .route("/profile/documents")
+  .get(isAuth, AuthController.getUserDocuments)
+  .post(isAuth, authSchemas.validateDocument, AuthController.uploadUserDocument)
+  .all(methodNotAllowed);
 
 router
   .route("/profile/next-of-kin")
@@ -110,7 +105,7 @@ router
   .get(isAuth, AuthController.getUserGuarantor)
   .patch(
     isAuth,
-    validateBody(authSchemas.updateNextOfKin),
+    validateBody(authSchemas.updateGuarantor),
     AuthController.updateUserGuarantor
   )
   .all(methodNotAllowed);

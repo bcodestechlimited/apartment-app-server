@@ -1,6 +1,9 @@
 import { ApiError, ApiSuccess } from "../../utils/responseHandler.js";
 import type { ObjectId } from "mongoose";
-import { PropertyService } from "../property/property.service.js";
+import {
+  propertyService,
+  PropertyService,
+} from "../property/property.service.js";
 import { PaymentService } from "../../services/payment.service.js";
 import { calculateBookingPeriod } from "../../utils/calculationUtils.js";
 import { paginate } from "../../utils/paginate.js";
@@ -16,6 +19,7 @@ import { TenantService } from "../tenant/tenant.service.js";
 import { formatDate, formatPrettyDate } from "@/utils/formatUtils.js";
 import { scheduleBookingRequestApprovalEmailToTenant } from "@/jobs/sendBookingRequestApproved.js";
 import { MessageService } from "../message/message.service.js";
+import { TransactionService } from "../transaction/transaction.service.js";
 
 export class BookingRequestService {
   // ----------------- Booking Requests -----------------
@@ -55,6 +59,9 @@ export class BookingRequestService {
       { path: "tenant", select: "firstName email" },
       { path: "landlord", select: "firstName email" },
     ]);
+
+    property.requestedBy.push(userId);
+    await property.save();
 
     // Set reminder to notify landlord about the booking request
     await scheduleBookingRequest({
@@ -185,7 +192,7 @@ export class BookingRequestService {
 
       await PropertyService.updateProperty(
         String(bookingRequest.property._id),
-        { isAvailable: false },
+        { isAvailable: false, requestedBy: [] },
         String(bookingRequest.landlord._id)
       );
 
@@ -234,6 +241,11 @@ export class BookingRequestService {
     if (status === "declined") {
       bookingRequest.status = "declined";
       // Notify tenant about the declined request
+
+      await PropertyService.pullTenantFromPropertyRequestedById(
+        String(bookingRequest.property._id),
+        String(bookingRequest.tenant._id)
+      );
 
       await scheduleBookingRequestDeclined({
         tenantEmail: bookingRequest.tenant.email,
@@ -388,6 +400,17 @@ export class BookingRequestService {
       moveInDate: bookingRequest.moveInDate,
       moveOutDate: bookingRequest.moveOutDate,
       isActive: true,
+    });
+
+    //Create Transaction
+    await TransactionService.createTransaction({
+      user: bookingRequest.tenant._id as ObjectId,
+      transactionType: "payment",
+      amount: bookingRequest.netPrice,
+      adminApproval: "approved",
+      approvalDate: new Date(),
+      provider: "paystack",
+      reference: transactionReference,
     });
 
     // Create Chat between tenant and landlord

@@ -236,12 +236,8 @@ class AuthSchemas {
 
   updateGuarantor = z
     .object({
-      firstName: z
-        .string({ required_error: "First name is required" })
-        .email("Please provide a valid email address"),
-      lastName: z
-        .string({ required_error: "Last name is required" })
-        .email("Please provide a valid email address"),
+      firstName: z.string({ required_error: "First name is required" }),
+      lastName: z.string({ required_error: "Last name is required" }),
       email: z
         .string({ required_error: "Email is required" })
         .email("Please provide a valid email address"),
@@ -251,9 +247,48 @@ class AuthSchemas {
           /^(0)(7|8|9){1}(0|1){1}[0-9]{8}$/,
           "Please provide a valid Nigerian phone number"
         ),
-      relationship: z.string({ required_error: "City is required" }),
+      occupation: z.string({ required_error: "Occupation is required" }),
+      workAddress: z.string({ required_error: "Work address is required" }),
+      homeAddress: z.string({ required_error: "Home address is required" }),
     })
     .strict();
+
+  validateDocument = (req: Request, res: Response, next: NextFunction) => {
+    const files = req.files as
+      | {
+          document?: UploadedFile;
+        }
+      | undefined;
+
+    console.log({ files });
+
+    if (!files) {
+      throw ApiError.badRequest("No files uploaded");
+    }
+
+    const document = files.document;
+
+    if (!document) {
+      throw ApiError.badRequest("No document uploaded");
+    }
+
+    // Optional: Validate each file is an image or a document
+    const allowedMimeTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "application/pdf",
+      "text/plain",
+    ];
+
+    if (!allowedMimeTypes.includes(document.mimetype)) {
+      return next(
+        ApiError.badRequest(`Invalid document file type: ${document.mimetype}`)
+      );
+    }
+
+    next();
+  };
 
   updateNotification = z
     .object({

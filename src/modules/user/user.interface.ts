@@ -23,7 +23,7 @@ export interface IUser extends Document {
   facebookId: string | null;
   personalInfo: IPersonalInfo | Types.ObjectId | null;
   employment: IEmployment | Types.ObjectId | null;
-  documents: IDocument[] | null;
+  documents: (Types.ObjectId | IDocument)[];
   guarantor: IGuarantor | Types.ObjectId | null;
   nextOfKin: INextOfKin | Types.ObjectId | null;
   notificationPreference: INotificationPreference | Types.ObjectId | null;
@@ -86,6 +86,7 @@ export interface IDocument {
   fileUrl: string; // URL or path to uploaded document
   mimeType: string;
   uploadedAt: Date;
+  status: "pending" | "verified" | "rejected";
 }
 
 /**
@@ -108,7 +109,7 @@ export interface IGuarantor {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
+  phoneNumber: string;
   occupation: string;
   workAddress: string;
   homeAddress: string;

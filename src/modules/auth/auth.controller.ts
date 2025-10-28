@@ -151,6 +151,19 @@ export class AuthController {
     res.status(200).json(result);
   }
 
+  // Profile - Documents
+  static async getUserDocuments(req: Request, res: Response) {
+    const { userId } = req.user as AuthenticatedUser;
+    const result = await AuthService.getUserDocuments(userId);
+    res.status(200).json(result);
+  }
+  static async uploadUserDocument(req: Request, res: Response) {
+    const { userId } = req.user as AuthenticatedUser;
+    const files = req.files;
+    const result = await AuthService.uploadUserDocument(userId, files);
+    res.status(200).json(result);
+  }
+
   // Profile - Next Of Kin
   static async getUserNextOfKin(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
@@ -173,7 +186,7 @@ export class AuthController {
   static async updateUserGuarantor(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
-    const result = await AuthService.updateUserEmployment(userId, userData);
+    const result = await AuthService.updateUserGuarantor(userId, userData);
     res.status(200).json(result);
   }
 }

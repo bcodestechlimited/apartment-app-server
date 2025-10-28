@@ -118,31 +118,9 @@ const UserSchema: Schema<IUser> = new Schema(
       unique: true,
     },
     documents: {
-      type: [
-        {
-          user: {
-            type: Types.ObjectId,
-            ref: "User",
-          },
-          name: {
-            type: String,
-          },
-          fileUrl: {
-            type: String,
-          },
-          mimeType: {
-            type: String,
-          },
-          uploadedAt: {
-            type: Date,
-            default: Date.now,
-          },
-          createdAt: {
-            type: Date,
-            default: Date.now,
-          },
-        },
-      ],
+      type: [Types.ObjectId],
+      ref: "Document",
+      default: [],
     },
     guarantor: {
       type: Types.ObjectId,

@@ -77,7 +77,6 @@ app.use(errorMiddleware);
 
 const startServer = async () => {
   try {
-    console.log(`Connecting.....`);
     await connectDB();
     server.listen(port, async () => {
       logger.info(`Server is listening on PORT:${port}`);

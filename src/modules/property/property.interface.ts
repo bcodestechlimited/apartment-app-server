@@ -44,8 +44,8 @@ export interface IProperty extends Document {
   numberOfBathrooms?: number;
   // For workspaces
   seatingCapacity?: string;
-  requestedBy: IUser[];
-  bookedBy: IUser[];
+  requestedBy: (IUser | ObjectId)[];
+  bookedBy: (IUser | ObjectId)[];
 }
 
 export interface CreatePropertyDTO {
@@ -92,4 +92,5 @@ export interface UpdatePropertyDTO {
   availability?: string[];
   seatingCapacity?: string;
   existingPictures: string;
+  requestedBy: (IUser | ObjectId)[];
 }

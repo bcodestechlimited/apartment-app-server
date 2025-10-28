@@ -2,8 +2,6 @@ import agenda from "../lib/agenda";
 import type { Job } from "agenda";
 import { mailService } from "../services/mail.service";
 import logger from "../utils/logger";
-import BookingRequest from "../modules/booking-request/booking-request.model";
-import Property from "../modules/property/property.model";
 
 export interface SendPaymentSuccessData {
   landlordName: string;
@@ -44,7 +42,7 @@ export const sendPaymentReceivedToLandlord = async (
       landlordName,
       landlordEmail,
       tenantName,
-      propertyName,
+      propertyTitle: propertyName,
       moveInDate,
       landlordDashboardUrl,
     });
@@ -109,7 +107,7 @@ export const sendPaymentConfirmationToTenant = async (
     const result = await mailService.sendPaymentConfirmationToTenant({
       tenantName,
       tenantEmail,
-      propertyName,
+      propertyTitle: propertyName,
       moveInDate,
       tenantDashboardUrl,
     });
