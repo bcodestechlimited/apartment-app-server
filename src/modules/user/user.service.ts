@@ -1,4 +1,4 @@
-import type { ObjectId } from "mongoose";
+import type { ObjectId, Types } from "mongoose";
 import { ApiError, ApiSuccess } from "../../utils/responseHandler";
 import { hashPassword } from "../../utils/validationUtils";
 import type {
@@ -45,7 +45,7 @@ class UserService {
     return user;
   }
   static async updateUser(
-    userId: ObjectId,
+    userId: Types.ObjectId,
     userData: Partial<updateUserDTO>
   ): Promise<IUser> {
     const { document, preferences, ...otherFields } = userData;
@@ -78,7 +78,7 @@ class UserService {
     }
     return user;
   }
-  static async findUserById(userId: ObjectId | string): Promise<IUser> {
+  static async findUserById(userId: Types.ObjectId | string): Promise<IUser> {
     const user = await User.findById(userId);
 
     if (!user) {
@@ -130,7 +130,9 @@ class UserService {
   }
 
   // Personal Info
-  static async getUserPersonalInfo(userId: ObjectId): Promise<IPersonalInfo> {
+  static async getUserPersonalInfo(
+    userId: Types.ObjectId
+  ): Promise<IPersonalInfo> {
     let personalInfo = await PersonalInfo.findOne({ user: userId });
 
     if (!personalInfo) {
@@ -141,7 +143,7 @@ class UserService {
   }
 
   static async updateUserInformation(
-    userId: ObjectId,
+    userId: Types.ObjectId,
     userData: any
   ): Promise<IPersonalInfo> {
     let personalInfo = await PersonalInfo.findOneAndUpdate(
@@ -175,7 +177,7 @@ class UserService {
   }
 
   static async updateUserEmployment(
-    userId: ObjectId,
+    userId: Types.ObjectId,
     userData: any
   ): Promise<IEmployment> {
     console.log({ userId, userData });
@@ -213,7 +215,7 @@ class UserService {
   }
 
   static async updateUserNextOfKin(
-    userId: ObjectId,
+    userId: Types.ObjectId,
     userData: any
   ): Promise<INextOfKin> {
     let nextOfKin = await NextOfKin.findOneAndUpdate(
@@ -247,7 +249,7 @@ class UserService {
   }
 
   static async updateUserGuarantor(
-    userId: ObjectId,
+    userId: Types.ObjectId,
     userData: any
   ): Promise<IGuarantor> {
     console.log({ userId, userData });

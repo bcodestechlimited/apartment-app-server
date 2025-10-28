@@ -37,4 +37,26 @@ const isAuthAdmin = asyncWrapper(
   }
 );
 
-export { isAuth, isAuthAdmin };
+const isLandlord = asyncWrapper(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { roles } = req.user as AuthenticatedUser;
+
+    if (!roles.includes("landlord")) {
+      throw ApiError.forbidden("You are not authorized to access this route");
+    }
+    next();
+  }
+);
+
+const isTenant = asyncWrapper(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { roles } = req.user as AuthenticatedUser;
+
+    if (!roles.includes("tenant")) {
+      throw ApiError.forbidden("You are not authorized to access this route");
+    }
+    next();
+  }
+);
+
+export { isAuth, isAuthAdmin, isLandlord, isTenant };

@@ -5,6 +5,7 @@ import { WalletController } from "../wallet/wallet.controller";
 import { TransactionController } from "../transaction/transaction.controller";
 import { UserController } from "../user/user.controller";
 import { PropertyController } from "../property/property.controller";
+import { LandlordRatingController } from "../landlord-rating/landlord-rating.controller";
 
 const router = express.Router();
 
@@ -52,6 +53,10 @@ router
 router
   .route("/property/:propertyId")
   .patch(isAuth, isAuthAdmin, PropertyController.adminUpdateProperty)
+  .all(methodNotAllowed);
+router
+  .route("/rating/:landlordId")
+  .get(isAuth, isAuthAdmin, LandlordRatingController.getAllRatings)
   .all(methodNotAllowed);
 
 export default router;

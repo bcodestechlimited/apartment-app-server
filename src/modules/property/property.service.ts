@@ -5,7 +5,7 @@ import {
   type CreatePropertyDTO,
   type UpdatePropertyDTO,
 } from "./property.interface.js";
-import type { ObjectId } from "mongoose";
+import type { ObjectId, Types } from "mongoose";
 import { UploadService } from "../../services/upload.service.js";
 import type { UploadedFile } from "express-fileupload";
 import type { IQueryParams } from "../../shared/interfaces/query.interface.js";
@@ -50,7 +50,7 @@ export class PropertyService {
   static async createProperty(
     propertyData: CreatePropertyDTO,
     files: { pictures: UploadedFile[] },
-    userId: ObjectId
+    userId: Types.ObjectId
   ) {
     const parsedAmenities = JSON.parse(propertyData.amenities);
     const parsedFacilities = JSON.parse(propertyData.facilities);
@@ -250,7 +250,7 @@ export class PropertyService {
   }
 
   static async getLandlordProperties(
-    userId: string | ObjectId,
+    userId: string | Types.ObjectId,
     query: IQueryParams
   ) {
     const { limit = 10, page = 1, type } = query;
@@ -290,7 +290,7 @@ export class PropertyService {
   static async updateProperty(
     propertyId: string,
     updateData: Partial<UpdatePropertyDTO>,
-    userId: ObjectId | string,
+    userId: Types.ObjectId | string,
     files?: { newPictures: UploadedFile | UploadedFile[] }
   ) {
     const { newPictures } = files ?? {};
@@ -442,7 +442,7 @@ export class PropertyService {
   }
 
   // Delete property
-  static async deleteProperty(id: string, userId: ObjectId) {
+  static async deleteProperty(id: string, userId: Types.ObjectId) {
     const property = await Property.findById(id);
     if (!property) {
       throw ApiError.notFound("Property not found");
