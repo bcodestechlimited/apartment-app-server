@@ -1,6 +1,5 @@
 import type { Document, ObjectId } from "mongoose";
 import type { IUser } from "../user/user.interface";
-import type { number } from "zod";
 
 export enum PropertyType {
   SERVICED_APARTMENT = "serviced-apartment",

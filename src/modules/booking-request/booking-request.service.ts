@@ -411,6 +411,7 @@ export class BookingRequestService {
       approvalDate: new Date(),
       provider: "paystack",
       reference: transactionReference,
+      status: "success",
     });
 
     // Create Chat between tenant and landlord

@@ -3,7 +3,7 @@ import { ApiError, ApiSuccess } from "../../utils/responseHandler.js";
 import { paginate } from "../../utils/paginate.js";
 import type { createTransactionDTO } from "./transaction.interface.js";
 import Transaction from "./transaction.model.js";
-import type { ObjectId, PopulateOptions } from "mongoose";
+import type { ObjectId, PopulateOptions, Types } from "mongoose";
 import type { IQueryParams } from "@/shared/interfaces/query.interface.js";
 
 export class TransactionService {
@@ -27,7 +27,10 @@ export class TransactionService {
     return transaction;
   }
 
-  static async getUserTransactions(userId: ObjectId, query: IQueryParams) {
+  static async getUserTransactions(
+    userId: Types.ObjectId,
+    query: IQueryParams
+  ) {
     const { page = 1, limit = 10 } = query;
 
     const filterQuery = { user: userId };

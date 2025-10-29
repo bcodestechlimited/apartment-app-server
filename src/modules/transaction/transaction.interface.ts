@@ -33,4 +33,5 @@ export interface createTransactionDTO {
   description?: string;
   adminApproval?: "pending" | "approved" | "rejected";
   approvalDate?: Date;
+  status?: "success" | "failed" | "pending";
 }
