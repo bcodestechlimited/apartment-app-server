@@ -9,7 +9,7 @@ import UserService from "../user/user.service.js";
 import { comparePassword, hashPassword } from "../../utils/validationUtils.js";
 import { ApiError, ApiSuccess } from "../../utils/responseHandler.js";
 import { generateToken } from "../../config/token.js";
-import type { ObjectId } from "mongoose";
+import type { ObjectId, Types } from "mongoose";
 import agenda from "../../lib/agenda.js";
 import type { updateUserDTO } from "../user/user.interface.js";
 import type { UploadedFile } from "express-fileupload";
@@ -24,8 +24,6 @@ export class AuthService {
   static async register(userData: RegisterDTO) {
     const { email, roles } = userData;
 
-    console.log({ roles });
-
     const user = await UserService.createUser({
       ...userData,
       provider: "local",
@@ -34,12 +32,6 @@ export class AuthService {
 
     await user.save();
     user.password = undefined;
-
-    // const emailInfo = await mailService.sendOTPViaEmail(
-    //   user.email,
-    //   "-"
-    //   // user.firstName
-    // );
 
     agenda.now("send_otp_email", {
       email: user.email,
@@ -54,10 +46,13 @@ export class AuthService {
 
   static async login(userData: LoginDTO) {
     const { email, password } = userData;
+    console.log({ userData });
+
     const user = await UserService.findUserByEmail(email);
     if (user.provider !== "local") {
       throw ApiError.conflict("Unauthorized");
     }
+    console.log({ password, userPassword: user });
     await comparePassword(password, user.password as string);
 
     if (!user.isVerified) {
@@ -108,7 +103,7 @@ export class AuthService {
     return ApiSuccess.ok("Login successful", { user, token });
   }
 
-  static async getUser(userId: ObjectId) {
+  static async getUser(userId: Types.ObjectId) {
     const user = await UserService.findUserById(userId);
     user.password = undefined;
     return ApiSuccess.ok("User Retrieved Successfully", {
@@ -116,7 +111,7 @@ export class AuthService {
     });
   }
   static async updateUser(
-    userId: ObjectId,
+    userId: Types.ObjectId,
     userData: Partial<updateUserDTO>,
     files?: { document?: UploadedFile; avatar?: UploadedFile }
   ) {
@@ -171,10 +166,7 @@ export class AuthService {
       return ApiSuccess.ok("User Already Verified");
     }
 
-    console.log({ email, otp });
-
     const otpExists = await OTP.findOne({ email, otp });
-    console.log({ otpExists });
     if (!otpExists) {
       throw ApiError.notFound("Invalid or Expired OTP");
     }
@@ -204,13 +196,13 @@ export class AuthService {
   }
 
   //Profile
-  static async getUserPersonalInfo(userId: ObjectId) {
+  static async getUserPersonalInfo(userId: Types.ObjectId) {
     const personalInfo = await UserService.getUserPersonalInfo(userId);
     return ApiSuccess.ok("Personal info retrieved successfully", {
       personalInfo,
     });
   }
-  static async updateUserPersonalInfo(userId: ObjectId, userData: any) {
+  static async updateUserPersonalInfo(userId: Types.ObjectId, userData: any) {
     const personalInfo = await UserService.updateUserInformation(
       userId,
       userData
@@ -222,14 +214,14 @@ export class AuthService {
   }
 
   //Employment
-  static async getUserEmployment(userId: ObjectId) {
+  static async getUserEmployment(userId: Types.ObjectId) {
     const userEmployment = await UserService.getUserEmployment(userId);
     return ApiSuccess.ok("User employment retrieved successfully", {
       employment: userEmployment,
     });
   }
 
-  static async updateUserEmployment(userId: ObjectId, userData: any) {
+  static async updateUserEmployment(userId: Types.ObjectId, userData: any) {
     const userEmployment = await UserService.updateUserEmployment(
       userId,
       userData
@@ -241,14 +233,14 @@ export class AuthService {
   }
 
   //Documents
-  static async getUserDocuments(userId: ObjectId) {
+  static async getUserDocuments(userId: Types.ObjectId) {
     const userDocuments = await UserService.getUserDocuments(userId);
     return ApiSuccess.ok("User documents retrieved successfully", {
       documents: userDocuments,
     });
   }
 
-  static async uploadUserDocument(userId: ObjectId, files: any) {
+  static async uploadUserDocument(userId: Types.ObjectId, files: any) {
     const userEmployment = await UserService.uploadUserDocument(userId, files);
 
     return ApiSuccess.ok("User employment Updated Successfully", {
@@ -257,14 +249,14 @@ export class AuthService {
   }
 
   //Next Of Kin
-  static async getUserNextOfKin(userId: ObjectId) {
+  static async getUserNextOfKin(userId: Types.ObjectId) {
     const nextOfKin = await UserService.getUserNextOfKin(userId);
     return ApiSuccess.ok("User next of kin retrieved successfully", {
       nextOfKin,
     });
   }
 
-  static async updateUserNextOfKin(userId: ObjectId, userData: any) {
+  static async updateUserNextOfKin(userId: Types.ObjectId, userData: any) {
     const nextOfKin = await UserService.updateUserNextOfKin(userId, userData);
 
     return ApiSuccess.ok("User next of kin Updated Successfully", {
@@ -273,14 +265,14 @@ export class AuthService {
   }
 
   //Guarantor
-  static async getUserGuarantor(userId: ObjectId) {
+  static async getUserGuarantor(userId: Types.ObjectId) {
     const guarantor = await UserService.getUserGuarantor(userId);
     return ApiSuccess.ok("User guarantor retrieved successfully", {
       guarantor,
     });
   }
 
-  static async updateUserGuarantor(userId: ObjectId, userData: any) {
+  static async updateUserGuarantor(userId: Types.ObjectId, userData: any) {
     const guarantor = await UserService.updateUserGuarantor(userId, userData);
 
     return ApiSuccess.ok("User guarantor Updated Successfully", {
@@ -289,7 +281,7 @@ export class AuthService {
   }
 
   static async updateUserDocuments(
-    userId: ObjectId,
+    userId: Types.ObjectId,
     userData: Partial<updateUserDTO>,
     files?: { document?: UploadedFile; avatar?: UploadedFile }
   ) {
@@ -325,7 +317,7 @@ export class AuthService {
   }
 
   static async updateUserNotification(
-    userId: ObjectId,
+    userId: Types.ObjectId,
     userData: Partial<updateUserDTO>,
     files?: { document?: UploadedFile; avatar?: UploadedFile }
   ) {

@@ -34,6 +34,8 @@ class UserService {
 
     const hashedPassword = await hashPassword(password as string);
 
+    console.log({ hashedPassword });
+
     const user = new User({
       firstName: firstName || "",
       lastName: lastName || "",
@@ -76,7 +78,7 @@ class UserService {
     return user;
   }
   static async findUserByEmail(email: string): Promise<IUser> {
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email }).select("+password")
     if (!user) {
       throw ApiError.notFound("No user with this email");
     }
@@ -170,7 +172,7 @@ class UserService {
   }
 
   // Employment
-  static async getUserEmployment(userId: ObjectId): Promise<IEmployment> {
+  static async getUserEmployment(userId: Types.ObjectId): Promise<IEmployment> {
     let userEmployment = await Employment.findOne({ user: userId });
 
     if (!userEmployment) {
@@ -208,7 +210,7 @@ class UserService {
   }
 
   // Documents
-  static async getUserDocuments(userId: ObjectId): Promise<IDocument[]> {
+  static async getUserDocuments(userId: Types.ObjectId): Promise<IDocument[]> {
     let userDocuments = await Document.find({ user: userId }).sort({
       createdAt: -1,
     });
@@ -217,7 +219,7 @@ class UserService {
   }
 
   static async uploadUserDocument(
-    userId: ObjectId,
+    userId: Types.ObjectId,
     files?: { document?: UploadedFile }
   ): Promise<IDocument[]> {
     console.log({ userId, files, document: files?.document });
@@ -252,7 +254,7 @@ class UserService {
   }
 
   // Next Of Kin
-  static async getUserNextOfKin(userId: ObjectId): Promise<INextOfKin> {
+  static async getUserNextOfKin(userId: Types.ObjectId): Promise<INextOfKin> {
     let nextOfKin = await NextOfKin.findOne({ user: userId });
 
     if (!nextOfKin) {
@@ -286,7 +288,7 @@ class UserService {
   }
 
   // Guarantor
-  static async getUserGuarantor(userId: ObjectId): Promise<IGuarantor> {
+  static async getUserGuarantor(userId: Types.ObjectId): Promise<IGuarantor> {
     let userGuarantor = await Guarantor.findOne({ user: userId });
 
     if (!userGuarantor) {

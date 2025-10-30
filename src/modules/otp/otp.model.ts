@@ -10,6 +10,7 @@ const otpSchema: Schema<IOTP> = new Schema({
   email: {
     type: String,
     required: true,
+    lowercase: true,
   },
   otp: {
     type: String,
