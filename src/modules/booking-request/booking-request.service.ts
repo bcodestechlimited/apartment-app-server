@@ -402,6 +402,11 @@ export class BookingRequestService {
       isActive: true,
     });
 
+    await PropertyService.addToBookedBy(
+      bookingRequest.tenant._id,
+      bookingRequest.property._id
+    );
+
     //Create Transaction
     await TransactionService.createTransaction({
       user: bookingRequest.tenant._id as ObjectId,

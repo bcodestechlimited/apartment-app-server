@@ -22,9 +22,13 @@ propertyRatingRouter
   )
   .get(isAuth, isTenant, PropertyRatingController.getAllRatings);
 
+// propertyRatingRouter
+//   .route("/:ratingId")
+//   .delete(isAuth, PropertyRatingController.deleteRating)
+//   .get(isAuth, PropertyRatingController.getRatingById);
+
 propertyRatingRouter
-  .route("/:ratingId")
-  .delete(isAuth, PropertyRatingController.deleteRating)
-  .get(isAuth, PropertyRatingController.getRatingById);
+  .route("/:propertyId")
+  .get(isAuth, PropertyRatingController.ratingByPropertyId);
 
 export default propertyRatingRouter;

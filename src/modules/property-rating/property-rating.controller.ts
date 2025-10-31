@@ -70,4 +70,12 @@ export class PropertyRatingController {
     const result = await PropertyRatingService.getAllRatings(propertyId, roles);
     res.status(200).json(result);
   }
+
+  static async ratingByPropertyId(req: Request, res: Response) {
+    const { propertyId } = req.params as { propertyId: string };
+    const result = await PropertyRatingService.getRatingByPropertyId(
+      propertyId
+    );
+    res.status(200).json(result);
+  }
 }

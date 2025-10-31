@@ -18,6 +18,7 @@ export class LandlordRatingController {
       rating: rating,
       comment: comment,
     };
+    console.log(newRatingData);
 
     const result = await LandlordRatingService.createRating(newRatingData);
 

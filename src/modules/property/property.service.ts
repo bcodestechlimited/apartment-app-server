@@ -60,6 +60,7 @@ export class PropertyService {
     const isAvailable = new Date(propertyData.availabilityDate) <= new Date();
 
     const { pictures } = files;
+
     const property = new Property({
       ...propertyData,
       seatingCapacity: Number(propertyData.seatingCapacity) || 1,
@@ -457,6 +458,32 @@ export class PropertyService {
     await property.deleteOne();
 
     return ApiSuccess.ok("Property deleted successfully");
+  }
+
+  static async addToBookedBy(
+    userId: ObjectId | string,
+    propertyId: ObjectId | string
+  ) {
+    const property = await Property.findOneAndUpdate(
+      { _id: propertyId },
+      { $addToSet: { bookedBy: userId } },
+      { new: true }
+    );
+    if (!property) {
+      throw ApiError.notFound("Property not found");
+    }
+    return ApiSuccess.ok("Property booked successfully", { property });
+  }
+
+  static async isBookedBy(userId: Types.ObjectId) {
+    console.log({ userId });
+    const isBookedBy = await Property.findOne({
+      bookedBy: { $in: [userId] },
+    });
+    if (!isBookedBy) {
+      return false;
+    }
+    return true;
   }
 
   //Helpers

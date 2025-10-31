@@ -326,14 +326,12 @@ export class PropertySchemas {
 
     const pictures = req.files["pictures"];
 
-    // console.log({ pictures });
-
     // Validate files are present
     if (!pictures || !Array.isArray(pictures)) {
       throw ApiError.badRequest("Pictures are required");
     }
 
-    if (pictures.length <= 1) {
+    if (pictures.length <= 2) {
       throw ApiError.badRequest("Please upload at least three images");
     }
 
