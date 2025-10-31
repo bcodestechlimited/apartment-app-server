@@ -3,6 +3,7 @@ import type { Types } from "mongoose";
 import type { IPropertyRating } from "./property-rating.interface";
 import PropertyRating from "./property-rating.model";
 import UserService from "../user/user.service";
+import { PropertyService } from "../property/property.service";
 
 export class PropertyRatingService {
   static createRating = async (
@@ -13,9 +14,14 @@ export class PropertyRatingService {
     if (!roles.includes("tenant")) {
       throw ApiError.badRequest("Only tenant can rate this property.");
     }
-    const existingUser = await UserService.findUserById(tenantId);
-    if (!existingUser) {
-      throw ApiError.notFound("User not found.");
+    // const existingUser = await UserService.findUserById(tenantId);
+    // if (!existingUser) {
+    //   throw ApiError.notFound("User not found.");
+    // }
+
+    const isBookedBy = await PropertyService.isBookedBy(tenantId);
+    if (!isBookedBy) {
+      throw ApiError.badRequest("This property is not booked by this user.");
     }
 
     const existingRating = await PropertyRating.findOne({
@@ -92,6 +98,13 @@ export class PropertyRatingService {
       throw ApiError.notFound("Unauthorized access.");
     }
 
+    return ApiSuccess.ok("Ratings retrieved successfully", ratings);
+  };
+  static getRatingByPropertyId = async (propertyId: string) => {
+    const ratings = await PropertyRating.find({ propertyId: propertyId });
+    if (ratings.length === 0) {
+      throw ApiError.notFound("No ratings found for this property.");
+    }
     return ApiSuccess.ok("Ratings retrieved successfully", ratings);
   };
 }
