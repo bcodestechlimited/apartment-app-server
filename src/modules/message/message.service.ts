@@ -1,11 +1,11 @@
 import { Message } from "./message.model";
 import { ApiError, ApiSuccess } from "../../utils/responseHandler";
-import type { ObjectId } from "mongoose";
+import type { ObjectId, Types } from "mongoose";
 import Conversation from "./message.model";
 
 export class MessageService {
   // Fetch all conversations for a user
-  static async getUserConversations(userId: string | ObjectId) {
+  static async getUserConversations(userId: string | Types.ObjectId) {
     const conversations = await Conversation.find({
       participants: userId,
     })
@@ -64,7 +64,7 @@ export class MessageService {
     conversationId,
     content,
   }: {
-    senderId: ObjectId | string;
+    senderId: Types.ObjectId | string;
     conversationId: string | ObjectId;
     content: string;
   }) {
@@ -94,13 +94,11 @@ export class MessageService {
 
   // Start or get a conversation between two users
   static async getOrCreateConversation(
-    user1: string | ObjectId,
-    user2: string | ObjectId,
+    user1: string | Types.ObjectId,
+    user2: string | Types.ObjectId,
     content?: string
   ) {
-
     console.log({ user1, user2 });
-    
 
     let conversation = await Conversation.findOne({
       participants: { $all: [user1, user2] },

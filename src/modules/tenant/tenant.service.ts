@@ -3,7 +3,7 @@ import type { IQueryParams } from "../../shared/interfaces/query.interface.js";
 import { paginate } from "../../utils/paginate.js";
 import Tenant from "./tenant.model.js";
 import type { createTenantDTO } from "./tenant.interface.js";
-import type { ObjectId } from "mongoose";
+import type { ObjectId, Types } from "mongoose";
 
 export class TenantService {
   static async createTenant(payload: createTenantDTO) {
@@ -54,7 +54,7 @@ export class TenantService {
   }
 
   static async getLandlordTenants(
-    landlordId: string | ObjectId,
+    landlordId: string | Types.ObjectId,
     query: IQueryParams
   ) {
     const { page, limit } = query;

@@ -1,4 +1,4 @@
-import type { Document, ObjectId } from "mongoose";
+import type { Document, ObjectId, Types } from "mongoose";
 import type { IUser } from "../user/user.interface";
 
 export enum PropertyType {
@@ -43,8 +43,10 @@ export interface IProperty extends Document {
   numberOfBathrooms?: number;
   // For workspaces
   seatingCapacity?: string;
-  requestedBy: (IUser | ObjectId)[];
+  requestedBy: (IUser | Types.ObjectId)[];
   bookedBy: (IUser | ObjectId)[];
+  averageRating: number;
+  totalRatings: number;
 }
 
 export interface CreatePropertyDTO {

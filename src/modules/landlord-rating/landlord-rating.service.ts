@@ -24,14 +24,14 @@ export class LandlordRatingService {
       throw ApiError.notFound("Rating already exists for this user.");
     }
 
-    const newRating = new LandlordRating({
+    const newRating = await LandlordRating.create({
       landlord: landlordId,
       tenant: tenantId,
-      rating: rating,
-      comment: comment,
+      rating,
+      comment,
     });
-
     await newRating.save();
+    await UserService.calculateAVerageRatingonRatingCreated(landlordId, rating);
     return ApiSuccess.created("Rating created successfully", newRating);
   };
 
@@ -49,10 +49,20 @@ export class LandlordRatingService {
     if (!existingRating) {
       throw ApiError.notFound("Rating not found for this user.");
     }
-    existingRating.rating = ratingDetails.rating;
-    existingRating.comment = ratingDetails.comment;
 
+    const landlordId = ratingDetails.landlordId;
+    const oldRating = existingRating.rating;
+    const newRatingValue = ratingDetails.rating ?? oldRating;
+
+    existingRating.rating = newRatingValue;
+    if (ratingDetails.comment) existingRating.comment = ratingDetails.comment;
     await existingRating.save();
+
+    await UserService.calculateAVerageRatingonRatingUpdated(
+      landlordId,
+      oldRating,
+      newRatingValue
+    );
     return ApiSuccess.ok("Rating updated successfully", existingRating);
   };
 
@@ -63,9 +73,18 @@ export class LandlordRatingService {
     if (!existingRating) {
       throw ApiError.notFound("Rating not found for this user.");
     }
+
+    const landlordId = existingRating.landlord._id;
+    const deletedRating = existingRating.rating;
+
     await LandlordRating.deleteOne({
       _id: Id,
     });
+
+    await UserService.calculateAVerageRatingonRatingDeleted(
+      landlordId as string,
+      deletedRating
+    );
 
     return ApiSuccess.ok("Rating deleted successfully");
   };

@@ -1,7 +1,7 @@
 import Booking from "./booking.model.js";
 import { ApiError, ApiSuccess } from "../../utils/responseHandler.js";
 import type { CreateBookingDTO } from "./booking.interface.js";
-import type { ObjectId } from "mongoose";
+import type { ObjectId, Types } from "mongoose";
 import { PropertyService } from "../property/property.service.js";
 import { PaymentService } from "../../services/payment.service.js";
 import { calculateBookingPeriod } from "../../utils/calculationUtils.js";
@@ -12,7 +12,10 @@ import { MessageService } from "../message/message.service.js";
 
 export class BookingService {
   // Create new booking
-  static async createBooking(bookingData: CreateBookingDTO, userId: ObjectId) {
+  static async createBooking(
+    bookingData: CreateBookingDTO,
+    userId: Types.ObjectId
+  ) {
     const { propertyId } = bookingData;
 
     const property = await PropertyService.getPropertyDocumentById(propertyId);
@@ -101,7 +104,7 @@ export class BookingService {
   }
 
   // Get tenant bookings
-  static async getTenantBookings(userId: ObjectId, query: IQueryParams) {
+  static async getTenantBookings(userId: Types.ObjectId, query: IQueryParams) {
     const { page, limit } = query;
     const filterQuery = { tenant: userId };
     const sort = { createdAt: -1 };
@@ -127,7 +130,10 @@ export class BookingService {
   }
 
   // Get landlord bookings
-  static async getLandlordBookings(userId: ObjectId, query: IQueryParams) {
+  static async getLandlordBookings(
+    userId: Types.ObjectId,
+    query: IQueryParams
+  ) {
     const { page, limit } = query;
     const filterQuery = { landlord: userId };
     const sort = { createdAt: -1 };
@@ -163,7 +169,7 @@ export class BookingService {
   }
 
   // Update booking
-  static async updateBooking(id: string, userId: ObjectId) {
+  static async updateBooking(id: string, userId: Types.ObjectId) {
     const booking = await Booking.findById(id);
     if (!booking) {
       throw ApiError.notFound("Booking not found");

@@ -21,6 +21,8 @@ export interface IUser extends Document {
   provider: string;
   googleId: string | null;
   facebookId: string | null;
+  averageRating: number;
+  totalRatings: number;
   personalInfo: IPersonalInfo | Types.ObjectId | null;
   employment: IEmployment | Types.ObjectId | null;
   documents: (Types.ObjectId | IDocument)[];

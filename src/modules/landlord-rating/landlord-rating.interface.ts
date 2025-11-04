@@ -8,6 +8,7 @@ export interface ILandlordRating extends Document {
   rating: number;
   comment: string;
   tenant: IUser;
+  averageRating: number;
 }
 
 export interface ICreateLandlordRatingDto {

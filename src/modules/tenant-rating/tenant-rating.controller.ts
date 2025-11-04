@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import type { AuthenticatedUser } from "../user/user.interface";
 import type { ICreateTenantRatingDto } from "./tenant-rating.interface";
 import { TenantRatingService } from "./tenant-rating.service";
+import type { Types } from "mongoose";
 
 export class TenantRatingController {
   static async createRating(req: Request, res: Response) {
