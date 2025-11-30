@@ -7,6 +7,7 @@ export class TransactionController {
     const { userId } = req.user as AuthenticatedUser;
     const query = req.query;
     const result = await TransactionService.getUserTransactions(userId, query);
+    console.log("User Transactions:", result);
     res.status(200).json(result);
   }
 
@@ -14,6 +15,7 @@ export class TransactionController {
   static async getAllTransactions(req: Request, res: Response) {
     const query = req.query;
     const result = await TransactionService.getAllTransactions(query);
+
     res.status(200).json(result);
   }
 

@@ -36,6 +36,8 @@ export interface IProperty extends Document {
   isDeleted: boolean;
   isVerified: boolean;
   isAvailable: boolean;
+  averageRating: number;
+  totalRatings: number;
   status: string;
   // For standard-rental / serviced-apartment
   availabilityDate: Date;

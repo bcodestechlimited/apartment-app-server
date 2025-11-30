@@ -1,4 +1,4 @@
-import type { Document, ObjectId } from "mongoose";
+import type { Document, ObjectId, Types } from "mongoose";
 
 export interface ITransaction extends Document {
   user: ObjectId;
@@ -22,11 +22,11 @@ export interface ITransaction extends Document {
 }
 
 export interface createTransactionDTO {
-  user: ObjectId;
+  user: Types.ObjectId;
   transactionType: "withdrawal" | "deposit" | "transfer" | "payment";
   amount: number;
   provider: "paystack" | "flutterwave";
-  reference: string;
+  reference?: string;
   bankName?: string;
   bankAccountNumber?: string;
   bankAccountName?: string;

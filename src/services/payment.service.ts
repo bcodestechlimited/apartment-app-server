@@ -6,6 +6,26 @@ import { AxiosError } from "axios";
 import crypto from "crypto";
 import { env } from "../config/env.config";
 
+export interface TransferRecipientInput {
+  type: string;
+  name: string;
+  account_number: string;
+  bank_code: string;
+  currency: CURRENCY;
+}
+
+export enum CURRENCY {
+  NGN = "NGN",
+  USD = "USD",
+}
+
+export interface PaystackDisbursementInput {
+  source: string;
+  reason: string;
+  amount: number;
+  recipient: string;
+}
+
 export class PaymentService {
   static async verifyPaystackSignature(req: Request): Promise<void> {
     const paystackSignature = req.headers["x-paystack-signature"];
@@ -95,6 +115,32 @@ export class PaymentService {
         );
       }
       throw ApiError.internalServerError("Something went wrong");
+    }
+  }
+
+  async transferRecipient(data: TransferRecipientInput) {
+    const res = await paystackClient
+      .post(`/transferrecipient`, { ...data })
+      .then(({ data }) => data)
+      .catch((e) => {
+        return `[Paystack] Error creating transfer recipient: ${e.message}`;
+      });
+    if (res) {
+      return res;
+    }
+  }
+
+  async transferFunds(data: PaystackDisbursementInput) {
+    const res = await paystackClient
+      .post(`/transfer`, { ...data })
+      .then(({ data }) => data)
+      .catch((e) => {
+        throw ApiError.internalServerError(
+          `[Paystack] Error transfering funds: ${e.message}`
+        );
+      });
+    if (res) {
+      return res;
     }
   }
 }

@@ -32,7 +32,7 @@ export class TransactionService {
     query: IQueryParams
   ) {
     const { page = 1, limit = 10 } = query;
-
+    console.log("Fetching transactions for user:", userId);
     const filterQuery = { user: userId };
     const sort = { createdAt: -1 };
     const populateOptions = [
@@ -87,6 +87,17 @@ export class TransactionService {
     );
 
     return ApiSuccess.ok("Transaction retrieved successfully", transaction);
+  }
+
+  static async getTransactionByReference(reference: string) {
+    const populateOptions = [
+      { path: "user", select: ["firstName", "lastName", "email"] },
+    ];
+    const transaction = await Transaction.findOne({ reference });
+    if (!transaction) {
+      throw ApiError.notFound("Transaction not found");
+    }
+    return transaction;
   }
 
   //   static async updateTransaction(

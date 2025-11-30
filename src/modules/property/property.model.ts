@@ -98,6 +98,14 @@ const PropertySchema: Schema<IProperty> = new Schema(
       type: Boolean,
       default: true,
     },
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
+    totalRatings: {
+      type: Number,
+      default: 0,
+    },
     status: {
       type: String,
       enum: ["available", "unavailable"],

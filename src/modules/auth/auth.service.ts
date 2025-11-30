@@ -55,8 +55,9 @@ export class AuthService {
     console.log({ password, userPassword: user });
     await comparePassword(password, user.password as string);
 
-    if (!user.isVerified) {
-      throw ApiError.forbidden("Email Not Verified");
+    if (!user.isEmailVerified) {
+      await this.sendOTP({ email });
+      return ApiSuccess.ok("OTP has been sent to your email", { user });
     }
     const token = generateToken({ userId: user._id, roles: user.roles });
 
@@ -148,7 +149,7 @@ export class AuthService {
 
   static async sendOTP({ email }: { email: string }) {
     const user = await UserService.findUserByEmail(email);
-    if (user.isVerified) {
+    if (user.isEmailVerified) {
       return ApiSuccess.ok("User Already Verified");
     }
 
@@ -162,7 +163,7 @@ export class AuthService {
 
   static async verifyOTP({ email, otp }: OTPData) {
     const user = await UserService.findUserByEmail(email);
-    if (user.isVerified) {
+    if (user.isEmailVerified) {
       return ApiSuccess.ok("User Already Verified");
     }
 
@@ -170,7 +171,7 @@ export class AuthService {
     if (!otpExists) {
       throw ApiError.notFound("Invalid or Expired OTP");
     }
-    user.isVerified = true;
+    user.isEmailVerified = true;
     await user.save();
     return ApiSuccess.ok("Email Verified");
   }

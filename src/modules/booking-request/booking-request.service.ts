@@ -20,6 +20,7 @@ import { formatDate, formatPrettyDate } from "@/utils/formatUtils.js";
 import { scheduleBookingRequestApprovalEmailToTenant } from "@/jobs/sendBookingRequestApproved.js";
 import { MessageService } from "../message/message.service.js";
 import { TransactionService } from "../transaction/transaction.service.js";
+import { WalletService } from "../wallet/wallet.service.js";
 
 export class BookingRequestService {
   // ----------------- Booking Requests -----------------
@@ -39,9 +40,9 @@ export class BookingRequestService {
       throw ApiError.forbidden("Property has been deleted");
     }
 
-    if (new Date(property.availabilityDate) <= new Date()) {
-      throw ApiError.forbidden("Property is still booked at the moment");
-    }
+    // if (new Date(property.availabilityDate) <= new Date()) {
+    //   throw ApiError.forbidden("Property is still booked at the moment");
+    // }
 
     const bookingRequest = await BookingRequest.create({
       tenant: userId,
@@ -375,6 +376,11 @@ export class BookingRequestService {
     bookingRequest.paymentReference = transactionReference;
     await bookingRequest.save();
 
+    const landlordWallet = await WalletService.getWalletByUserId(
+      bookingRequest.landlord._id as string
+    );
+    landlordWallet.balance += bookingRequest.netPrice;
+    await landlordWallet.save();
     // Create the actual booking
     const booking = new Booking({
       tenant: bookingRequest.tenant,

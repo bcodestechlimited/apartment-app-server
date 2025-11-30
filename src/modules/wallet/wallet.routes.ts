@@ -13,8 +13,21 @@ router
     // walletUpdateValidator,
     WalletController.updateUserWallet
   )
+  .post(
+    isAuth,
+    // walletDepositValidator,
+    WalletController.topUpWallet
+  )
   .all(methodNotAllowed);
 
+router
+  .route("/verify-payment/:reference")
+  .get(
+    isAuth,
+    // walletDepositValidator,
+    WalletController.verifyTopUpWallet
+  )
+  .all(methodNotAllowed);
 router
   .route("/withdraw")
   .post(
@@ -27,6 +40,10 @@ router
 router
   .route("/banks")
   .get(isAuth, WalletController.getAllBanks)
+  .all(methodNotAllowed);
+router
+  .route("/verify-account-number")
+  .get(WalletController.verifyAccountNumber)
   .all(methodNotAllowed);
 
 export default router;

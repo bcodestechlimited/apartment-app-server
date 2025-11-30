@@ -27,7 +27,8 @@ import { initializeSocket } from "./lib/socket";
 import landlordRatingRouter from "./modules/landlord-rating/landlord-rating.routes";
 import propertyRatingRouter from "./modules/property-rating/property-rating.routes";
 import tenantRatingRouter from "./modules/tenant-rating/tenant-rating.routes";
-
+// import favouriteRouter from "./modules/favourite/favourite.route";
+import savedPropertiesRouter from "./modules/saved-properties/saved-properties.routes";
 const app = express();
 const server = createServer(app);
 const port = process.env.PORT || 3000;
@@ -74,6 +75,8 @@ app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/landlord-rating", landlordRatingRouter);
 app.use("/api/v1/property-rating", propertyRatingRouter);
 app.use("/api/v1/tenant-rating", tenantRatingRouter);
+app.use("/api/v1/save-properties", savedPropertiesRouter);
+// app.use("/api/v1/favourite", favouriteRouter);
 
 // Admin routes
 

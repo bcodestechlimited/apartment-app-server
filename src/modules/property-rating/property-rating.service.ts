@@ -4,6 +4,7 @@ import type { IPropertyRating } from "./property-rating.interface";
 import PropertyRating from "./property-rating.model";
 import UserService from "../user/user.service";
 import { PropertyService } from "../property/property.service";
+import { RatingStatsHelper } from "@/utils/RatingStats";
 
 export class PropertyRatingService {
   static createRating = async (
@@ -11,13 +12,10 @@ export class PropertyRatingService {
     roles: string[]
   ) => {
     const { propertyId, tenantId, rating, comment } = ratingDetails;
-    if (!roles.includes("tenant")) {
-      throw ApiError.badRequest("Only tenant can rate this property.");
-    }
-    // const existingUser = await UserService.findUserById(tenantId);
-    // if (!existingUser) {
-    //   throw ApiError.notFound("User not found.");
-    // }
+
+    const propertyExists = await PropertyService.getPropertyDocumentById(
+      propertyId.toString()
+    );
 
     const isBookedBy = await PropertyService.isBookedBy(tenantId);
     if (!isBookedBy) {
@@ -34,6 +32,9 @@ export class PropertyRatingService {
     const newRating = new PropertyRating(ratingDetails);
 
     await newRating.save();
+
+    await RatingStatsHelper.update(propertyExists, undefined, rating);
+
     return ApiSuccess.created("Rating created successfully", newRating);
   };
 
@@ -56,6 +57,13 @@ export class PropertyRatingService {
     existingRating.rating = ratingDetails.rating;
     existingRating.comment = ratingDetails.comment;
     existingRating.updatedAt = new Date();
+
+    const property = await PropertyService.getPropertyDocumentById(
+      ratingDetails.propertyId.toString()
+    );
+    const oldRating = existingRating.rating;
+    const newRating = ratingDetails.rating;
+    await RatingStatsHelper.update(property, oldRating, newRating);
     await existingRating.save();
     return ApiSuccess.ok("Rating updated successfully", existingRating);
   };
@@ -67,6 +75,10 @@ export class PropertyRatingService {
     if (!existingRating) {
       throw ApiError.notFound("Rating not found for this property.");
     }
+    const property = await PropertyService.getPropertyDocumentById(
+      existingRating.propertyId.toString()
+    );
+    await RatingStatsHelper.update(property, existingRating.rating, undefined);
     await PropertyRating.deleteOne({
       _id: ratingId,
     });

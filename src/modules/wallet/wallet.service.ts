@@ -1,6 +1,6 @@
 import { ApiError, ApiSuccess } from "../../utils/responseHandler.js";
 import { paginate } from "../../utils/paginate.js";
-import type { ObjectId, PopulateOptions } from "mongoose";
+import type { ObjectId, PopulateOptions, Types } from "mongoose";
 import type { IQueryParams } from "@/shared/interfaces/query.interface.js";
 import Wallet from "./wallet.model.js";
 import { TransactionService } from "../transaction/transaction.service.js";
@@ -8,9 +8,72 @@ import type { UpdateWalletDTO } from "./wallet.interface.js";
 import paystackClient from "@/lib/paystackClient.js";
 import { AxiosError } from "axios";
 import logger from "@/utils/logger.js";
+import { env } from "@/config/env.config.js";
+import UserService from "../user/user.service.js";
 
 export class WalletService {
-  static async getWalletByUserId(userId: ObjectId) {
+  static async topUpWallet(userId: Types.ObjectId, amount: number) {
+    await this.getWalletByUserId(userId);
+
+    const user = await UserService.findUserById(userId);
+    let callback_url = "";
+    if (user.roles.includes("landlord")) {
+      callback_url = `${env.CLIENT_BASE_URL}/dashboard/landlord/paystack/verify`;
+    } else if (user.roles.includes("user")) {
+      callback_url = `${env.CLIENT_BASE_URL}/dashboard/paystack/verify`;
+    }
+    console.log("User Roles:", user.roles);
+    console.log("Callback URL:", callback_url);
+    const response = await paystackClient.post("/transaction/initialize", {
+      amount: amount * 100,
+      email: user.email,
+
+      callback_url: callback_url,
+    }); // loalhost://5123/tickets/verify?appointementId=1234&reference=rtssdoq3
+
+    const transaction = await TransactionService.createTransaction({
+      user: userId,
+      transactionType: "deposit",
+      amount,
+      description: "Wallet Topup",
+      reference: response.data.data.reference,
+      provider: "paystack",
+      status: "pending",
+      adminApproval: "pending",
+    });
+    return ApiSuccess.ok("Wallet Topup Initialized", {
+      authorization_url: response.data.data.authorization_url,
+      reference: response.data.data.reference,
+    });
+  }
+
+  static async verifyTopUpWallet(userId: Types.ObjectId, reference: string) {
+    const response = await paystackClient.get(
+      `/transaction/verify/${reference}`
+    );
+    if (response.data.data.status === "success") {
+      // Handle successful payment here
+      const transaction = await TransactionService.getTransactionByReference(
+        reference
+      );
+      console.log("Transaction found:", transaction);
+      if (transaction.status === "success") {
+        return ApiSuccess.ok("Wallet already topped up");
+      }
+      transaction.status = "success";
+      await transaction.save();
+
+      const userWallet = await this.getWalletByUserId(userId);
+      console.log("User Wallet before topup:", userWallet);
+      userWallet.balance += transaction.amount;
+      console.log("User Wallet after topup:", userWallet);
+      await userWallet.save();
+      return ApiSuccess.ok("Wallet Topup Successful", { wallet: userWallet });
+    }
+    throw ApiError.badRequest("Payment not successful");
+  }
+
+  static async getWalletByUserId(userId: Types.ObjectId | string) {
     const existingWallet = await Wallet.findOne({ user: userId });
 
     if (!existingWallet) {
@@ -23,14 +86,14 @@ export class WalletService {
     return existingWallet;
   }
 
-  static async getWallet(userId: ObjectId) {
+  static async getWallet(userId: Types.ObjectId) {
     const wallet = await this.getWalletByUserId(userId);
 
-    return ApiSuccess.ok("Bank Details Retrieved Successfully", { wallet });
+    return ApiSuccess.ok("Wallet Details Retrieved Successfully", { wallet });
   }
 
   static async getUserWalletByAdmin(userId: ObjectId | string) {
-    const wallet = await this.getWalletByUserId(userId as ObjectId);
+    const wallet = await this.getWalletByUserId(userId as string);
 
     return ApiSuccess.ok("Bank Details Retrieved Successfully", { wallet });
   }
@@ -56,7 +119,18 @@ export class WalletService {
     });
   }
 
-  static async withdrawFromWallet(userId: ObjectId, amount: number) {
+  static async verifyAccountNumber(bankCode: string, accountNumber: string) {
+    console.log("entering verifyAccountNumber");
+    console.log({ bankCode, accountNumber });
+
+    const response = await paystackClient.get(
+      `/bank/resolve?account_number=${accountNumber}&bank_code=${bankCode}`
+    );
+    console.log("Response:", response);
+    return ApiSuccess.ok("Bank Details Verified Successfully", response.data);
+  }
+
+  static async withdrawFromWallet(userId: Types.ObjectId, amount: number) {
     if (amount <= 0) {
       throw ApiError.badRequest("Amount must be greater than zero");
     }
@@ -83,7 +157,7 @@ export class WalletService {
       throw ApiError.forbidden("Please update your bank details");
     }
 
-    if (!userWallet.isBlocked) {
+    if (userWallet.isBlocked) {
       throw ApiError.forbidden(
         "Your wallet has been disabled. Please contact the admin"
       );
@@ -91,17 +165,21 @@ export class WalletService {
 
     // Update the user's balance
     userWallet.balance -= amount;
-    await userWallet.save();
 
     const transaction = await TransactionService.createTransaction({
       user: userId,
-      transactionType: "debit",
+      transactionType: "withdrawal",
       amount,
       bankAccountNumber: userWallet.bankAccountNumber,
       bankAccountName: userWallet.bankAccountName,
       bankName: userWallet.bankName,
       description: "Withdrawal",
+      status: "pending",
+      provider: "paystack",
+      adminApproval: "pending",
     });
+
+    await userWallet.save();
 
     // Log the withdrawal transaction
     // const transaction = new Transaction({
@@ -121,7 +199,7 @@ export class WalletService {
   }
 
   static async updateWallet(
-    userId: ObjectId,
+    userId: Types.ObjectId,
     updatedWalletDetails: UpdateWalletDTO
   ) {
     const wallet = await this.getWalletByUserId(userId);
@@ -139,7 +217,7 @@ export class WalletService {
       wallet.recipientCode = data.data.recipient_code;
       wallet.currency = data.data.currency;
       wallet.bankAccountName = data.data.details.account_name;
-      wallet.bankAccountName = data.data.details.bank_name;
+      wallet.bankName = data.data.details.bank_name;
       wallet.bankAccountNumber = data.data.details.account_number;
       wallet.hasSubmitted = true;
 
@@ -169,7 +247,7 @@ export class WalletService {
     }
   }
 
-  static async blockUserWallet(userId: ObjectId) {
+  static async blockUserWallet(userId: string) {
     const wallet = await this.getWalletByUserId(userId);
 
     wallet.isBlocked = false;
@@ -178,7 +256,7 @@ export class WalletService {
     return ApiSuccess.ok("Wallet blocked successfully", { wallet });
   }
 
-  static async unBlockUserWallet(userId: ObjectId) {
+  static async unBlockUserWallet(userId: string) {
     const wallet = await this.getWalletByUserId(userId);
 
     wallet.isBlocked = true;
@@ -206,6 +284,8 @@ export class WalletService {
       throw ApiError.internalServerError("Something went wrong");
     }
   }
+
+  static async approveWithdrawal() {}
 }
 
 export const walletService = new WalletService();

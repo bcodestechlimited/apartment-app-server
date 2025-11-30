@@ -78,10 +78,19 @@ class UserService {
     return user;
   }
   static async findUserByEmail(email: string): Promise<IUser> {
-    const user = await User.findOne({ email }).select("+password")
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
       throw ApiError.notFound("No user with this email");
     }
+    return user;
+  }
+
+  static async getUserDocumentById(propertyId: string | Types.ObjectId) {
+    const user = await User.findOne({ _id: propertyId });
+    if (!user) {
+      throw ApiError.notFound("Property not found");
+    }
+
     return user;
   }
   static async findUserById(userId: Types.ObjectId | string): Promise<IUser> {
@@ -321,6 +330,30 @@ class UserService {
     }
 
     return userGuarantor;
+  }
+  static async addToSavedProperties(
+    userId: Types.ObjectId,
+    propertyId: Types.ObjectId
+  ) {
+    const user = await this.findUserById(userId);
+    user.savedProperties.push(propertyId);
+    await user.save();
+    return user;
+  }
+
+  static async removeFromSavedProperties(
+    userId: Types.ObjectId,
+    propertyId: string
+  ) {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $pull: { savedProperties: propertyId } },
+      { new: true }
+    );
+    if (!user) {
+      throw ApiError.notFound("User Not Found");
+    }
+    return user;
   }
 }
 

@@ -4,6 +4,24 @@ import { WalletService } from "./wallet.service.js";
 
 export class WalletController {
   // Controller to withdraw funds from the user's wallet
+  static async topUpWallet(req: Request, res: Response) {
+    const { userId } = req.user as AuthenticatedUser;
+    const { amount } = req.body;
+    console.log("Amount:", amount);
+    const result = await WalletService.topUpWallet(userId, amount);
+    console.log("Result:", result);
+    res.status(200).json(result);
+  }
+
+  static async verifyTopUpWallet(req: Request, res: Response) {
+    const { userId } = req.user as AuthenticatedUser;
+    const { reference } = req.params;
+    const result = await WalletService.verifyTopUpWallet(
+      userId,
+      reference as string
+    );
+    res.status(200).json(result);
+  }
   static async withdrawFromWallet(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const { amount } = req.body;
@@ -11,10 +29,23 @@ export class WalletController {
     res.status(200).json(result);
   }
 
+  static async verifyAccountNumber(req: Request, res: Response) {
+    const { accountNumber, bankCode } = req.query as {
+      accountNumber: string;
+      bankCode: string;
+    };
+    const result = await WalletService.verifyAccountNumber(
+      bankCode,
+      accountNumber
+    );
+    res.status(200).json(result);
+  }
+
   // Controller to update wallet details
   static async updateUserWallet(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const walletDetails = req.body;
+    console.log("Wallet Details:", walletDetails);
     const result = await WalletService.updateWallet(userId, walletDetails);
     res.status(200).json(result);
   }
