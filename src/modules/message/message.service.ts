@@ -88,6 +88,7 @@ export class MessageService {
 
     conversation.lastMessage = content;
     conversation.lastSender = senderId as string;
+    conversation.lastMessageAt = new Date();
     conversation.updatedAt = new Date();
 
     await conversation.save();

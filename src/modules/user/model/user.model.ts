@@ -151,6 +151,18 @@ const UserSchema: Schema<IUser> = new Schema(
       ref: "NotificationPreference",
       unique: true,
     },
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+    totalRatings: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
   },
   {
     timestamps: true,

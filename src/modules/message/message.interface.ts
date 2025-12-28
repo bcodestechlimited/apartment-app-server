@@ -18,6 +18,7 @@ export interface IConversation extends Document {
   participants: Types.ObjectId[];
   lastMessage?: string;
   lastSender?: IUser | string | ObjectId;
+  lastMessageAt: Date;
   isGroup: boolean;
   createdAt: Date;
   updatedAt: Date;

@@ -1,5 +1,5 @@
 import { ApiError, ApiSuccess } from "../../utils/responseHandler.js";
-import type { ObjectId } from "mongoose";
+import type { ObjectId, Types } from "mongoose";
 import {
   propertyService,
   PropertyService,
@@ -25,7 +25,10 @@ import { WalletService } from "../wallet/wallet.service.js";
 export class BookingRequestService {
   // ----------------- Booking Requests -----------------
   // Create Booking Request
-  static async createBookingRequest(bookingRequestData: any, userId: ObjectId) {
+  static async createBookingRequest(
+    bookingRequestData: any,
+    userId: Types.ObjectId
+  ) {
     const { propertyId, moveInDate } = bookingRequestData;
 
     const property = await PropertyService.getPropertyDocumentById(propertyId);
@@ -86,7 +89,7 @@ export class BookingRequestService {
 
   static async getLandlordBookingRequests(
     params: IQueryParams,
-    userId: ObjectId
+    userId: Types.ObjectId
   ) {
     const { page = 1, limit = 10 } = params;
 
@@ -127,7 +130,7 @@ export class BookingRequestService {
 
   static async getTenantBookingRequests(
     params: IQueryParams,
-    userId: ObjectId
+    userId: Types.ObjectId
   ) {
     const { page = 1, limit = 10 } = params;
 
@@ -169,7 +172,7 @@ export class BookingRequestService {
   static async updateBookingRequest(
     bookingRequestId: string,
     bookingRequestData: any,
-    userId: ObjectId
+    userId: Types.ObjectId
   ) {
     const { status } = bookingRequestData;
     const bookingRequest = await BookingRequest.findById(
@@ -295,7 +298,7 @@ export class BookingRequestService {
 
   static async deleteBookingRequest(
     bookingRequestId: string,
-    userId: ObjectId
+    userId: Types.ObjectId
   ) {
     const bookingRequest = await BookingRequest.findById(bookingRequestId);
     if (!bookingRequest) {
@@ -427,8 +430,8 @@ export class BookingRequestService {
 
     // Create Chat between tenant and landlord
     await MessageService.getOrCreateConversation(
-      bookingRequest.tenant._id,
-      bookingRequest.landlord._id
+      bookingRequest.tenant._id as string,
+      bookingRequest.landlord._id as string
     );
 
     await booking.save();
