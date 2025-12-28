@@ -16,10 +16,7 @@ export class PropertyRatingController {
       comment: comment,
     };
 
-    const result = await PropertyRatingService.createRating(
-      newRatingData,
-      roles
-    );
+    const result = await PropertyRatingService.createRating(newRatingData);
 
     res.status(200).json(result);
   }

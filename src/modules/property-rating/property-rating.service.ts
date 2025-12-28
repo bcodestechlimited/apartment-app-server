@@ -6,34 +6,31 @@ import UserService from "../user/user.service";
 import { PropertyService } from "../property/property.service";
 
 export class PropertyRatingService {
-  static createRating = async (
-    ratingDetails: IPropertyRating,
-    roles: string[]
-  ) => {
+  static createRating = async (ratingDetails: IPropertyRating) => {
     const { propertyId, tenantId, rating, comment } = ratingDetails;
-    if (!roles.includes("tenant")) {
-      throw ApiError.badRequest("Only tenant can rate this property.");
-    }
-    // const existingUser = await UserService.findUserById(tenantId);
-    // if (!existingUser) {
-    //   throw ApiError.notFound("User not found.");
-    // }
-
     const isBookedBy = await PropertyService.isBookedBy(tenantId);
     if (!isBookedBy) {
       throw ApiError.badRequest("This property is not booked by this user.");
     }
 
     const existingRating = await PropertyRating.findOne({
-      propertyId: ratingDetails.propertyId,
-      tenantId: ratingDetails.tenantId,
+      propertyId,
+      tenantId,
     });
     if (existingRating) {
       throw ApiError.badRequest("Rating already exists for this property.");
     }
-    const newRating = new PropertyRating(ratingDetails);
+    const newRating = await PropertyRating.create({
+      propertyId,
+      tenantId,
+      rating,
+      comment,
+    });
 
-    await newRating.save();
+    await PropertyService.calculateAVerageRatingOnRatingCreated(
+      propertyId.toString(),
+      rating
+    );
     return ApiSuccess.created("Rating created successfully", newRating);
   };
 
@@ -41,10 +38,6 @@ export class PropertyRatingService {
     ratingDetails: IPropertyRating,
     roles: string[]
   ) => {
-    console.log("entering update rating");
-    if (!roles.includes("tenant")) {
-      throw ApiError.badRequest("Only tenant can rate this property.");
-    }
     const existingRating = await PropertyRating.findOne({
       propertyId: ratingDetails.propertyId,
       tenantId: ratingDetails.tenantId,
@@ -53,23 +46,36 @@ export class PropertyRatingService {
     if (!existingRating) {
       throw ApiError.notFound("Rating not found for this property.");
     }
+    const oldRating = existingRating.rating;
     existingRating.rating = ratingDetails.rating;
     existingRating.comment = ratingDetails.comment;
     existingRating.updatedAt = new Date();
+
     await existingRating.save();
+
+    await PropertyService.calculateAVerageRatingOnRatingUpdated(
+      ratingDetails.propertyId.toString(),
+      oldRating,
+      ratingDetails.rating
+    );
     return ApiSuccess.ok("Rating updated successfully", existingRating);
   };
 
   static deleteRating = async (ratingId: string) => {
-    const existingRating = await PropertyRating.findOne({
-      _id: ratingId,
-    });
+    const existingRating = await PropertyRating.findById(ratingId);
     if (!existingRating) {
       throw ApiError.notFound("Rating not found for this property.");
     }
+
+    const { propertyId, rating } = existingRating;
     await PropertyRating.deleteOne({
       _id: ratingId,
     });
+
+    await PropertyService.calculateAVerageRatingOnRatingDeleted(
+      propertyId.toString(),
+      rating
+    );
 
     return ApiSuccess.ok("Rating deleted successfully");
   };
@@ -101,7 +107,11 @@ export class PropertyRatingService {
     return ApiSuccess.ok("Ratings retrieved successfully", ratings);
   };
   static getRatingByPropertyId = async (propertyId: string) => {
-    const ratings = await PropertyRating.find({ propertyId: propertyId });
+    console.log("entering here");
+    const ratings = await PropertyRating.find({
+      propertyId: propertyId,
+    }).populate("tenantId");
+    console.log(ratings);
     if (ratings.length === 0) {
       throw ApiError.notFound("No ratings found for this property.");
     }
