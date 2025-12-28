@@ -643,6 +643,66 @@ class UserService {
       $set: updateFields,
     });
   }
+
+  static calculateAVerageRatingonRatingCreated = async (
+    UserId: Types.ObjectId | string,
+    newRating: number
+  ) => {
+    const landlord = await User.findById(UserId);
+    if (!landlord) throw ApiError.notFound("Landlord not found.");
+
+    const { averageRating, totalRatings } = landlord;
+    const newTotal = totalRatings + 1;
+    const newAverage = (averageRating * totalRatings + newRating) / newTotal;
+
+    landlord.averageRating = parseFloat(newAverage.toFixed(2));
+    landlord.totalRatings = newTotal;
+
+    await landlord.save();
+  };
+
+  static calculateAVerageRatingonRatingUpdated = async (
+    UserId: Types.ObjectId | string,
+    oldRating: number,
+    newRating: number
+  ) => {
+    const landlord = await User.findById(UserId);
+    if (!landlord) throw ApiError.notFound("Landlord not found.");
+
+    const { averageRating, totalRatings } = landlord;
+
+    // Adjust average by removing old rating and adding new one
+    const newAverage =
+      (averageRating * totalRatings - oldRating + newRating) / totalRatings;
+
+    landlord.averageRating = parseFloat(newAverage.toFixed(2));
+    await landlord.save();
+  };
+
+  static calculateAVerageRatingonRatingDeleted = async (
+    UserId: Types.ObjectId | string,
+    deletedRating: number
+  ) => {
+    const landlord = await User.findById(UserId);
+    if (!landlord) throw ApiError.notFound("Landlord not found.");
+
+    const { averageRating, totalRatings } = landlord;
+
+    if (totalRatings <= 1) {
+      // If it was the only rating
+      landlord.averageRating = 0;
+      landlord.totalRatings = 0;
+    } else {
+      const newTotal = totalRatings - 1;
+      const newAverage =
+        (averageRating * totalRatings - deletedRating) / newTotal;
+
+      landlord.averageRating = parseFloat(newAverage.toFixed(2));
+      landlord.totalRatings = newTotal;
+    }
+
+    await landlord.save();
+  };
 }
 
 export default UserService;

@@ -6,7 +6,7 @@ import { RatingStatsHelper } from "@/utils/RatingStats";
 
 export class TenantRatingService {
   static createRating = async (ratingDetails: ICreateTenantRatingDto) => {
-    const { landlordId, tenantId } = ratingDetails;
+    const { landlordId, tenantId, rating, comment } = ratingDetails;
 
     const existingUser = await UserService.getUserDocumentById(tenantId);
     if (!existingUser) {
@@ -18,14 +18,14 @@ export class TenantRatingService {
       tenantId: tenantId,
     });
     if (existingRating) {
-      throw ApiError.badRequest("Rating already exists for this property.");
+      throw ApiError.badRequest("You have already rated this landlord.");
     }
 
-    const newRating = new TenantRating({
+    const newRating = await TenantRating.create({
       landlord: landlordId,
       tenant: tenantId,
-      rating: ratingDetails.rating,
-      comment: ratingDetails.comment,
+      rating,
+      comment,
     });
 
     await RatingStatsHelper.update(
@@ -35,6 +35,7 @@ export class TenantRatingService {
     );
 
     await newRating.save();
+    await UserService.calculateAVerageRatingonRatingCreated(tenantId, rating);
     return ApiSuccess.created("Rating created successfully", newRating);
   };
   static async updateRating(ratingDetails: ICreateTenantRatingDto) {

@@ -15,6 +15,7 @@ const LandlordRatingSchema: Schema<ILandlordRating> = new Schema(
       ref: "User",
       required: true,
     },
+    averageRating: { type: Number, required: true, min: 1, max: 5 },
   },
   { timestamps: true }
 );

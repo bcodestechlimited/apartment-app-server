@@ -56,6 +56,10 @@ const ConversationSchema: Schema<IConversation> = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    lastMessageAt: {
+      type: Date,
+      default: Date.now,
+    },
     isGroup: {
       type: Boolean,
       default: false,

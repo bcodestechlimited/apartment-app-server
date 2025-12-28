@@ -159,6 +159,18 @@ const UserSchema: Schema<IUser> = new Schema(
     },
     totalEarnings: { type: Number, default: 0 },
     propertiesCount: { type: Number, default: 0 },
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+    totalRatings: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
   },
   {
     timestamps: true,

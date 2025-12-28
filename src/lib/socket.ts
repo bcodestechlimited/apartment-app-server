@@ -10,6 +10,13 @@ interface OnlineUser {
   userId: string;
 }
 
+interface IMessagePayload {
+  conversationId: string;
+  senderId: string;
+  receiverId: string;
+  text: string;
+}
+
 let onlineUsers: OnlineUser[] = [];
 
 const handleAddNewUser = (
@@ -36,18 +43,18 @@ const handleAddNewUser = (
 const handleSendMessage = async (
   io: SocketIOServer,
   socket: Socket,
-  data: {
-    conversationId: string;
-    senderId: string;
-    receiverId: string;
-    text: string;
-  }
+  data: IMessagePayload
 ) => {
   logger.info("Socket message", data);
   try {
     const { conversationId, senderId, receiverId, text } = data;
 
     console.log({ conversationId, senderId, receiverId, text });
+
+    if (!conversationId || !senderId || !receiverId || !text) {
+      logger.warn("Invalid message payload", data);
+      return;
+    }
 
     const newMessage = new Message({
       conversationId,
@@ -74,19 +81,21 @@ const handleSendMessage = async (
       lastSender: senderId,
     });
 
-    const user = onlineUsers.find((user) => user.userId === receiverId);
+    const receiver = onlineUsers.find((user) => user.userId === receiverId);
     const sender = onlineUsers.find((user) => user.userId === senderId);
 
-    console.log({ user, sender });
+    console.log({ receiver, sender });
 
-    if (user) {
-      io.to(user.socketId).to(socket.id).emit("receive_message", newMessage);
-      logger.info("Message delivered to user successfully");
+    if (receiver) {
+      io.to(receiver.socketId).emit("receive_message", newMessage);
+      logger.info(`Message delivered to receiver ${receiverId}`);
     }
 
+    console.log({ sender: !!sender, isSame: sender?.socketId !== socket.id });
+
     if (sender) {
-      io.to(sender.socketId).to(socket.id).emit("receive_message", newMessage);
-      logger.info("Message delivered to sender successfully");
+      io.to(sender.socketId).emit("receive_message", newMessage);
+      logger.info(`Message echoed to sender ${senderId}`);
     }
 
     // io.to(conversationId).emit("receive_message", newMessage);
@@ -104,6 +113,7 @@ const handleUserTyping = (
   const user = onlineUsers.find((user) => user.userId === data.recipientId);
 
   if (user) {
+    console.log({ user });
     io.to(user.socketId).emit("receive_typing_status", data);
   }
 };
@@ -140,6 +150,8 @@ export const initializeSocket = (server: HTTPServer) => {
 
     socket.on("disconnect", () => {
       logger.info(`Client disconnected: ${socket.id}`);
+      onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
+      io.emit("get_online_users", onlineUsers);
     });
   });
 };
