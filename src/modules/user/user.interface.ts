@@ -13,9 +13,12 @@ export interface IUser extends Document {
   // documents: { type: string; url: string; createdAt: Date }[] | null;
   preferences: string[];
   isActive: boolean;
-  isVerified: boolean;
+  isDocumentVerified: boolean;
   isEmailVerified: boolean;
+  averageRating: number;
+  totalRatings: number;
   onboarded: boolean;
+  savedProperties: Types.ObjectId[];
   // onboardingStep: "not_started" | "profile_completed" | "documents_uploaded" | "completed";
   roles: UserRolesEnum;
   provider: string;

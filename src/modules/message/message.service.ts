@@ -1,11 +1,15 @@
 import { Message } from "./message.model";
 import { ApiError, ApiSuccess } from "../../utils/responseHandler";
-import type { ObjectId, Types } from "mongoose";
+import type {
+  ObjectId,
+  TypeExpressionOperatorReturningObjectId,
+  Types,
+} from "mongoose";
 import Conversation from "./message.model";
 
 export class MessageService {
   // Fetch all conversations for a user
-  static async getUserConversations(userId: string | Types.ObjectId) {
+  static async getUserConversations(userId: Types.ObjectId | ObjectId) {
     const conversations = await Conversation.find({
       participants: userId,
     })

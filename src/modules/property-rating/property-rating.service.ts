@@ -4,10 +4,16 @@ import type { IPropertyRating } from "./property-rating.interface";
 import PropertyRating from "./property-rating.model";
 import UserService from "../user/user.service";
 import { PropertyService } from "../property/property.service";
+import { RatingStatsHelper } from "@/utils/RatingStats";
 
 export class PropertyRatingService {
   static createRating = async (ratingDetails: IPropertyRating) => {
     const { propertyId, tenantId, rating, comment } = ratingDetails;
+
+    const propertyExists = await PropertyService.getPropertyDocumentById(
+      propertyId.toString()
+    );
+
     const isBookedBy = await PropertyService.isBookedBy(tenantId);
     if (!isBookedBy) {
       throw ApiError.badRequest("This property is not booked by this user.");
@@ -26,6 +32,10 @@ export class PropertyRatingService {
       rating,
       comment,
     });
+
+    await newRating.save();
+
+    await RatingStatsHelper.update(propertyExists, undefined, rating);
 
     await PropertyService.calculateAVerageRatingOnRatingCreated(
       propertyId.toString(),
@@ -51,6 +61,12 @@ export class PropertyRatingService {
     existingRating.comment = ratingDetails.comment;
     existingRating.updatedAt = new Date();
 
+    const property = await PropertyService.getPropertyDocumentById(
+      ratingDetails.propertyId.toString()
+    );
+    const oldRating = existingRating.rating;
+    const newRating = ratingDetails.rating;
+    await RatingStatsHelper.update(property, oldRating, newRating);
     await existingRating.save();
 
     await PropertyService.calculateAVerageRatingOnRatingUpdated(
@@ -66,6 +82,10 @@ export class PropertyRatingService {
     if (!existingRating) {
       throw ApiError.notFound("Rating not found for this property.");
     }
+    const property = await PropertyService.getPropertyDocumentById(
+      existingRating.propertyId.toString()
+    );
+    await RatingStatsHelper.update(property, existingRating.rating, undefined);
 
     const { propertyId, rating } = existingRating;
     await PropertyRating.deleteOne({

@@ -54,7 +54,7 @@ export class TenantService {
   }
 
   static async getLandlordTenants(
-    landlordId: string | Types.ObjectId,
+    landlordId: Types.ObjectId,
     query: IQueryParams
   ) {
     const { page, limit } = query;
@@ -63,7 +63,11 @@ export class TenantService {
     const sort = { createdAt: -1 };
     const populateOptions = [
       { path: "landlord", select: "firstName lastName email" },
-      { path: "user", select: "firstName lastName email avatar phoneNumber" },
+      {
+        path: "user",
+        select:
+          "firstName lastName email avatar phoneNumber isDocumentVerified totalRatings  averageRating",
+      },
       { path: "property" },
     ];
 

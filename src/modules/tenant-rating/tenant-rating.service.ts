@@ -2,12 +2,13 @@ import { ApiError, ApiSuccess } from "@/utils/responseHandler";
 import UserService from "../user/user.service";
 import type { ICreateTenantRatingDto } from "./tenant-rating.interface";
 import TenantRating from "./tenant-rating.model";
+import { RatingStatsHelper } from "@/utils/RatingStats";
 
 export class TenantRatingService {
   static createRating = async (ratingDetails: ICreateTenantRatingDto) => {
     const { landlordId, tenantId, rating, comment } = ratingDetails;
 
-    const existingUser = await UserService.findUserById(tenantId);
+    const existingUser = await UserService.getUserDocumentById(tenantId);
     if (!existingUser) {
       throw ApiError.notFound("User not found.");
     }
@@ -27,6 +28,13 @@ export class TenantRatingService {
       comment,
     });
 
+    await RatingStatsHelper.update(
+      existingUser,
+      undefined,
+      ratingDetails.rating
+    );
+
+    await newRating.save();
     await UserService.calculateAVerageRatingonRatingCreated(tenantId, rating);
     return ApiSuccess.created("Rating created successfully", newRating);
   };
@@ -39,20 +47,13 @@ export class TenantRatingService {
     if (!existingRating) {
       throw ApiError.notFound("Rating not found.");
     }
-
+    existingRating.rating = rating;
+    existingRating.comment = comment;
     const oldRating = existingRating.rating;
-    const newRatingValue = rating ?? oldRating;
-
-    // Update rating doc
-    existingRating.rating = newRatingValue;
-    if (comment) existingRating.comment = comment;
+    const newRating = rating;
     await existingRating.save();
-
-    await UserService.calculateAVerageRatingonRatingUpdated(
-      tenantId,
-      oldRating,
-      newRatingValue
-    );
+    const user = await UserService.getUserDocumentById(tenantId);
+    await RatingStatsHelper.update(user, oldRating, newRating);
     return ApiSuccess.created("Rating updated successfully", existingRating);
   }
 
@@ -61,14 +62,16 @@ export class TenantRatingService {
     if (!existingRating) {
       throw ApiError.notFound("Rating not found.");
     }
-    const tenantId = existingRating.tenant._id;
+
+    const user = await UserService.getUserDocumentById(
+      existingRating.tenant._id as string
+    );
     const deletedRating = existingRating.rating;
+
     await existingRating.deleteOne();
 
-    await UserService.calculateAVerageRatingonRatingDeleted(
-      tenantId as string,
-      deletedRating
-    );
+    await RatingStatsHelper.update(user, deletedRating, undefined);
+
     return ApiSuccess.created("Rating deleted successfully", existingRating);
   }
   static async getRatingById(ratingId: string) {

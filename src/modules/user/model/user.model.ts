@@ -75,7 +75,7 @@ const UserSchema: Schema<IUser> = new Schema(
       type: Boolean,
       default: true,
     },
-    isVerified: {
+    isDocumentVerified: {
       type: Boolean,
       default: false,
     },
@@ -86,6 +86,14 @@ const UserSchema: Schema<IUser> = new Schema(
     onboarded: {
       type: Boolean,
       default: false,
+    },
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
+    totalRatings: {
+      type: Number,
+      default: 0,
     },
     // onboardingStep: {
     //   type: String,
@@ -117,6 +125,12 @@ const UserSchema: Schema<IUser> = new Schema(
       ref: "Employment",
       unique: true,
     },
+    savedProperties: {
+      type: [Types.ObjectId],
+      ref: "Property",
+      default: [],
+    },
+
     documents: {
       type: [Types.ObjectId],
       ref: "Document",

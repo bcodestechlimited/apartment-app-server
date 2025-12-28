@@ -16,34 +16,24 @@ const walletSchema: Schema<IWallet> = new Schema(
     },
     recipientCode: {
       type: String,
-      //   required: [true, "Please provide a recipient code"],
     },
     bankName: {
       type: String,
-      //   required: [true, "Please provide a bank name"],
     },
     bankAccountNumber: {
       type: String,
-      //   required: [true, "Please provide a bank account number"],
     },
     bankAccountName: {
       type: String,
-      //   required: [true, "Please provide a bank account name"],
     },
     currency: {
       type: String,
-      //   required: [true, "Please provide a bank account number"],
     },
     hasSubmitted: {
       type: Boolean,
       default: false,
     },
-    // walletId: {
-    //   type: String,
-    //   default: () => `WALLET-${nanoid(10)}`,
-    //   unique: true,
-    //   index: true,
-    // },
+
     isActive: {
       type: Boolean,
       default: true,
