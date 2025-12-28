@@ -95,6 +95,12 @@ const UserSchema: Schema<IUser> = new Schema(
       type: Number,
       default: 0,
     },
+
+    paymentStatus: {
+      type: String,
+      enum: ["Cleared", "Outstanding", "Overdue", "Cancelled"],
+      default: "Cleared",
+    },
     // onboardingStep: {
     //   type: String,
     //   enum: [
@@ -151,10 +157,37 @@ const UserSchema: Schema<IUser> = new Schema(
       ref: "NotificationPreference",
       unique: true,
     },
+    totalEarnings: { type: Number, default: 0 },
+    propertiesCount: { type: Number, default: 0 },
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
+
+UserSchema.virtual("activeBookingsCount", {
+  ref: "Booking",
+  localField: "_id",
+  foreignField: "tenant",
+  match: { status: "active" },
+  count: true, // Only returns the number, not the array
+});
+
+// Add this to your UserSchema file
+// UserSchema.virtual("propertiesCount", {
+//   ref: "Property",
+//   localField: "_id",
+//   foreignField: "user",
+//   count: true,
+// });
+
+// // We need the full booking documents to sum the prices manually
+// UserSchema.virtual("landlordBookings", {
+//   ref: "Booking",
+//   localField: "_id",
+//   foreignField: "landlord",
+// });
 
 export default mongoose.model<IUser>("User", UserSchema);

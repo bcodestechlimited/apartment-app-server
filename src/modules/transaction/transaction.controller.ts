@@ -27,4 +27,11 @@ export class TransactionController {
     );
     res.status(200).json(result);
   }
+
+  static async getPaymentOverview(req: Request, res: Response) {
+    const query = req.query;
+    console.log("Received query params:", query);
+    const result = await TransactionService.getPaymentOverview(query);
+    res.status(200).json(result);
+  }
 }

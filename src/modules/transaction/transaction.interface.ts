@@ -35,3 +35,9 @@ export interface createTransactionDTO {
   approvalDate?: Date;
   status?: "success" | "failed" | "pending";
 }
+
+export interface IProcessWithdrawal {
+  transactionId: string;
+  reason: string;
+  action: "approved" | "rejected";
+}

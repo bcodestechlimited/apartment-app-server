@@ -11,10 +11,10 @@ router.post("/", isAuth, SavedPropertiesController.saveProperty);
 router.get("/user", isAuth, SavedPropertiesController.getUserSavedProperties);
 
 // Get a saved property by ID
-router.get("/:id", SavedPropertiesController.getSavedPropertyById);
+router.get("/:id", isAuth, SavedPropertiesController.getSavedPropertyById);
 
 // Delete saved property by ID
-router.delete("/:id", SavedPropertiesController.deleteSavedProperty);
+router.delete("/:id", isAuth, SavedPropertiesController.deleteSavedProperty);
 
 // Remove saved property with user + property (toggle unsave)
 router.delete(
@@ -26,6 +26,7 @@ router.delete(
 // Check if user saved property
 router.get(
   "/check/:userId/:propertyId",
+  isAuth,
   SavedPropertiesController.checkIfSaved
 );
 

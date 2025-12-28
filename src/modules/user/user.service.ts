@@ -20,6 +20,8 @@ import Guarantor from "./model/profile/user.guarantor.model";
 import { Document } from "./model/profile/user.document.model";
 import type { UploadedFile } from "express-fileupload";
 import { UploadService } from "@/services/upload.service";
+import { BookingService } from "../booking/booking.service";
+import mongoose from "mongoose";
 
 class UserService {
   static async createUser(userData: Partial<IUser>): Promise<IUser> {
@@ -219,12 +221,113 @@ class UserService {
   }
 
   // Documents
-  static async getUserDocuments(userId: Types.ObjectId): Promise<IDocument[]> {
+  static async getUserDocuments(
+    userId: Types.ObjectId | string
+  ): Promise<IDocument[]> {
     let userDocuments = await Document.find({ user: userId }).sort({
       createdAt: -1,
     });
 
     return userDocuments;
+  }
+
+  static async getAllUserDocuments(query: IQueryParams) {
+    const { limit = 10, page = 1, search, documentType, sortBy } = query;
+
+    const filterQuery: Record<string, any> = {};
+    const populateOptions = [{ path: "user", select: "-password" }];
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+
+      filterQuery["$or"] = [
+        { name: searchRegex },
+
+        { "user.firstName": searchRegex },
+        { "user.lastName": searchRegex },
+        { "user.email": searchRegex },
+      ];
+    }
+
+    console.log({ filterQuery });
+    if (documentType) {
+      filterQuery.documentType = documentType;
+    }
+
+    // --- C. Handle Sorting ---
+    let mongooseSort: Record<string, any> = { createdAt: -1 }; // Default sort
+    if (sortBy) {
+      // Example sortBy format: "field:order" (e.g., "documentType:1" or "createdAt:-1")
+      const [field, order] = sortBy.split(":");
+      if (field && order) {
+        mongooseSort = {
+          [field]: order === "1" ? 1 : order === "-1" ? -1 : order,
+        };
+      } else {
+        mongooseSort = { [field]: 1 };
+      }
+    }
+
+    const statusCounts = await Document.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const statusMeta = statusCounts.reduce(
+      (acc, item) => {
+        acc[item._id] = item.count;
+        return acc;
+      },
+      { pending: 0, approved: 0, rejected: 0 }
+    );
+
+    const { documents, pagination } = await paginate({
+      model: Document,
+      query: filterQuery,
+      page: page,
+      limit: limit,
+      sort: mongooseSort,
+      populateOptions,
+    });
+
+    statusMeta.total = pagination.totalCount;
+
+    return ApiSuccess.ok("Documents retrieved successfully", {
+      documents,
+      pagination,
+
+      statusCounts: statusMeta,
+    });
+  }
+
+  static async verifyDocument(id: Types.ObjectId) {
+    const document = await Document.findByIdAndUpdate(
+      id,
+      { status: "approved" },
+      { new: true }
+    );
+    if (!document) {
+      throw ApiError.notFound("Document Not Found");
+    }
+
+    await this.verifyUserDocument(document.user);
+    return ApiSuccess.ok("Document verified successfully", { document });
+  }
+
+  static async rejectUserDocument(id: Types.ObjectId) {
+    const document = await Document.findByIdAndUpdate(
+      id,
+      { status: "rejected" },
+      { new: true }
+    );
+    if (!document) {
+      throw ApiError.notFound("Document Not Found");
+    }
+    await this.unVerrifyUserDocument(document.user);
+    return ApiSuccess.ok("Document rejected successfully", { document });
   }
 
   static async uploadUserDocument(
@@ -307,6 +410,8 @@ class UserService {
     return userGuarantor;
   }
 
+  // user.controller.ts (or wherever you list tenants)
+
   static async updateUserGuarantor(
     userId: Types.ObjectId,
     userData: any
@@ -331,6 +436,63 @@ class UserService {
 
     return userGuarantor;
   }
+
+  // user.controller.ts
+
+  static async getTenantsForAdmin(query: IQueryParams) {
+    const { limit = 10, page = 1, status, isVerified, search } = query;
+
+    console.log({ limit, page, status, isVerified, search });
+
+    // 1. Basic filter: always restrict to tenants
+    const filterQuery: any = { roles: "tenant" };
+
+    // 2. Filter by Payment Status (Real field on User model)
+    // Check if status is provided and NOT the string "all"
+    if (status && status !== "all" && status !== "") {
+      filterQuery.paymentStatus = status;
+    }
+
+    // Check if isVerified is a valid boolean string
+    if (isVerified !== undefined && isVerified !== "" && isVerified !== "all") {
+      filterQuery.isDocumentVerified = isVerified === "true";
+    }
+
+    // 4. Add Search Functionality (Search by Name or Email)
+    if (search) {
+      const searchRegex = new RegExp(search as string, "i"); // "i" for case-insensitive
+      filterQuery.$or = [
+        { firstName: searchRegex },
+        { lastName: searchRegex },
+        { email: searchRegex },
+      ];
+    }
+
+    // 5. Execute pagination with the virtual count populated
+    const { documents: tenants, pagination } = await paginate({
+      model: User,
+      query: filterQuery,
+      page,
+      limit,
+      // Use the virtual for active booking counts (performance optimized)
+      populateOptions: [{ path: "activeBookingsCount" }],
+      sort: { createdAt: -1 },
+    });
+
+    return ApiSuccess.ok("Tenants retrieved successfully", {
+      tenants,
+      pagination,
+    });
+  }
+
+  static async getTenantForAdmin(userId: ObjectId | string) {
+    const tenant = await User.findById(userId).populate("activeBookingsCount");
+    if (!tenant) {
+      throw ApiError.notFound("Tenant not found");
+    }
+    return tenant;
+  }
+
   static async addToSavedProperties(
     userId: Types.ObjectId,
     propertyId: Types.ObjectId
@@ -354,6 +516,132 @@ class UserService {
       throw ApiError.notFound("User Not Found");
     }
     return user;
+  }
+
+  static async verifiedLandlordsCount() {
+    const count = await User.countDocuments({
+      roles: "landlord",
+      isEmailVerified: true,
+    });
+    return count;
+  }
+
+  static async syncUserPaymentStatus(
+    userId: ObjectId | string | Types.ObjectId
+  ): Promise<void> {
+    // 1. Fetch all bookings for this tenant that aren't 'success'
+    const unresolvedBookings =
+      await BookingService.getBookingByIdAndPaymentStatus(userId as string);
+
+    let status = "Cleared";
+
+    if (unresolvedBookings.length > 0) {
+      // 2. Check if ANY booking has failed
+      const hasFailed = unresolvedBookings.some(
+        (b) => b.paymentStatus === "failed"
+      );
+
+      if (hasFailed) {
+        status = "Overdue"; // Priority 1: If anything failed, they are overdue
+      } else {
+        status = "Outstanding"; // Priority 2: If nothing failed but some are pending
+      }
+    }
+
+    // 3. Update the User model
+    await User.findByIdAndUpdate(userId, { paymentStatus: status });
+  }
+
+  static async verifyUserDocument(id: ObjectId | string) {
+    const document = await User.findByIdAndUpdate(
+      id,
+      { isDocumentVerified: true },
+      { new: true }
+    );
+    if (!document) {
+      throw ApiError.notFound("Document Not Found");
+    }
+    // return ApiSuccess.ok("Document verified successfully", { document });
+  }
+
+  static async unVerrifyUserDocument(id: ObjectId | string) {
+    const document = await User.findByIdAndUpdate(
+      id,
+      { isDocumentVerified: false },
+      { new: true }
+    );
+    if (!document) {
+      throw ApiError.notFound("Document Not Found");
+    }
+    // return ApiSuccess.ok("Document rejected successfully", { document });
+  }
+
+  //landlord
+
+  static async getLandlordsForAdmin(query: IQueryParams) {
+    const { page, limit, search, status } = query;
+    const filterQuery: any = { roles: "landlord" };
+
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+      filterQuery.$or = [
+        { firstName: searchRegex },
+        { lastName: searchRegex },
+        { email: searchRegex },
+      ];
+    }
+
+    if (status === "Verified") {
+      filterQuery.isDocumentVerified = true;
+    }
+    if (status === "Pending") {
+      filterQuery.isDocumentVerified = false;
+    }
+    const sort = { createdAt: -1 };
+    const { documents: landlords, pagination } = await paginate({
+      model: User,
+      query: filterQuery,
+      page,
+      limit,
+      sort,
+    });
+    return ApiSuccess.ok("Landlords retrieved successfully", {
+      landlords,
+      pagination,
+    });
+  }
+
+  static async getLandlordForAdmin(userId: ObjectId | string) {
+    const landlord = await User.findById(userId).populate(
+      "activeBookingsCount"
+    );
+    if (!landlord) {
+      throw ApiError.notFound("Landlord not found");
+    }
+    return landlord;
+  }
+
+  static async updateLandlordStats(
+    userId: string | Types.ObjectId,
+    update: {
+      propertiesDelta?: number;
+      earningsDelta?: number;
+      newStatus?: "Verified" | "Pending" | "Failed";
+    }
+  ) {
+    const incrementFields: any = {};
+    if (update.propertiesDelta)
+      incrementFields.propertiesListed = update.propertiesDelta;
+    if (update.earningsDelta)
+      incrementFields.totalEarnings = update.earningsDelta;
+
+    const updateFields: any = {};
+    if (update.newStatus) updateFields.verificationStatus = update.newStatus;
+
+    return await User.findByIdAndUpdate(userId, {
+      $inc: incrementFields,
+      $set: updateFields,
+    });
   }
 }
 

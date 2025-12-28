@@ -106,6 +106,10 @@ const PropertySchema: Schema<IProperty> = new Schema(
       type: Number,
       default: 0,
     },
+    totalRevenue: {
+      type: Number,
+      default: 0,
+    },
     status: {
       type: String,
       enum: ["available", "unavailable"],

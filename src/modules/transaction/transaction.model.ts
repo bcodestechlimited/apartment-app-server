@@ -47,6 +47,7 @@ const TransactionSchema: Schema<ITransaction> = new Schema(
       type: String,
       default: null,
     },
+
     adminApproval: {
       type: String,
       enum: ["pending", "approved", "rejected"],
@@ -84,4 +85,8 @@ TransactionSchema.pre("save", function (next) {
   next();
 });
 
-export default mongoose.model<ITransaction>("Transaction", TransactionSchema);
+const Transaction = mongoose.model<ITransaction>(
+  "Transaction",
+  TransactionSchema
+);
+export default Transaction;

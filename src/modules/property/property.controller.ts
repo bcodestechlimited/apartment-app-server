@@ -42,6 +42,17 @@ export class PropertyController {
     res.status(200).json(result);
   }
 
+  static async getAllLandlordPropertiesByAdmin(req: Request, res: Response) {
+    const query = req.query as IQueryParams;
+    const { landlordId } = req.params;
+    console.log("landlordId", landlordId);
+    const result = await PropertyService.getLandlordProperties(
+      landlordId as string,
+      query
+    );
+    res.status(200).json(result);
+  }
+
   // Get a single property by ID
   static async getPropertyById(req: Request, res: Response) {
     const { propertyId } = req.params;

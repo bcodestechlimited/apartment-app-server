@@ -31,6 +31,17 @@ export class BookingController {
     res.status(200).json(result);
   }
 
+  static async getTenantBookingsByAdmin(req: Request, res: Response) {
+    const { userId } = req.params;
+    const query = req.query;
+    console.log("getTenantBookingsByAdmin", userId, query);
+    const result = await BookingService.getTenantBookings(
+      userId as string,
+      query
+    );
+    res.status(200).json(result);
+  }
+
   // Get landlord bookings
   static async getLandlordBookings(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
@@ -59,6 +70,18 @@ export class BookingController {
     res.status(200).json(result);
   }
 
+  static async getLandlordStats(req: Request, res: Response) {
+    const { landlordId } = req.params;
+    const result = await BookingService.getLandlordStats(landlordId as string);
+    res.status(200).json(result);
+  }
+
+  static async getTenantStats(req: Request, res: Response) {
+    const { tenantId } = req.params;
+    const result = await BookingService.getTenantStats(tenantId as string);
+    res.status(200).json(result);
+  }
+
   // // Delete a booking
   // static async deleteBooking(req: Request, res: Response) {
   //   const { bookingId } = req.params;
@@ -69,6 +92,4 @@ export class BookingController {
   //   );
   //   res.status(200).json(result);
   // }
-
-
 }

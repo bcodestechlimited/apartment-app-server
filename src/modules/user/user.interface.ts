@@ -17,6 +17,7 @@ export interface IUser extends Document {
   isEmailVerified: boolean;
   averageRating: number;
   totalRatings: number;
+  paymentStatus: "Cleared" | "Outstanding" | "Overdue";
   onboarded: boolean;
   savedProperties: Types.ObjectId[];
   // onboardingStep: "not_started" | "profile_completed" | "documents_uploaded" | "completed";
@@ -30,6 +31,8 @@ export interface IUser extends Document {
   guarantor: IGuarantor | Types.ObjectId | null;
   nextOfKin: INextOfKin | Types.ObjectId | null;
   notificationPreference: INotificationPreference | Types.ObjectId | null;
+  totalEarnings: number;
+  propertiesCount: number;
 }
 
 export interface updateUserDTO {

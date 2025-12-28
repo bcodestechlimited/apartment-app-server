@@ -86,6 +86,16 @@ export class TenantService {
     });
   }
 
+  static async totalActiveTenants() {
+    const count = await Tenant.countDocuments({ isActive: true });
+    return count;
+  }
+
+  static async totalTenantsCount() {
+    const count = await Tenant.countDocuments();
+    return count;
+  }
+
   static async getTenantById(tenantId: string) {
     const populateOptions = [
       {

@@ -1,10 +1,16 @@
 import { ApiError, ApiSuccess } from "../../utils/responseHandler.js";
 
 import { paginate } from "../../utils/paginate.js";
-import type { createTransactionDTO } from "./transaction.interface.js";
-import Transaction from "./transaction.model.js";
+import type {
+  createTransactionDTO,
+  IProcessWithdrawal,
+} from "./transaction.interface.js";
+// import Transaction from "./transaction.model.js";
 import type { ObjectId, PopulateOptions, Types } from "mongoose";
 import type { IQueryParams } from "@/shared/interfaces/query.interface.js";
+import Booking from "../booking/booking.model.js";
+import Transaction from "./transaction.model.js";
+import type { Request } from "express";
 
 export class TransactionService {
   static async createTransaction(data: createTransactionDTO) {
@@ -98,6 +104,101 @@ export class TransactionService {
       throw ApiError.notFound("Transaction not found");
     }
     return transaction;
+  }
+
+  static async getPaymentOverview(query: IQueryParams) {
+    const { page = 1, limit = 10, search, status, transactionType } = query;
+
+    // 1. Calculate Global Stats using ONLY the Transaction collection
+    const [revenueStats, payoutStats] = await Promise.all([
+      // Sum successful payments (Income)
+      Transaction.aggregate([
+        {
+          $match: {
+            transactionType: "payment",
+            status: "success",
+          },
+        },
+        { $group: { _id: null, total: { $sum: "$amount" } } },
+      ]),
+      // Sum withdrawals grouped by status (Outgoings)
+      Transaction.aggregate([
+        { $match: { transactionType: "withdrawal" } },
+        {
+          $group: {
+            _id: "$status",
+            total: { $sum: "$amount" },
+          },
+        },
+      ]),
+    ]);
+
+    // Parse withdrawal results
+    const pendingPayouts =
+      payoutStats.find((p) => p._id === "pending")?.total || 0;
+    const successfulPayouts =
+      payoutStats.find((p) => p._id === "success")?.total || 0;
+
+    // 2. Fetch Transactions for the table
+    const filterQuery: any = {};
+    if (status && status !== "all") filterQuery.status = status;
+    if (transactionType && transactionType !== "all")
+      filterQuery.transactionType = transactionType;
+    if (search) filterQuery.reference = { $regex: search, $options: "i" };
+
+    const { documents: transactions, pagination } = await paginate({
+      model: Transaction,
+      query: filterQuery,
+      populateOptions: [
+        { path: "user", select: "firstName lastName email roles" },
+        { path: "approvedBy", select: "firstName lastName" },
+      ],
+      page,
+      limit,
+      sort: { createdAt: -1 },
+    });
+
+    return ApiSuccess.ok("Payments retrieved", {
+      transactions,
+      stats: {
+        // This will now equal 20,000 + 65,000 + 65,000 = 150,000
+        totalRevenue: revenueStats[0]?.total || 0,
+        pendingPayouts,
+        successfulPayouts,
+      },
+      pagination,
+    });
+  }
+
+  static async adminProcessWithdrawal(
+    payload: IProcessWithdrawal,
+    adminId: string | Types.ObjectId | ObjectId
+  ) {
+    const { transactionId, action, reason } = payload;
+
+    const transaction = await Transaction.findById(transactionId);
+
+    if (!transaction || transaction.transactionType !== "withdrawal") {
+      throw new ApiError(404, "Withdrawal request not found");
+    }
+
+    if (transaction.adminApproval !== "pending") {
+      throw new ApiError(400, "This transaction has already been processed");
+    }
+
+    if (action === "approved") {
+      transaction.adminApproval = "approved";
+      transaction.status = "success";
+      transaction.approvedBy = adminId as ObjectId;
+      transaction.approvalDate = new Date();
+    } else {
+      transaction.adminApproval = "rejected";
+      transaction.status = "failed";
+      transaction.rejectionReason = reason;
+    }
+
+    await transaction.save();
+    return new ApiSuccess(200, `Withdrawal ${action} successfully`);
   }
 
   //   static async updateTransaction(
