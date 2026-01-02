@@ -124,7 +124,7 @@ const UserSchema: Schema<IUser> = new Schema(
     personalInfo: {
       type: Types.ObjectId,
       ref: "PersonalInfo",
-      unique: true,
+      // unique: true,
     },
     employment: {
       type: Types.ObjectId,
@@ -159,17 +159,9 @@ const UserSchema: Schema<IUser> = new Schema(
     },
     totalEarnings: { type: Number, default: 0 },
     propertiesCount: { type: Number, default: 0 },
-    averageRating: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 5,
-    },
-    totalRatings: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 5,
+    paystackRecipientCode: {
+      type: String,
+      default: "",
     },
   },
   {

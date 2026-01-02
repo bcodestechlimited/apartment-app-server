@@ -8,9 +8,9 @@ import type {
 // import Transaction from "./transaction.model.js";
 import type { ObjectId, PopulateOptions, Types } from "mongoose";
 import type { IQueryParams } from "@/shared/interfaces/query.interface.js";
-import Booking from "../booking/booking.model.js";
 import Transaction from "./transaction.model.js";
-import type { Request } from "express";
+import { PaymentService } from "@/services/payment.service.js";
+import UserService from "../user/user.service.js";
 
 export class TransactionService {
   static async createTransaction(data: createTransactionDTO) {
@@ -170,35 +170,115 @@ export class TransactionService {
     });
   }
 
-  static async adminProcessWithdrawal(
+  static async processWithdrawal(
     payload: IProcessWithdrawal,
     adminId: string | Types.ObjectId | ObjectId
   ) {
     const { transactionId, action, reason } = payload;
+    console.log("Payload:", payload);
+    const transaction = await Transaction.findById(transactionId).populate(
+      "user"
+    );
+    console.log("Transaction found:", transaction);
 
-    const transaction = await Transaction.findById(transactionId);
-
-    if (!transaction || transaction.transactionType !== "withdrawal") {
-      throw new ApiError(404, "Withdrawal request not found");
+    if (!transaction || transaction.adminApproval !== "pending") {
+      throw new ApiError(400, "Invalid or already processed transaction");
     }
 
-    if (transaction.adminApproval !== "pending") {
-      throw new ApiError(400, "This transaction has already been processed");
-    }
-
-    if (action === "approved") {
-      transaction.adminApproval = "approved";
-      transaction.status = "success";
-      transaction.approvedBy = adminId as ObjectId;
-      transaction.approvalDate = new Date();
-    } else {
+    // 2. Handle Rejection (No API call needed)
+    if (action === "rejected") {
       transaction.adminApproval = "rejected";
       transaction.status = "failed";
       transaction.rejectionReason = reason;
+      await transaction.save();
+      return new ApiSuccess(200, "Withdrawal rejected successfully");
+    }
+
+    // 3. Handle Approval (Trigger Paystack via Payment Service)
+
+    // Check if user has a recipient code
+    if (!transaction.user.paystackRecipientCode) {
+      throw new ApiError(
+        400,
+        "Recipient bank details not registered with provider"
+      );
+    }
+
+    const transferData = {
+      source: "balance",
+      amount: Math.round(transaction.amount * 100), // Convert to kobo
+      recipient: transaction.user.paystackRecipientCode,
+      reason: `Withdrawal for ${transaction.user.firstName} ${transaction.user.lastName}`,
+      reference: transaction.reference,
+    };
+
+    // Call the payment service method
+
+    const paystackRes = await PaymentService.transferFunds(transferData);
+
+    // 4. Update local state based on successful initiation
+    if (paystackRes?.status) {
+      transaction.adminApproval = "approved";
+      transaction.status = "pending"; // Final status determined by webhook
+      transaction.approvedBy = adminId as ObjectId;
+      transaction.approvalDate = new Date();
+
+      await transaction.save();
+
+      return new ApiSuccess(
+        200,
+        "Transfer initiated successfully via Paystack"
+      );
+    }
+    // else {
+    //   throw new ApiError(500, "Paystack declined the transfer initiation");
+    // }
+  }
+
+  static async updateTransactionStatus(
+    reference: string,
+    status: "success" | "failed",
+    metadata?: { description?: string; reason?: string }
+  ) {
+    const transaction = await Transaction.findOne({ reference }).populate(
+      "user"
+    );
+
+    if (!transaction) {
+      throw ApiError.notFound(
+        `Transaction with reference ${reference} not found`
+      );
+    }
+
+    // Prevent duplicate processing if already in a final state
+    if (
+      transaction.status === "success" ||
+      (transaction.status === "failed" &&
+        transaction.transactionType !== "withdrawal")
+    ) {
+      return transaction;
+    }
+
+    // Update transaction details
+    transaction.status = status;
+    if (metadata?.description) transaction.description = metadata.description;
+    if (metadata?.reason) transaction.rejectionReason = metadata.reason;
+
+    // Handle Withdrawal Reversal Logic
+    // If a withdrawal fails, we must return the money back to the user's "totalEarnings" or wallet balance
+    if (status === "failed" && transaction.transactionType === "withdrawal") {
+      const user = await UserService.findUserById(
+        transaction.user._id as string
+      );
+      if (user) {
+        // Revert the amount back to the user
+        user.totalEarnings = (user.totalEarnings || 0) + transaction.amount;
+        await user.save();
+      }
     }
 
     await transaction.save();
-    return new ApiSuccess(200, `Withdrawal ${action} successfully`);
+    return transaction;
   }
 
   //   static async updateTransaction(

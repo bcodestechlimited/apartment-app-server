@@ -37,10 +37,10 @@ export class PropertyRatingService {
 
     await RatingStatsHelper.update(propertyExists, undefined, rating);
 
-    await PropertyService.calculateAVerageRatingOnRatingCreated(
-      propertyId.toString(),
-      rating
-    );
+    // await PropertyService.calculateAVerageRatingOnRatingCreated(
+    //   propertyId.toString(),
+    //   rating
+    // );
     return ApiSuccess.created("Rating created successfully", newRating);
   };
 
@@ -64,7 +64,6 @@ export class PropertyRatingService {
     const property = await PropertyService.getPropertyDocumentById(
       ratingDetails.propertyId.toString()
     );
-    const oldRating = existingRating.rating;
     const newRating = ratingDetails.rating;
     await RatingStatsHelper.update(property, oldRating, newRating);
     await existingRating.save();
@@ -133,7 +132,7 @@ export class PropertyRatingService {
     }).populate("tenantId");
     console.log(ratings);
     if (ratings.length === 0) {
-      throw ApiError.notFound("No ratings found for this property.");
+      return ApiSuccess.ok("No ratings found for this property.");
     }
     return ApiSuccess.ok("Ratings retrieved successfully", ratings);
   };

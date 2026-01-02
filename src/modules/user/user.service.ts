@@ -703,6 +703,29 @@ class UserService {
 
     await landlord.save();
   };
+
+  static async totalActiveTenants() {
+    const count = await User.countDocuments({
+      isActive: true,
+      roles: "tenant",
+    });
+    return count;
+  }
+
+  static async totalTenantsCount() {
+    const count = await User.countDocuments({ roles: "tenant" });
+    return count;
+  }
+
+  static async updateUserPaystackReceipientCode(
+    userId: Types.ObjectId | ObjectId,
+    code: string
+  ) {
+    const user = await User.findById(userId);
+    if (!user) throw ApiError.notFound("User not found.");
+    user.paystackRecipientCode = code;
+    await user.save();
+  }
 }
 
 export default UserService;

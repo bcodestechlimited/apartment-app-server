@@ -15,8 +15,6 @@ export interface IUser extends Document {
   isActive: boolean;
   isDocumentVerified: boolean;
   isEmailVerified: boolean;
-  averageRating: number;
-  totalRatings: number;
   paymentStatus: "Cleared" | "Outstanding" | "Overdue";
   onboarded: boolean;
   savedProperties: Types.ObjectId[];
@@ -35,6 +33,7 @@ export interface IUser extends Document {
   notificationPreference: INotificationPreference | Types.ObjectId | null;
   totalEarnings: number;
   propertiesCount: number;
+  paystackRecipientCode: string;
 }
 
 export interface updateUserDTO {

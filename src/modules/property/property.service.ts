@@ -243,11 +243,11 @@ export class PropertyService {
 
     const totalListings = await Property.countDocuments();
 
-    const totalActiveTenants = await TenantService.totalActiveTenants();
+    const totalActiveTenants = await UserService.totalActiveTenants();
 
     const verifiedLandlords = await UserService.verifiedLandlordsCount();
 
-    const totalTenants = await TenantService.totalTenantsCount();
+    const totalTenants = await UserService.totalTenantsCount();
     return ApiSuccess.ok("Properties retrieved successfully", {
       properties,
       pagination,
@@ -610,6 +610,61 @@ export class PropertyService {
     return await Property.findByIdAndUpdate(propertyId, {
       $inc: { totalRevenue: amount },
     });
+  }
+
+  static async calculateAVerageRatingOnRatingCreated(
+    propertyId: string,
+    newRating: number
+  ) {
+    const property = await Property.findById(propertyId);
+    if (!property) return;
+
+    const { averageRating, totalRatings } = property;
+    const newTotal = totalRatings + 1;
+    const newAverage = (averageRating * totalRatings + newRating) / newTotal;
+
+    property.averageRating = parseFloat(newAverage.toFixed(2));
+    property.totalRatings = newTotal;
+    await property.save();
+  }
+
+  static async calculateAVerageRatingOnRatingUpdated(
+    propertyId: string,
+    oldRating: number,
+    newRating: number
+  ) {
+    const property = await Property.findById(propertyId);
+    if (!property) return;
+
+    const { averageRating, totalRatings } = property;
+    const newAverage =
+      (averageRating * totalRatings - oldRating + newRating) / totalRatings;
+
+    property.averageRating = parseFloat(newAverage.toFixed(2));
+    await property.save();
+  }
+
+  static async calculateAVerageRatingOnRatingDeleted(
+    propertyId: string,
+    deletedRating: number
+  ) {
+    const property = await Property.findById(propertyId);
+    if (!property) return;
+
+    const { averageRating, totalRatings } = property;
+    if (totalRatings <= 1) {
+      property.averageRating = 0;
+      property.totalRatings = 0;
+    } else {
+      const newTotal = totalRatings - 1;
+      const newAverage =
+        (averageRating * totalRatings - deletedRating) / newTotal;
+
+      property.averageRating = parseFloat(newAverage.toFixed(2));
+      property.totalRatings = newTotal;
+    }
+
+    await property.save();
   }
 }
 

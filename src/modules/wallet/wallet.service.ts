@@ -223,6 +223,11 @@ export class WalletService {
 
       await wallet.save();
 
+      await UserService.updateUserPaystackReceipientCode(
+        userId,
+        wallet.recipientCode as string
+      );
+
       return ApiSuccess.ok("Wallet Updated", { wallet });
     } catch (error) {
       if (error instanceof AxiosError) {

@@ -33,6 +33,10 @@ router
   .get(isAuth, TransactionController.getPaymentOverview)
   .all(methodNotAllowed);
 router
+  .route("/transactions/process-withdrawal")
+  .post(isAuth, TransactionController.adminProcessWithdrawal)
+  .all(methodNotAllowed);
+router
   .route("/transactions/:transactionId")
   .get(isAuth, TransactionController.getTransactionById)
   .all(methodNotAllowed);

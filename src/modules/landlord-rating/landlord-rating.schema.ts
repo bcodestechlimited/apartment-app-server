@@ -3,7 +3,7 @@ import { z } from "zod";
 export class LandlordRatingSchemas {
   static createLandlordRatingSchema = z.object({
     rating: z.number().min(1).max(5),
-    comment: z.string().min(1).max(1000),
+    comment: z.string().max(1000).optional(),
     tenantId: z
       .string()
       .min(1, "Tenant id is required")

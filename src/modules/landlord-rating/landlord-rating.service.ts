@@ -34,7 +34,7 @@ export class LandlordRatingService {
     await newRating.save();
 
     await RatingStatsHelper.update(userExist, undefined, rating);
-    await UserService.calculateAVerageRatingonRatingCreated(landlordId, rating);
+    // await UserService.calculateAVerageRatingonRatingCreated(landlordId, rating);
     return ApiSuccess.created("Rating created successfully", newRating);
   };
 
@@ -63,7 +63,6 @@ export class LandlordRatingService {
     if (ratingDetails.comment) existingRating.comment = ratingDetails.comment;
     await existingRating.save();
 
-    const oldRating = existingRating.rating;
     const newRating = ratingDetails.rating;
     await RatingStatsHelper.update(userExist, oldRating, newRating);
     await UserService.calculateAVerageRatingonRatingUpdated(

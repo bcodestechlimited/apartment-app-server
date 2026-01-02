@@ -85,18 +85,18 @@ const PropertySchema: Schema<IProperty> = new Schema(
       type: Number,
       min: [1, "Seating capacity must be at least 1"],
     },
-    averageRating: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 5,
-    },
-    totalRatings: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 5,
-    },
+    // averageRating: {
+    //   type: Number,
+    //   default: 0,
+    //   min: 0,
+    //   max: 5,
+    // },
+    // totalRatings: {
+    //   type: Number,
+    //   default: 0,
+    //   min: 0,
+    //   max: 5,
+    // },
 
     isDeleted: {
       type: Boolean,

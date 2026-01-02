@@ -1,7 +1,8 @@
 import type { Document, ObjectId, Types } from "mongoose";
+import type { IUser } from "../user/user.interface";
 
 export interface ITransaction extends Document {
-  user: ObjectId;
+  user: IUser;
   transactionType: "withdrawal" | "deposit" | "transfer" | "payment";
   amount: number;
   bankName?: string;
