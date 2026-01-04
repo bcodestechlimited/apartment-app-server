@@ -24,7 +24,12 @@ export class PropertyRatingService {
       tenantId,
     });
     if (existingRating) {
-      throw ApiError.badRequest("Rating already exists for this property.");
+      const oldRating = existingRating.rating;
+      existingRating.rating = rating;
+      existingRating.comment = comment;
+      await existingRating.save();
+      await RatingStatsHelper.update(existingRating, oldRating, rating);
+      return ApiSuccess.created("Rating updated successfully", existingRating);
     }
     const newRating = await PropertyRating.create({
       propertyId,

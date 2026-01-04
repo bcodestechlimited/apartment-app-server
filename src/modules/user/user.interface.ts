@@ -70,6 +70,7 @@ export interface IPersonalInfo {
   address: string;
   state: string;
   city: string;
+  avatar?: string;
 }
 
 /**

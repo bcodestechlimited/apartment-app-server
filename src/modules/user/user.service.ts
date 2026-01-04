@@ -22,11 +22,20 @@ import type { UploadedFile } from "express-fileupload";
 import { UploadService } from "@/services/upload.service";
 import { BookingService } from "../booking/booking.service";
 import mongoose from "mongoose";
+import fs from "fs/promises";
 
 class UserService {
   static async createUser(userData: Partial<IUser>): Promise<IUser> {
-    const { firstName, lastName, password, email, avatar, provider, roles } =
-      userData;
+    const {
+      firstName,
+      lastName,
+      password,
+      email,
+      avatar,
+      provider,
+      roles,
+      phoneNumber,
+    } = userData;
 
     if (provider === "google") {
       const googleUser = new User(userData);
@@ -46,6 +55,7 @@ class UserService {
       avatar: avatar || undefined,
       provider: provider || "local",
       roles: roles,
+      phoneNumber: phoneNumber || "",
     });
 
     await user.save();
@@ -161,23 +171,52 @@ class UserService {
 
   static async updateUserInformation(
     userId: Types.ObjectId,
-    userData: any
+    userData: any,
+    files?: { avatar?: UploadedFile }
   ): Promise<IPersonalInfo> {
+    // console.log({ userId, userData, files });
+    const UpdatedUserData = {
+      ...userData,
+    };
+
+    if (files && files.avatar) {
+      const { secure_url } = await UploadService.uploadToCloudinary(
+        files.avatar.tempFilePath
+      );
+      UpdatedUserData.avatar = secure_url as string;
+      await fs.unlink(files.avatar.tempFilePath).catch(console.error);
+    }
+
+    if (!files || !files.avatar) {
+      UpdatedUserData.avatar = "";
+    }
+
     let personalInfo = await PersonalInfo.findOneAndUpdate(
       { user: userId },
-      userData,
+      UpdatedUserData,
       {
-        // new: true,
+        new: true,
         runValidators: true,
+        upsert: false,
       }
     );
 
+    // console.log(" personal info", { personalInfo });
+
+    // console.log("about to check personal info");
     if (!personalInfo) {
-      personalInfo = await PersonalInfo.create({ ...userData, user: userId });
-      const user = await this.findUserById(userId);
-      user.personalInfo = personalInfo._id;
-      await user.save();
+      personalInfo = await PersonalInfo.create({
+        ...UpdatedUserData,
+        user: userId,
+      });
     }
+
+    const user = await this.findUserById(userId);
+    // console.log("personal info user", user);
+    user.personalInfo = personalInfo._id;
+    user.avatar = personalInfo.avatar;
+    await user.save();
+    // console.log("final personal info", { personalInfo });
 
     return personalInfo;
   }
@@ -232,7 +271,7 @@ class UserService {
   }
 
   static async getAllUserDocuments(query: IQueryParams) {
-    const { limit = 10, page = 1, search, documentType, sortBy } = query;
+    const { limit = 10, page = 1, search, verificationStatus, sortBy } = query;
 
     const filterQuery: Record<string, any> = {};
     const populateOptions = [{ path: "user", select: "-password" }];
@@ -249,8 +288,8 @@ class UserService {
     }
 
     console.log({ filterQuery });
-    if (documentType) {
-      filterQuery.documentType = documentType;
+    if (verificationStatus) {
+      filterQuery.status = verificationStatus;
     }
 
     // --- C. Handle Sorting ---
@@ -594,7 +633,7 @@ class UserService {
     if (status === "Verified") {
       filterQuery.isDocumentVerified = true;
     }
-    if (status === "Pending") {
+    if (status === "Unverified") {
       filterQuery.isDocumentVerified = false;
     }
     const sort = { createdAt: -1 };
@@ -631,7 +670,7 @@ class UserService {
   ) {
     const incrementFields: any = {};
     if (update.propertiesDelta)
-      incrementFields.propertiesListed = update.propertiesDelta;
+      incrementFields.propertiesCount = update.propertiesDelta;
     if (update.earningsDelta)
       incrementFields.totalEarnings = update.earningsDelta;
 

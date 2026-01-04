@@ -5,6 +5,7 @@ import type { UploadedFile } from "express-fileupload";
 import { clientURLs } from "@/utils/clientURL.js";
 import type { IQueryParams } from "@/shared/interfaces/query.interface.js";
 import type { Types } from "mongoose";
+import { firebaserules_v1 } from "googleapis";
 
 export class AuthController {
   // Register user
@@ -136,7 +137,13 @@ export class AuthController {
   static async updatePersonalInfo(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
-    const result = await AuthService.updateUserPersonalInfo(userId, userData);
+    const files = req.files;
+    console.log("Updating personal info with data:", userData, files);
+    const result = await AuthService.updateUserPersonalInfo(
+      userId,
+      userData,
+      files
+    );
     res.status(200).json(result);
   }
 

@@ -1,13 +1,24 @@
-import { model, Schema } from "mongoose";
+import mongoose, { model, Schema } from "mongoose";
 import type { ITenantRating } from "./tenant-rating.interface";
 
-const tenantRatingSchema = new Schema<ITenantRating>({
-  landlord: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  rating: { type: Number, required: true, min: 1, max: 5 },
-  comment: { type: String, required: false, trim: true, maxLength: 1000 },
-  tenant: { type: Schema.Types.ObjectId, ref: "User", required: true },
-});
+const TenantRatingSchema: Schema<ITenantRating> = new Schema(
+  {
+    landlord: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    rating: { type: Number, required: true, min: 1, max: 5 }, // 1-5 stars
+    comment: { type: String, required: false, trim: true, maxLength: 1000 }, // max 1000 characters;
+    tenant: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    averageRating: { type: Number, required: false, min: 1, max: 5 },
+  },
+  { timestamps: true }
+);
 
-const TenantRating = model<ITenantRating>("TenantRating", tenantRatingSchema);
-
+const TenantRating = model<ITenantRating>("TenantRating", TenantRatingSchema);
 export default TenantRating;

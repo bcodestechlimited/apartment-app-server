@@ -144,7 +144,13 @@ export class TransactionService {
     if (status && status !== "all") filterQuery.status = status;
     if (transactionType && transactionType !== "all")
       filterQuery.transactionType = transactionType;
-    if (search) filterQuery.reference = { $regex: search, $options: "i" };
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+      filterQuery.$or = [
+        { reference: { $regex: searchRegex } },
+        { "user.email": { $regex: searchRegex } },
+      ];
+    }
 
     const { documents: transactions, pagination } = await paginate({
       model: Transaction,

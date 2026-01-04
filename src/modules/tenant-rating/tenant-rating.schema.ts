@@ -1,24 +1,23 @@
 import { z } from "zod";
 
-export class TenantRatingSchema {
+export class TenantRatingSchemas {
   static createTenantRatingSchema = z.object({
     rating: z.number().min(1).max(5),
     comment: z.string().max(1000).optional(),
-    landlordId: z
+    tenantId: z
       .string()
-      .min(1, "Landlord id is required")
-      .regex(/^[0-9a-fA-F]{24}$/, "Invalid landlord id"),
+      .min(1, "Tenant id is required")
+      .regex(/^[0-9a-fA-F]{24}$/, "Invalid tenant id"),
   });
 
   static updateTenantRatingSchema = z.object({
     rating: z.number().min(1).max(5),
     comment: z.string().min(1).max(1000),
-    landlordId: z
+    tenantId: z
       .string()
-      .min(1, "Landlord id is required")
-      .regex(/^[0-9a-fA-F]{24}$/, "Invalid landlord id"),
+      .min(1, "Tenant id is required")
+      .regex(/^[0-9a-fA-F]{24}$/, "Invalid tenant id"),
   });
-
   static idParams(paramName: string, paramLabel: string) {
     return z.object({
       [paramName]: z

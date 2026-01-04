@@ -203,10 +203,15 @@ export class AuthService {
       personalInfo,
     });
   }
-  static async updateUserPersonalInfo(userId: Types.ObjectId, userData: any) {
+  static async updateUserPersonalInfo(
+    userId: Types.ObjectId,
+    userData: any,
+    files?: any
+  ) {
     const personalInfo = await UserService.updateUserInformation(
       userId,
-      userData
+      userData,
+      files
     );
 
     return ApiSuccess.ok("Personal Info Updated Successfully", {

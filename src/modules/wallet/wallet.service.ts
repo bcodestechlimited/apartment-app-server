@@ -19,7 +19,7 @@ export class WalletService {
     let callback_url = "";
     if (user.roles.includes("landlord")) {
       callback_url = `${env.CLIENT_BASE_URL}/dashboard/landlord/paystack/verify`;
-    } else if (user.roles.includes("user")) {
+    } else if (user.roles.includes("tenant")) {
       callback_url = `${env.CLIENT_BASE_URL}/dashboard/paystack/verify`;
     }
     console.log("User Roles:", user.roles);

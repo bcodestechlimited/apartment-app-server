@@ -5,7 +5,7 @@ import { WalletController } from "../wallet/wallet.controller";
 import { TransactionController } from "../transaction/transaction.controller";
 import { UserController } from "../user/user.controller";
 import { PropertyController } from "../property/property.controller";
-import { LandlordRatingController } from "../landlord-rating/landlord-rating.controller";
+import { TenantRatingController } from "../tenant-rating/tenant-rating.controller";
 import { AuthController } from "../auth/auth.controller";
 import { ReportController } from "../report/report.controller";
 import { BookingController } from "../booking/booking.controller";
@@ -78,7 +78,7 @@ router
 //Rating
 router
   .route("/rating/:landlordId")
-  .get(isAuth, isAuthAdmin, LandlordRatingController.getAllRatings)
+  .get(isAuth, isAuthAdmin, TenantRatingController.getAllRatings)
   .all(methodNotAllowed);
 
 //document
