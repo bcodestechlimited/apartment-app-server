@@ -130,6 +130,7 @@ const UserSchema: Schema<IUser> = new Schema(
       type: Types.ObjectId,
       ref: "Employment",
       unique: true,
+      sparse: true,
     },
     savedProperties: {
       type: [Types.ObjectId],
@@ -146,16 +147,19 @@ const UserSchema: Schema<IUser> = new Schema(
       type: Types.ObjectId,
       ref: "Guarantor",
       unique: true,
+      sparse: true,
     },
     nextOfKin: {
       type: Types.ObjectId,
       ref: "NextOfKin",
       unique: true,
+      sparse: true,
     },
     notificationPreference: {
       type: Types.ObjectId,
       ref: "NotificationPreference",
       unique: true,
+      sparse: true,
     },
     totalEarnings: { type: Number, default: 0 },
     propertiesCount: { type: Number, default: 0 },

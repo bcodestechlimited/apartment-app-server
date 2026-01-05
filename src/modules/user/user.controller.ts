@@ -44,4 +44,14 @@ export class UserController {
     const result = await UserService.getUserDocuments(userId as string);
     res.status(200).json(result);
   }
+
+  static async UpdateUserByAdmin(req: Request, res: Response) {
+    const { userId } = req.params;
+    const userData = req.body;
+    const result = await UserService.updateUserByAdmin(
+      userId as string,
+      userData
+    );
+    res.status(200).json(result);
+  }
 }

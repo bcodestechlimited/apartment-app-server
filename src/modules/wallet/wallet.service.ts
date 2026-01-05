@@ -39,7 +39,7 @@ export class WalletService {
       reference: response.data.data.reference,
       provider: "paystack",
       status: "pending",
-      adminApproval: "pending",
+      adminApproval: "approved",
     });
     return ApiSuccess.ok("Wallet Topup Initialized", {
       authorization_url: response.data.data.authorization_url,

@@ -14,7 +14,7 @@ const connectDB = async () => {
       dbName:
         env.NODE_ENV === "production"
           ? "Haven-Lease"
-          : "Haven-Lease-Staging-new",
+          : "Haven-Lease-Staging-final",
       // "Haven-Lease",
     });
     logger.info("DB Connected!");

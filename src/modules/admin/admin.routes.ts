@@ -15,44 +15,45 @@ const router = express.Router();
 // Users
 router
   .route("/users")
-  .get(isAuth, UserController.getAllUsers)
+  .get(isAuth, isAuthAdmin, UserController.getAllUsers)
   .all(methodNotAllowed);
 router
   .route("/users/:userId")
-  .get(isAuth, UserController.getUserById)
+  .get(isAuth, isAuthAdmin, UserController.getUserById)
+  .patch(isAuth, UserController.UpdateUserByAdmin)
   .all(methodNotAllowed);
 
 // Transactions
 router
   .route("/transactions")
-  .get(isAuth, TransactionController.getAllTransactions)
+  .get(isAuth, isAuthAdmin, TransactionController.getAllTransactions)
   .all(methodNotAllowed);
 
 router
   .route("/transactions/overview")
-  .get(isAuth, TransactionController.getPaymentOverview)
+  .get(isAuth, isAuthAdmin, TransactionController.getPaymentOverview)
   .all(methodNotAllowed);
 router
   .route("/transactions/process-withdrawal")
-  .post(isAuth, TransactionController.adminProcessWithdrawal)
+  .post(isAuth, isAuthAdmin, TransactionController.adminProcessWithdrawal)
   .all(methodNotAllowed);
 router
   .route("/transactions/:transactionId")
-  .get(isAuth, TransactionController.getTransactionById)
+  .get(isAuth, isAuthAdmin, TransactionController.getTransactionById)
   .all(methodNotAllowed);
 
 //Wallet
 router
   .route("/wallet")
-  .get(isAuth, WalletController.getAllWallets)
+  .get(isAuth, isAuthAdmin, WalletController.getAllWallets)
   .all(methodNotAllowed);
 router
   .route("/wallet/block/:userId")
-  .put(isAuth, WalletController.blockUserWallet)
+  .put(isAuth, isAuthAdmin, WalletController.blockUserWallet)
   .all(methodNotAllowed);
 router
   .route("/wallet/unblock/:userId")
-  .put(isAuth, WalletController.unBlockUserWallet)
+  .put(isAuth, isAuthAdmin, WalletController.unBlockUserWallet)
   .all(methodNotAllowed);
 
 //Property

@@ -89,6 +89,19 @@ class UserService {
 
     return user;
   }
+  static async updateUserByAdmin(
+    userId: string,
+    userData: Partial<updateUserDTO>
+  ) {
+    const user = await User.findOneAndUpdate({ _id: userId }, userData, {
+      new: true,
+    });
+    if (!user) {
+      throw ApiError.notFound("User Not Found");
+    }
+    return ApiSuccess.ok("User updated successfully", { user });
+  }
+
   static async findUserByEmail(email: string): Promise<IUser> {
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
