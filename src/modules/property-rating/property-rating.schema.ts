@@ -3,7 +3,7 @@ import { z } from "zod";
 export class PropertyRatingSchemas {
   static createPropertyRatingSchema = z.object({
     rating: z.number().min(1).max(5),
-    comment: z.string().min(1).max(1000),
+    comment: z.string().max(1000).optional(),
     propertyId: z
       .string()
       .min(1, "Property id is required")

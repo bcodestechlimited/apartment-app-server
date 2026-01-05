@@ -39,6 +39,7 @@ export interface IProperty extends Document {
   averageRating: number;
   totalRatings: number;
   status: string;
+  totalRevenue: number;
   // For standard-rental / serviced-apartment
   availabilityDate: Date;
   numberOfBedrooms?: number;

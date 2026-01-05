@@ -1,42 +1,40 @@
-import { isAuth, isTenant } from "@/middleware/auth";
-import { validateBody, validateParams } from "@/middleware/validateSchema";
 import { Router } from "express";
-import { TenantRatingSchema } from "./tenant-rating.schema";
 import { TenantRatingController } from "./tenant-rating.controller";
+import { isAuth, isLandlord } from "@/middleware/auth";
+import { validateBody, validateParams } from "@/middleware/validateSchema";
+import { TenantRatingSchemas } from "./tenant-rating.schema";
 
 const tenantRatingRouter = Router();
-
 tenantRatingRouter
   .route("/")
-  //   .get(isAuth, isTenant)
   .post(
     isAuth,
-    isTenant,
-    validateBody(TenantRatingSchema.createTenantRatingSchema),
+    isLandlord,
+    validateBody(TenantRatingSchemas.createTenantRatingSchema),
     TenantRatingController.createRating
   )
   .put(
     isAuth,
-    isTenant,
-    validateBody(TenantRatingSchema.updateTenantRatingSchema),
-
+    isLandlord,
+    validateBody(TenantRatingSchemas.updateTenantRatingSchema),
     TenantRatingController.updateRating
-  );
+  )
+  .get(isAuth, isLandlord, TenantRatingController.getAllRatingsByLandlordId);
 
 tenantRatingRouter
   .route("/:ratingId")
-  .get(
-    isAuth,
-    isTenant,
-    validateParams(TenantRatingSchema.idParams("ratingId", "id")),
-    TenantRatingController.getRatingById
-  )
-
   .delete(
     isAuth,
-    isTenant,
-    validateBody(TenantRatingSchema.idParams("ratingId", "id")),
+    isLandlord,
+    validateParams(TenantRatingSchemas.idParams("ratingId", " id")),
     TenantRatingController.deleteRating
+  )
+  .get(
+    isAuth,
+    isLandlord,
+    validateParams(TenantRatingSchemas.idParams("ratingId", "id")),
+
+    TenantRatingController.getRatingById
   );
 
 export default tenantRatingRouter;

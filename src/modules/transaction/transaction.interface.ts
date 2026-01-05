@@ -1,7 +1,8 @@
 import type { Document, ObjectId, Types } from "mongoose";
+import type { IUser } from "../user/user.interface";
 
 export interface ITransaction extends Document {
-  user: ObjectId;
+  user: IUser;
   transactionType: "withdrawal" | "deposit" | "transfer" | "payment";
   amount: number;
   bankName?: string;
@@ -34,4 +35,10 @@ export interface createTransactionDTO {
   adminApproval?: "pending" | "approved" | "rejected";
   approvalDate?: Date;
   status?: "success" | "failed" | "pending";
+}
+
+export interface IProcessWithdrawal {
+  transactionId: string;
+  reason: string;
+  action: "approved" | "rejected";
 }

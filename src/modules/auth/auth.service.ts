@@ -203,10 +203,15 @@ export class AuthService {
       personalInfo,
     });
   }
-  static async updateUserPersonalInfo(userId: Types.ObjectId, userData: any) {
+  static async updateUserPersonalInfo(
+    userId: Types.ObjectId,
+    userData: any,
+    files?: any
+  ) {
     const personalInfo = await UserService.updateUserInformation(
       userId,
-      userData
+      userData,
+      files
     );
 
     return ApiSuccess.ok("Personal Info Updated Successfully", {
@@ -241,6 +246,17 @@ export class AuthService {
     });
   }
 
+  static async getAllUserDocuments(query: IQueryParams) {
+    return await UserService.getAllUserDocuments(query);
+  }
+
+  static async verifyUserDocument(userId: Types.ObjectId) {
+    return await UserService.verifyDocument(userId);
+  }
+
+  static async rejectUserDocument(userId: Types.ObjectId) {
+    return await UserService.rejectUserDocument(userId);
+  }
   static async uploadUserDocument(userId: Types.ObjectId, files: any) {
     const userEmployment = await UserService.uploadUserDocument(userId, files);
 

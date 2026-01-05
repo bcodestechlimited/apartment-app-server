@@ -3,6 +3,9 @@ import { AuthService } from "./auth.service.js";
 import type { AuthenticatedUser, IUser } from "../user/user.interface.js";
 import type { UploadedFile } from "express-fileupload";
 import { clientURLs } from "@/utils/clientURL.js";
+import type { IQueryParams } from "@/shared/interfaces/query.interface.js";
+import type { Types } from "mongoose";
+import { firebaserules_v1 } from "googleapis";
 
 export class AuthController {
   // Register user
@@ -134,7 +137,13 @@ export class AuthController {
   static async updatePersonalInfo(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
-    const result = await AuthService.updateUserPersonalInfo(userId, userData);
+    const files = req.files;
+    console.log("Updating personal info with data:", userData, files);
+    const result = await AuthService.updateUserPersonalInfo(
+      userId,
+      userData,
+      files
+    );
     res.status(200).json(result);
   }
 
@@ -157,6 +166,36 @@ export class AuthController {
     const result = await AuthService.getUserDocuments(userId);
     res.status(200).json(result);
   }
+
+  // static async getUserDocument(req: Request, res: Response) {
+  //   const { UserId } = req.params;
+  //   const result = await AuthService.getUserDocument(UserId);
+  //   res.status(200).json(result);
+  // }
+
+  static async getAllUserDocuments(req: Request, res: Response) {
+    const query = req.query as IQueryParams;
+    // console.log("Received query params:", query);
+    const result = await AuthService.getAllUserDocuments(query);
+    res.status(200).json(result);
+  }
+
+  static async verifyUserDocument(req: Request, res: Response) {
+    const { documentId } = req.params as unknown as {
+      documentId: Types.ObjectId;
+    };
+    const result = await AuthService.verifyUserDocument(documentId);
+    res.status(200).json(result);
+  }
+
+  static async rejectUserDocument(req: Request, res: Response) {
+    const { documentId } = req.params as unknown as {
+      documentId: Types.ObjectId;
+    };
+    const result = await AuthService.rejectUserDocument(documentId);
+    res.status(200).json(result);
+  }
+
   static async uploadUserDocument(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const files = req.files;

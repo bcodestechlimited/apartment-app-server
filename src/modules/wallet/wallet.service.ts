@@ -19,7 +19,7 @@ export class WalletService {
     let callback_url = "";
     if (user.roles.includes("landlord")) {
       callback_url = `${env.CLIENT_BASE_URL}/dashboard/landlord/paystack/verify`;
-    } else if (user.roles.includes("user")) {
+    } else if (user.roles.includes("tenant")) {
       callback_url = `${env.CLIENT_BASE_URL}/dashboard/paystack/verify`;
     }
     console.log("User Roles:", user.roles);
@@ -39,7 +39,7 @@ export class WalletService {
       reference: response.data.data.reference,
       provider: "paystack",
       status: "pending",
-      adminApproval: "pending",
+      adminApproval: "approved",
     });
     return ApiSuccess.ok("Wallet Topup Initialized", {
       authorization_url: response.data.data.authorization_url,
@@ -222,6 +222,11 @@ export class WalletService {
       wallet.hasSubmitted = true;
 
       await wallet.save();
+
+      await UserService.updateUserPaystackReceipientCode(
+        userId,
+        wallet.recipientCode as string
+      );
 
       return ApiSuccess.ok("Wallet Updated", { wallet });
     } catch (error) {

@@ -60,6 +60,7 @@ class MailService {
       const sentMessageInfo = await this.transporter.sendMail(mailOptions);
       return sentMessageInfo;
     } catch (error) {
+      console.error("Error sending email:", error);
       logger.fatal("Error sending email:", error);
       throw error;
     }

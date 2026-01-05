@@ -21,6 +21,7 @@ import { scheduleBookingRequestApprovalEmailToTenant } from "@/jobs/sendBookingR
 import { MessageService } from "../message/message.service.js";
 import { TransactionService } from "../transaction/transaction.service.js";
 import { WalletService } from "../wallet/wallet.service.js";
+import UserService from "../user/user.service.js";
 
 export class BookingRequestService {
   // ----------------- Booking Requests -----------------
@@ -418,7 +419,7 @@ export class BookingRequestService {
 
     //Create Transaction
     await TransactionService.createTransaction({
-      user: bookingRequest.tenant._id as ObjectId,
+      user: bookingRequest.tenant._id,
       transactionType: "payment",
       amount: bookingRequest.netPrice,
       adminApproval: "approved",
@@ -435,6 +436,15 @@ export class BookingRequestService {
     );
 
     await booking.save();
+
+    await UserService.updateLandlordStats(booking.landlord._id as string, {
+      earningsDelta: booking.netPrice,
+    });
+
+    await PropertyService.updatePropertyRevenue(
+      booking.property._id,
+      booking.netPrice
+    );
 
     await schedulePaymentSuccessEmail({
       landlordName: bookingRequest.landlord.firstName,

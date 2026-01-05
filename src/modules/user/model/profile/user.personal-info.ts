@@ -17,6 +17,7 @@ const personalInfoSchema: Schema<IPersonalInfo> = new Schema(
     address: { type: String, default: "" },
     state: { type: String, default: "" },
     city: { type: String, default: "" },
+    avatar: { type: String, default: "" },
   },
   { timestamps: true }
 );

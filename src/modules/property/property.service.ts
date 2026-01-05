@@ -10,6 +10,8 @@ import { UploadService } from "../../services/upload.service.js";
 import type { UploadedFile } from "express-fileupload";
 import type { IQueryParams } from "../../shared/interfaces/query.interface.js";
 import { paginate } from "../../utils/paginate.js";
+import { TenantService } from "../tenant/tenant.service.js";
+import UserService from "../user/user.service.js";
 
 export class PropertyService {
   static async getPropertyDocumentById(propertyId: string | ObjectId) {
@@ -80,9 +82,84 @@ export class PropertyService {
 
     property.pictures = uploadedPictures as string[];
     await property.save();
+
+    await UserService.updateLandlordStats(userId, { propertiesDelta: 1 });
     return ApiSuccess.created("Property created successfully", { property });
   }
   // Get all properties (admin)
+  // static async getAllProperties(query: IQueryParams) {
+  //   const {
+  //     limit = 10,
+  //     page = 1,
+  //     propertyType,
+  //     minPrice,
+  //     maxPrice,
+  //     state,
+  //     lga,
+  //     numberOfBedrooms,
+  //     numberOfBathrooms,
+  //   } = query;
+
+  //   console.log({ numberOfBedrooms, numberOfBathrooms });
+
+  //   const filterQuery: Record<string, any> = {};
+
+  //   // const filterQuery: Record<string, any> = {
+  //   //   isAvailable: true,
+  //   //   isApproved: true,
+  //   // };
+
+  //   if (propertyType) {
+  //     const actualPropertyType =
+  //       PropertyService.getActualTypeFromParam(propertyType);
+
+  //     console.log({ actualPropertyType });
+
+  //     if (actualPropertyType) {
+  //       filterQuery.type = actualPropertyType;
+  //     }
+  //   }
+
+  //   if (minPrice) {
+  //     filterQuery.price = { $gte: Number(minPrice) };
+  //   }
+
+  //   if (maxPrice) {
+  //     filterQuery.price = { ...filterQuery.price, $lte: Number(maxPrice) };
+  //   }
+
+  //   if (state) {
+  //     filterQuery.state = state;
+  //   }
+
+  //   if (lga) {
+  //     filterQuery.lga = lga;
+  //   }
+
+  //   if (numberOfBedrooms) {
+  //     filterQuery.numberOfBedRooms = numberOfBedrooms;
+  //   }
+
+  //   if (numberOfBathrooms) {
+  //     filterQuery.numberOfBathrooms = numberOfBathrooms;
+  //   }
+
+  //   console.log({ filterQuery });
+
+  //   const { documents: properties, pagination } = await paginate({
+  //     model: Property,
+  //     query: filterQuery,
+  //     page,
+  //     limit,
+  //     sort: { createdAt: -1 },
+  //   });
+
+  //   return ApiSuccess.ok("Properties retrieved successfully", {
+  //     properties,
+  //     pagination,
+  //   });
+  // }
+
   static async getAllProperties(query: IQueryParams) {
     const {
       limit = 10,
@@ -92,11 +169,12 @@ export class PropertyService {
       maxPrice,
       state,
       lga,
+      search,
       numberOfBedrooms,
       numberOfBathrooms,
     } = query;
 
-    console.log({ numberOfBedrooms, numberOfBathrooms });
+    console.log("query", query);
 
     const filterQuery: Record<string, any> = {};
 
@@ -140,6 +218,19 @@ export class PropertyService {
       filterQuery.numberOfBathrooms = numberOfBathrooms;
     }
 
+    if (search) {
+      const searchRegex = { $regex: search, $options: "i" };
+
+      // Use $or to search across multiple fields
+      filterQuery.$or = [
+        { title: searchRegex },
+        { description: searchRegex },
+        { address: searchRegex },
+        { state: searchRegex },
+        { lga: searchRegex },
+      ];
+    }
+
     console.log({ filterQuery });
 
     const { documents: properties, pagination } = await paginate({
@@ -150,11 +241,25 @@ export class PropertyService {
       sort: { createdAt: -1 },
     });
 
+    const totalListings = await Property.countDocuments();
+
+    const totalActiveTenants = await UserService.totalActiveTenants();
+
+    const verifiedLandlords = await UserService.verifiedLandlordsCount();
+
+    const totalTenants = await UserService.totalTenantsCount();
     return ApiSuccess.ok("Properties retrieved successfully", {
       properties,
       pagination,
+      meta: {
+        totalListings,
+        totalActiveTenants,
+        verifiedLandlords,
+        totalTenants,
+      },
     });
   }
+
   // Get all properties
   static async getProperties(query: IQueryParams) {
     const {
@@ -456,6 +561,7 @@ export class PropertyService {
     }
 
     await property.deleteOne();
+    await UserService.updateLandlordStats(userId, { propertiesDelta: -1 });
 
     return ApiSuccess.ok("Property deleted successfully");
   }
@@ -497,6 +603,15 @@ export class PropertyService {
     });
   }
 
+  static async updatePropertyRevenue(
+    propertyId: string | Types.ObjectId | ObjectId,
+    amount: number
+  ) {
+    return await Property.findByIdAndUpdate(propertyId, {
+      $inc: { totalRevenue: amount },
+    });
+  }
+
   static async calculateAVerageRatingOnRatingCreated(
     propertyId: string,
     newRating: number
@@ -528,6 +643,7 @@ export class PropertyService {
     property.averageRating = parseFloat(newAverage.toFixed(2));
     await property.save();
   }
+
   static async calculateAVerageRatingOnRatingDeleted(
     propertyId: string,
     deletedRating: number

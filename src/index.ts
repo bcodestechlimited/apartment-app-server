@@ -24,9 +24,10 @@ import messageRoutes from "./modules/message/message.routes";
 import webookRoutes from "./modules/webhook/webhook.routes";
 import adminRoutes from "./modules/admin/admin.routes";
 import { initializeSocket } from "./lib/socket";
-import landlordRatingRouter from "./modules/landlord-rating/landlord-rating.routes";
-import propertyRatingRouter from "./modules/property-rating/property-rating.routes";
 import tenantRatingRouter from "./modules/tenant-rating/tenant-rating.routes";
+import propertyRatingRouter from "./modules/property-rating/property-rating.routes";
+import landlordRatingRouter from "./modules/landord-rating/landlord-rating.routes";
+import ReportRouter from "./modules/report/report.routes";
 // import favouriteRouter from "./modules/favourite/favourite.route";
 import savedPropertiesRouter from "./modules/saved-properties/saved-properties.routes";
 const app = express();
@@ -76,6 +77,7 @@ app.use("/api/v1/landlord-rating", landlordRatingRouter);
 app.use("/api/v1/property-rating", propertyRatingRouter);
 app.use("/api/v1/tenant-rating", tenantRatingRouter);
 app.use("/api/v1/save-properties", savedPropertiesRouter);
+app.use("/api/v1/report", ReportRouter);
 // app.use("/api/v1/favourite", favouriteRouter);
 
 // Admin routes
