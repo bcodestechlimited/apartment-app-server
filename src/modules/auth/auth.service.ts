@@ -67,16 +67,32 @@ export class AuthService {
     });
   }
 
-  static async loginWithGoogle() {
-    const redirectURL = generateGoogleAuthURL();
+  static async loginWithGoogle(role: string) {
+    const redirectURL = generateGoogleAuthURL(role);
     return ApiSuccess.ok("Login successful", { redirectURL });
   }
 
   static async handleGoogleCallback(query: IQueryParams) {
-    const { code } = query;
+    const { code, state } = query;
     if (!code) {
       throw ApiError.badRequest("Code is required");
     }
+
+    let role;
+    if (state) {
+      const decoded = JSON.parse(
+        Buffer.from(state as string, "base64").toString()
+      );
+      const selectedRole = decoded.role || "";
+      console.log("selected role:", selectedRole);
+
+      // Validate against allowed enum values
+      if (["user", "landlord", "tenant", "admin"].includes(selectedRole)) {
+        role = selectedRole;
+      }
+    }
+
+    console.log("google user role:", role);
     const googleUser = await getGoogleUserData(code as string);
 
     if (!googleUser || !googleUser.email) {
@@ -94,9 +110,14 @@ export class AuthService {
         googleId: googleUser.id,
         provider: "google",
         isEmailVerified: true,
+        roles: role,
       });
 
       user = newUser;
+    } else if (!user.roles || user.roles.length === 0) {
+      // If user exists but has no role, add the selected role
+      user.roles = role;
+      await user.save();
     }
 
     const token = generateToken({ userId: user._id, roles: user.roles });

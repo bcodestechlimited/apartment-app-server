@@ -36,7 +36,8 @@ export class AuthController {
 
   // Generate Goolge Link
   static async generateGoogleLoginLink(req: Request, res: Response) {
-    const result = await AuthService.loginWithGoogle();
+    const { role } = req.query;
+    const result = await AuthService.loginWithGoogle(role as string);
     res.status(200).json(result);
   }
 
@@ -56,9 +57,9 @@ export class AuthController {
 
     result.data.token = undefined;
 
-    if (!user.onboarded) {
-      return res.redirect(clientURLs.onboarding.roleSelectionURL);
-    }
+    // if (!user.onboarded) {
+    //   return res.redirect(clientURLs.onboarding.roleSelectionURL);
+    // }
     if (user.roles.includes("admin")) {
       return res.redirect(clientURLs.admin.dashboardURL);
     }
