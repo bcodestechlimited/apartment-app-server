@@ -57,6 +57,8 @@ export class AuthController {
 
     result.data.token = undefined;
 
+    console.log("User roles:", user.roles);
+
     // if (!user.onboarded) {
     //   return res.redirect(clientURLs.onboarding.roleSelectionURL);
     // }
@@ -68,6 +70,10 @@ export class AuthController {
     }
     if (user.roles.includes("tenant")) {
       return res.redirect(clientURLs.tenant.dashboardURL);
+    }
+
+    if (user.roles.includes("user")) {
+      return res.redirect(clientURLs.onboarding.roleSelectionURL);
     }
 
     return res.redirect(clientURLs.landingPageURL);

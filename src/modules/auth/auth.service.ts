@@ -114,11 +114,9 @@ export class AuthService {
       });
 
       user = newUser;
-    } else if (!user.roles || user.roles.length === 0) {
-      // If user exists but has no role, add the selected role
-      user.roles = role;
-      await user.save();
     }
+
+    console.log("Authenticated user roles:", user.roles);
 
     const token = generateToken({ userId: user._id, roles: user.roles });
 
