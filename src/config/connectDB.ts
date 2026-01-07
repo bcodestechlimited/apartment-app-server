@@ -12,9 +12,7 @@ const connectDB = async () => {
     logger.info("Connecting...");
     await mongoose.connect(env.MONGODB_URI, {
       dbName:
-        env.NODE_ENV === "production"
-          ? "Haven-Lease"
-          : "Haven-Lease-Staging-final",
+        env.NODE_ENV === "production" ? "Haven-Lease" : "Haven-Lease-Staging",
       // "Haven-Lease",
     });
     logger.info("DB Connected!");
