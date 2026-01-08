@@ -9,13 +9,16 @@ const oauth2Client = new google.auth.OAuth2({
 
 const scopes = ["profile", "email"];
 
-export const generateGoogleAuthURL = () => {
+export const generateGoogleAuthURL = (role: string) => {
   console.log(`${env.SERVER_BASE_URL}/api/v1/auth/google/callback`);
 
   return oauth2Client.generateAuthUrl({
     access_type: "offline",
     prompt: "consent",
     scope: scopes,
+    state: role
+      ? Buffer.from(JSON.stringify({ role })).toString("base64")
+      : undefined,
   });
 };
 

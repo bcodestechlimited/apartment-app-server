@@ -261,6 +261,107 @@ export class PropertyService {
   }
 
   // Get all properties
+  // static async getProperties(query: IQueryParams) {
+  //   const {
+  //     limit = 10,
+  //     page = 1,
+  //     search,
+  //     propertyType,
+  //     minPrice,
+  //     maxPrice,
+  //     state,
+  //     lga,
+  //     numberOfBedrooms,
+  //     numberOfBathrooms,
+  //     pricingModel,
+  //     availableFrom,
+  //     city,
+  //   } = query;
+
+  //   console.log("query", query);
+
+  //   const filterQuery: Record<string, any> = {};
+
+  //   // const filterQuery: Record<string, any> = {
+  //   //   isAvailable: true,
+  //   //   isApproved: true,
+  //   // };
+
+  //   if (propertyType) {
+  //     const actualPropertyType =
+  //       PropertyService.getActualTypeFromParam(propertyType);
+
+  //     console.log({ actualPropertyType });
+
+  //     if (actualPropertyType) {
+  //       filterQuery.type = actualPropertyType;
+  //     }
+  //   }
+
+  //   if (minPrice) {
+  //     filterQuery.price = { $gte: Number(minPrice) };
+  //   }
+
+  //   if (maxPrice) {
+  //     filterQuery.price = { ...filterQuery.price, $lte: Number(maxPrice) };
+  //   }
+
+  //   if (city) {
+  //     filterQuery.$or = [{ state: city }, { lga: city }];
+  //   } else {
+  //     // Only use state/lga if city is not provided
+  //     if (state) {
+  //       filterQuery.state = state;
+  //     }
+
+  //     if (lga) {
+  //       filterQuery.lga = lga;
+  //     }
+  //   }
+
+  //   if (numberOfBedrooms) {
+  //     filterQuery.numberOfBedRooms = numberOfBedrooms;
+  //   }
+
+  //   if (numberOfBathrooms) {
+  //     filterQuery.numberOfBathrooms = numberOfBathrooms;
+  //   }
+
+  //   if (pricingModel) {
+  //     filterQuery.pricingModel = pricingModel.toLowerCase();
+  //   }
+
+  //   if (search) {
+  //     filterQuery.title = { $regex: search, $options: "i" };
+  //   }
+
+  //   // if (availableFrom) {
+  //   //   const isoDate = toISODate(availableFrom as string);
+
+  //   //   console.log({ isoDate });
+
+  //   //   if (isoDate) {
+  //   //     filterQuery.availabilityDate = {
+  //   //       $gte: isoDate,
+  //   //     };
+  //   //   }
+  //   // }
+
+  //   console.log({ filterQuery });
+
+  //   const { documents: properties, pagination } = await paginate({
+  //     model: Property,
+  //     query: filterQuery,
+  //     page,
+  //     limit,
+  //     sort: { createdAt: -1 },
+  //   });
+
+  //   return ApiSuccess.ok("Properties retrieved successfully", {
+  //     properties,
+  //     pagination,
+  //   });
+  // }
   static async getProperties(query: IQueryParams) {
     const {
       limit = 10,
@@ -275,14 +376,12 @@ export class PropertyService {
       numberOfBathrooms,
       pricingModel,
       availableFrom,
+      city,
     } = query;
 
-    const filterQuery: Record<string, any> = {};
+    console.log("query", query);
 
-    // const filterQuery: Record<string, any> = {
-    //   isAvailable: true,
-    //   isApproved: true,
-    // };
+    const filterQuery: Record<string, any> = {};
 
     if (propertyType) {
       const actualPropertyType =
@@ -303,16 +402,25 @@ export class PropertyService {
       filterQuery.price = { ...filterQuery.price, $lte: Number(maxPrice) };
     }
 
-    if (state) {
-      filterQuery.state = state;
-    }
+    // Handle location filtering: city takes precedence over state/lga
+    if (city && city.trim()) {
+      filterQuery.$or = [
+        { state: { $regex: city, $options: "i" } },
+        { lga: { $regex: city, $options: "i" } },
+      ];
+    } else {
+      // Only use state/lga if city is not provided
+      if (state && state.trim()) {
+        filterQuery.state = state;
+      }
 
-    if (lga) {
-      filterQuery.lga = lga;
+      if (lga && lga.trim()) {
+        filterQuery.lga = lga;
+      }
     }
 
     if (numberOfBedrooms) {
-      filterQuery.numberOfBedRooms = numberOfBedrooms;
+      filterQuery.numberOfBedrooms = numberOfBedrooms;
     }
 
     if (numberOfBathrooms) {
@@ -323,21 +431,9 @@ export class PropertyService {
       filterQuery.pricingModel = pricingModel.toLowerCase();
     }
 
-    if (search) {
+    if (search && search.trim()) {
       filterQuery.title = { $regex: search, $options: "i" };
     }
-
-    // if (availableFrom) {
-    //   const isoDate = toISODate(availableFrom as string);
-
-    //   console.log({ isoDate });
-
-    //   if (isoDate) {
-    //     filterQuery.availabilityDate = {
-    //       $gte: isoDate,
-    //     };
-    //   }
-    // }
 
     console.log({ filterQuery });
 
