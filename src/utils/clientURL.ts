@@ -17,7 +17,7 @@ export const clientURLs = {
     dashboardURL: `${CLIENT_BASE_URL}/admin`,
   },
   onboarding: {
-    roleSelectionURL: `${CLIENT_BASE_URL}/onboarding/role-selection`,
+    roleSelectionURL: `${CLIENT_BASE_URL}/onboarding`,
   },
   landingPageURL: `${CLIENT_BASE_URL}/`,
 };
