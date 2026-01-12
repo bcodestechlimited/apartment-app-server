@@ -4,17 +4,17 @@ import { type IConversation, type IMessage } from "./message.interface";
 const MessageSchema: Schema<IMessage> = new Schema(
   {
     conversationId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "Conversation",
       required: true,
     },
     sender: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
     receiver: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
@@ -28,7 +28,7 @@ const MessageSchema: Schema<IMessage> = new Schema(
       default: false,
     },
     deletedFor: {
-      type: [mongoose.Schema.Types.ObjectId], // soft delete per user
+      type: [Schema.Types.ObjectId], // soft delete per user
       ref: "User",
       default: [],
     },
@@ -43,7 +43,7 @@ const ConversationSchema: Schema<IConversation> = new Schema(
   {
     participants: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "User",
         required: true,
       },
@@ -53,7 +53,7 @@ const ConversationSchema: Schema<IConversation> = new Schema(
       default: "",
     },
     lastSender: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
     },
     lastMessageAt: {

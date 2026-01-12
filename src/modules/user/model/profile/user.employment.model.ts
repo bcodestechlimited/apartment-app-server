@@ -1,9 +1,9 @@
-import { Schema, model, Types } from "mongoose";
+import { Schema, model } from "mongoose";
 import type { IEmployment } from "../../user.interface";
 
 const employmentSchema: Schema<IEmployment> = new Schema(
   {
-    user: { type: Types.ObjectId, ref: "User", required: true },
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     employmentStatus: { type: String, default: "" },
     companyName: { type: String, default: "" },
     jobTitle: { type: String, default: "" },

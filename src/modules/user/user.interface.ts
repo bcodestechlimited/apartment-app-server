@@ -27,7 +27,7 @@ export interface IUser extends Document {
   totalRatings: number;
   personalInfo: IPersonalInfo | Types.ObjectId | null;
   employment: IEmployment | Types.ObjectId | null;
-  documents: (Types.ObjectId | IDocument)[];
+  documents: Types.ObjectId[];
   guarantor: IGuarantor | Types.ObjectId | null;
   nextOfKin: INextOfKin | Types.ObjectId | null;
   notificationPreference: INotificationPreference | Types.ObjectId | null;

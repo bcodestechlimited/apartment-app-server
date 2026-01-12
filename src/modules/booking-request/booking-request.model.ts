@@ -4,17 +4,17 @@ import type { IBookingRequest } from "./booking-request.interface";
 const BookingRequestSchema: Schema<IBookingRequest> = new Schema(
   {
     tenant: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
     landlord: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
     property: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "Property",
       required: true,
     },
