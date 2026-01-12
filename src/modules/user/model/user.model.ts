@@ -1,4 +1,4 @@
-import mongoose, { Schema, Types } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import type { IUser } from "../user.interface";
 
 const UserSchema: Schema<IUser> = new Schema(
@@ -122,41 +122,40 @@ const UserSchema: Schema<IUser> = new Schema(
       sparse: true, // allows multiple nulls
     },
     personalInfo: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "PersonalInfo",
       // unique: true,
     },
     employment: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "Employment",
       unique: true,
       sparse: true,
     },
     savedProperties: {
-      type: [Types.ObjectId],
+      type: [Schema.Types.ObjectId],
       ref: "Property",
       default: [],
     },
-
     documents: {
-      type: [Types.ObjectId],
+      type: [Schema.Types.ObjectId],
       ref: "Document",
       default: [],
     },
     guarantor: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "Guarantor",
       unique: true,
       sparse: true,
     },
     nextOfKin: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "NextOfKin",
       unique: true,
       sparse: true,
     },
     notificationPreference: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "NotificationPreference",
       unique: true,
       sparse: true,

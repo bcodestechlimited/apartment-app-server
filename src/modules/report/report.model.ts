@@ -4,12 +4,12 @@ import type { IReport } from "./report.interface";
 const ReportSchema: Schema<IReport> = new Schema(
   {
     reporter: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
     reportedUser: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },

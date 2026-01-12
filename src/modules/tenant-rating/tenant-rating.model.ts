@@ -4,14 +4,14 @@ import type { ITenantRating } from "./tenant-rating.interface";
 const TenantRatingSchema: Schema<ITenantRating> = new Schema(
   {
     landlord: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
     rating: { type: Number, required: true, min: 1, max: 5 }, // 1-5 stars
     comment: { type: String, required: false, trim: true, maxLength: 1000 }, // max 1000 characters;
     tenant: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },

@@ -1,9 +1,9 @@
-import { Schema, model, Types } from "mongoose";
+import { Schema, model } from "mongoose";
 import type { IGuarantor } from "../../user.interface";
 
 const guarantorSchema: Schema<IGuarantor> = new Schema(
   {
-    user: { type: Types.ObjectId, ref: "User", required: true },
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     firstName: { type: String, default: "" },
     lastName: { type: String, default: "" },
     email: { type: String, default: "" },
