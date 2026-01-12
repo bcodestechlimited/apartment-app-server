@@ -48,8 +48,6 @@ export interface IProperty extends Document {
   seatingCapacity?: string;
   requestedBy: (IUser | Types.ObjectId)[];
   bookedBy: (IUser | ObjectId)[];
-  averageRating: number;
-  totalRatings: number;
 }
 
 export interface CreatePropertyDTO {

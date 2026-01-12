@@ -40,6 +40,14 @@ class UserService {
     if (provider === "google") {
       const googleUser = new User(userData);
       await googleUser.save();
+      await PersonalInfo.create({
+        user: googleUser._id,
+        avatar: avatar || "",
+        firstName: firstName || "",
+        lastName: lastName || "",
+        email: email || "",
+        phoneNumber: phoneNumber || "",
+      });
       return googleUser;
     }
 
@@ -59,6 +67,14 @@ class UserService {
     });
 
     await user.save();
+    await PersonalInfo.create({
+      user: user._id,
+      avatar: avatar || "",
+      firstName: firstName || "",
+      lastName: lastName || "",
+      email: email || "",
+      phoneNumber: phoneNumber || "",
+    });
 
     return user;
   }

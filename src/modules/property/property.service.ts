@@ -86,79 +86,6 @@ export class PropertyService {
     await UserService.updateLandlordStats(userId, { propertiesDelta: 1 });
     return ApiSuccess.created("Property created successfully", { property });
   }
-  // Get all properties (admin)
-  // static async getAllProperties(query: IQueryParams) {
-  //   const {
-  //     limit = 10,
-  //     page = 1,
-  //     propertyType,
-  //     minPrice,
-  //     maxPrice,
-  //     state,
-  //     lga,
-  //     numberOfBedrooms,
-  //     numberOfBathrooms,
-  //   } = query;
-
-  //   console.log({ numberOfBedrooms, numberOfBathrooms });
-
-  //   const filterQuery: Record<string, any> = {};
-
-  //   // const filterQuery: Record<string, any> = {
-  //   //   isAvailable: true,
-  //   //   isApproved: true,
-  //   // };
-
-  //   if (propertyType) {
-  //     const actualPropertyType =
-  //       PropertyService.getActualTypeFromParam(propertyType);
-
-  //     console.log({ actualPropertyType });
-
-  //     if (actualPropertyType) {
-  //       filterQuery.type = actualPropertyType;
-  //     }
-  //   }
-
-  //   if (minPrice) {
-  //     filterQuery.price = { $gte: Number(minPrice) };
-  //   }
-
-  //   if (maxPrice) {
-  //     filterQuery.price = { ...filterQuery.price, $lte: Number(maxPrice) };
-  //   }
-
-  //   if (state) {
-  //     filterQuery.state = state;
-  //   }
-
-  //   if (lga) {
-  //     filterQuery.lga = lga;
-  //   }
-
-  //   if (numberOfBedrooms) {
-  //     filterQuery.numberOfBedRooms = numberOfBedrooms;
-  //   }
-
-  //   if (numberOfBathrooms) {
-  //     filterQuery.numberOfBathrooms = numberOfBathrooms;
-  //   }
-
-  //   console.log({ filterQuery });
-
-  //   const { documents: properties, pagination } = await paginate({
-  //     model: Property,
-  //     query: filterQuery,
-  //     page,
-  //     limit,
-  //     sort: { createdAt: -1 },
-  //   });
-
-  //   return ApiSuccess.ok("Properties retrieved successfully", {
-  //     properties,
-  //     pagination,
-  //   });
-  // }
 
   static async getAllProperties(query: IQueryParams) {
     const {
@@ -172,6 +99,7 @@ export class PropertyService {
       search,
       numberOfBedrooms,
       numberOfBathrooms,
+      isVerified,
     } = query;
 
     console.log("query", query);
@@ -231,6 +159,10 @@ export class PropertyService {
       ];
     }
 
+    if (isVerified !== undefined) {
+      filterQuery.isVerified = isVerified;
+    }
+
     console.log({ filterQuery });
 
     const { documents: properties, pagination } = await paginate({
@@ -260,108 +192,6 @@ export class PropertyService {
     });
   }
 
-  // Get all properties
-  // static async getProperties(query: IQueryParams) {
-  //   const {
-  //     limit = 10,
-  //     page = 1,
-  //     search,
-  //     propertyType,
-  //     minPrice,
-  //     maxPrice,
-  //     state,
-  //     lga,
-  //     numberOfBedrooms,
-  //     numberOfBathrooms,
-  //     pricingModel,
-  //     availableFrom,
-  //     city,
-  //   } = query;
-
-  //   console.log("query", query);
-
-  //   const filterQuery: Record<string, any> = {};
-
-  //   // const filterQuery: Record<string, any> = {
-  //   //   isAvailable: true,
-  //   //   isApproved: true,
-  //   // };
-
-  //   if (propertyType) {
-  //     const actualPropertyType =
-  //       PropertyService.getActualTypeFromParam(propertyType);
-
-  //     console.log({ actualPropertyType });
-
-  //     if (actualPropertyType) {
-  //       filterQuery.type = actualPropertyType;
-  //     }
-  //   }
-
-  //   if (minPrice) {
-  //     filterQuery.price = { $gte: Number(minPrice) };
-  //   }
-
-  //   if (maxPrice) {
-  //     filterQuery.price = { ...filterQuery.price, $lte: Number(maxPrice) };
-  //   }
-
-  //   if (city) {
-  //     filterQuery.$or = [{ state: city }, { lga: city }];
-  //   } else {
-  //     // Only use state/lga if city is not provided
-  //     if (state) {
-  //       filterQuery.state = state;
-  //     }
-
-  //     if (lga) {
-  //       filterQuery.lga = lga;
-  //     }
-  //   }
-
-  //   if (numberOfBedrooms) {
-  //     filterQuery.numberOfBedRooms = numberOfBedrooms;
-  //   }
-
-  //   if (numberOfBathrooms) {
-  //     filterQuery.numberOfBathrooms = numberOfBathrooms;
-  //   }
-
-  //   if (pricingModel) {
-  //     filterQuery.pricingModel = pricingModel.toLowerCase();
-  //   }
-
-  //   if (search) {
-  //     filterQuery.title = { $regex: search, $options: "i" };
-  //   }
-
-  //   // if (availableFrom) {
-  //   //   const isoDate = toISODate(availableFrom as string);
-
-  //   //   console.log({ isoDate });
-
-  //   //   if (isoDate) {
-  //   //     filterQuery.availabilityDate = {
-  //   //       $gte: isoDate,
-  //   //     };
-  //   //   }
-  //   // }
-
-  //   console.log({ filterQuery });
-
-  //   const { documents: properties, pagination } = await paginate({
-  //     model: Property,
-  //     query: filterQuery,
-  //     page,
-  //     limit,
-  //     sort: { createdAt: -1 },
-  //   });
-
-  //   return ApiSuccess.ok("Properties retrieved successfully", {
-  //     properties,
-  //     pagination,
-  //   });
-  // }
   static async getProperties(query: IQueryParams) {
     const {
       limit = 10,
@@ -402,21 +232,17 @@ export class PropertyService {
       filterQuery.price = { ...filterQuery.price, $lte: Number(maxPrice) };
     }
 
-    // Handle location filtering: city takes precedence over state/lga
-    if (city && city.trim()) {
-      filterQuery.$or = [
-        { state: { $regex: city, $options: "i" } },
-        { lga: { $regex: city, $options: "i" } },
-      ];
-    } else {
-      // Only use state/lga if city is not provided
-      if (state && state.trim()) {
-        filterQuery.state = state;
-      }
+    if (state && state.trim()) {
+      filterQuery.state = { $regex: state, $options: "i" };
+    }
 
-      if (lga && lga.trim()) {
-        filterQuery.lga = lga;
-      }
+    if (lga && lga.trim()) {
+      filterQuery.lga = { $regex: lga, $options: "i" };
+    }
+
+    // If city is provided, it searches within the LGA field
+    if (city && city.trim()) {
+      filterQuery.lga = { $regex: city, $options: "i" };
     }
 
     if (numberOfBedrooms) {

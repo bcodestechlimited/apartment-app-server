@@ -111,6 +111,7 @@ export class AuthService {
         provider: "google",
         isEmailVerified: true,
         roles: role,
+        password: "",
       });
 
       user = newUser;
@@ -197,6 +198,9 @@ export class AuthService {
 
   static async forgotPassword({ email }: { email: string }) {
     const user = await UserService.findUserByEmail(email);
+    if (user.provider !== "local") {
+      throw ApiError.conflict("Kindly login with Google");
+    }
     agenda.now("send_otp_email", {
       email: user.email,
       username: user.firstName,
@@ -206,6 +210,7 @@ export class AuthService {
 
   static async resetPassword({ email, otp, password }: ResetPasswordDTO) {
     const user = await UserService.findUserByEmail(email);
+
     const otpExists = await OTP.findOne({ email, otp });
     if (!otpExists) {
       throw ApiError.badRequest("Invalid or Expired OTP");
