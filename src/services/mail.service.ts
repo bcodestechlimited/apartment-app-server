@@ -57,6 +57,8 @@ class MailService {
         html,
       };
 
+      console.log({ mailOptions });
+
       const sentMessageInfo = await this.transporter.sendMail(mailOptions);
       return sentMessageInfo;
     } catch (error) {
