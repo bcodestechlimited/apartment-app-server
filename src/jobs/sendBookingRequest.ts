@@ -100,8 +100,6 @@ export const sendBookingRequestToTenant = async (
     retriesLeft = MAX_RETRIES,
   } = job.attrs.data;
 
-  console.log({ data: job.attrs.data });
-
   logger.info(
     `Running job to send booking request to tenant - Name: ${
       tenantName ?? "Anon"

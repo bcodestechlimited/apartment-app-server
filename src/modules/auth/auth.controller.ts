@@ -54,8 +54,6 @@ export class AuthController {
       redirectPath: string;
     };
 
-    console.log("Redirect path:", redirectPath);
-
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,
@@ -65,8 +63,6 @@ export class AuthController {
     });
 
     result.data.token = undefined;
-
-    console.log("User roles:", user.roles);
 
     // if (!user.onboarded) {
     //   return res.redirect(clientURLs.onboarding.roleSelectionURL);
@@ -160,7 +156,6 @@ export class AuthController {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
     const files = req.files;
-    console.log("Updating personal info with data:", userData, files);
     const result = await AuthService.updateUserPersonalInfo(
       userId,
       userData,
@@ -197,7 +192,6 @@ export class AuthController {
 
   static async getAllUserDocuments(req: Request, res: Response) {
     const query = req.query as IQueryParams;
-    // console.log("Received query params:", query);
     const result = await AuthService.getAllUserDocuments(query);
     res.status(200).json(result);
   }

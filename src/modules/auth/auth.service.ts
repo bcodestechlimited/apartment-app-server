@@ -47,13 +47,11 @@ export class AuthService {
 
   static async login(userData: LoginDTO) {
     const { email, password } = userData;
-    console.log({ userData });
 
     const user = await UserService.findUserByEmail(email);
     if (user.provider !== "local") {
       throw ApiError.conflict("Unauthorized");
     }
-    console.log({ password, userPassword: user });
     await comparePassword(password, user.password as string);
 
     if (!user.isActive) {
@@ -96,7 +94,6 @@ export class AuthService {
       );
       const selectedRole = decoded.role || "";
       redirectPath = decoded.redirect;
-      console.log("selected role:", selectedRole);
 
       // Validate against allowed enum values
       if (["user", "landlord", "tenant", "admin"].includes(selectedRole)) {
@@ -104,7 +101,6 @@ export class AuthService {
       }
     }
 
-    console.log("google user role:", role);
     const googleUser = await getGoogleUserData(code as string);
 
     if (!googleUser || !googleUser.email) {
@@ -128,8 +124,6 @@ export class AuthService {
 
       user = newUser;
     }
-
-    console.log("Authenticated user roles:", user.roles);
 
     const token = generateToken({ userId: user._id, roles: user.roles });
 
@@ -169,8 +163,6 @@ export class AuthService {
       );
       UpdatedUserData.avatar = secure_url as string;
     }
-
-    console.log({ UpdatedUserData, files });
 
     const user = await UserService.updateUser(userId, UpdatedUserData);
     user.password = undefined;
@@ -359,8 +351,6 @@ export class AuthService {
       );
       UpdatedUserData.avatar = secure_url as string;
     }
-
-    console.log({ UpdatedUserData, files });
 
     const user = await UserService.updateUser(userId, UpdatedUserData);
     user.password = undefined;

@@ -8,8 +8,6 @@ export const validateBody =
   (schema: ZodSchema<any>) =>
   (req: Request, res: Response, next: NextFunction): void => {
     try {
-      console.log({ body: req.body });
-
       schema.parse(req.body);
       return next();
     } catch (error) {
@@ -61,7 +59,6 @@ export const validateQuery =
     try {
       schema.parse(req.query);
       // const parsedQuery = schema.parse(req.query);
-      // console.log({ parsedQuery });
 
       // req.query = parsedQuery;
       next();
@@ -74,8 +71,6 @@ export const validateQuery =
               ? `Unrecognized key(s): ${err.keys?.join(", ")}`
               : err.message,
         }));
-
-        console.log({ errors });
 
         return void res.status(400).json({
           success: false,

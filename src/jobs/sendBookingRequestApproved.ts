@@ -34,8 +34,6 @@ export const sendBookingRequestApprovalEmailToTenant = async (
     retriesLeft = MAX_RETRIES,
   } = job.attrs.data;
 
-  console.log({ data: job.attrs.data });
-
   logger.info(
     `Running job to send booking request approval email to tenant - Name: ${
       tenantName ?? "Anon"

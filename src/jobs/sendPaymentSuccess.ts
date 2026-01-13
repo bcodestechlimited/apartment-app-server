@@ -97,8 +97,6 @@ export const sendPaymentConfirmationToTenant = async (
     retriesLeft = MAX_RETRIES,
   } = job.attrs.data;
 
-  console.log({ data: job.attrs.data });
-
   logger.info(
     `Running job to send payment confirmation to tenant - Name: ${tenantName}, Email: ${tenantEmail}`
   );

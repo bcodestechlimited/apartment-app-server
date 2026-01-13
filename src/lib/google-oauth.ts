@@ -15,8 +15,6 @@ const oauth2Client = new google.auth.OAuth2({
 const scopes = ["profile", "email"];
 
 export const generateGoogleAuthURL = (options: AuthStateOptions) => {
-  console.log(`${env.SERVER_BASE_URL}/api/v1/auth/google/callback`);
-
   if (!options || Object.keys(options).length === 0) {
     return oauth2Client.generateAuthUrl({
       access_type: "offline",
@@ -44,8 +42,5 @@ export const getGoogleUserData = async (code: string) => {
   });
 
   const { data } = await oauth2.userinfo.get();
-
-  console.log({ data });
-
   return data;
 };

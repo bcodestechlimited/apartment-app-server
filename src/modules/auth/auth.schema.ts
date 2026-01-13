@@ -58,7 +58,6 @@ class AuthSchemas {
       //     (val) => {
       //       try {
       //         const parsed = JSON.parse(val);
-      //         console.log({ parsed });
 
       //         return true;
       //       } catch {
@@ -127,8 +126,6 @@ class AuthSchemas {
   validateFiles = (req: Request, res: Response, next: NextFunction) => {
     const documents = req.files?.documents as UploadedFile[] | undefined;
     const avatar = req.files?.avatar as UploadedFile | undefined;
-
-    console.log({ documents, avatar });
 
     if (!documents && !avatar) {
       return next();
@@ -258,8 +255,6 @@ class AuthSchemas {
           document?: UploadedFile;
         }
       | undefined;
-
-    console.log({ files });
 
     if (!files) {
       throw ApiError.badRequest("No files uploaded");

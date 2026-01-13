@@ -35,7 +35,7 @@ const handleAddNewUser = (
     });
   }
 
-  console.log({ OU: onlineUsers });
+  logger.info({ onlineUsers });
 
   io.emit("get_online_users", onlineUsers);
 };
@@ -48,8 +48,6 @@ const handleSendMessage = async (
   logger.info("Socket message", data);
   try {
     const { conversationId, senderId, receiverId, text } = data;
-
-    console.log({ conversationId, senderId, receiverId, text });
 
     if (!conversationId || !senderId || !receiverId || !text) {
       logger.warn("Invalid message payload", data);
@@ -84,14 +82,10 @@ const handleSendMessage = async (
     const receiver = onlineUsers.find((user) => user.userId === receiverId);
     const sender = onlineUsers.find((user) => user.userId === senderId);
 
-    console.log({ receiver, sender });
-
     if (receiver) {
       io.to(receiver.socketId).emit("receive_message", newMessage);
       logger.info(`Message delivered to receiver ${receiverId}`);
     }
-
-    console.log({ sender: !!sender, isSame: sender?.socketId !== socket.id });
 
     if (sender) {
       io.to(sender.socketId).emit("receive_message", newMessage);
@@ -113,7 +107,6 @@ const handleUserTyping = (
   const user = onlineUsers.find((user) => user.userId === data.recipientId);
 
   if (user) {
-    console.log({ user });
     io.to(user.socketId).emit("receive_typing_status", data);
   }
 };

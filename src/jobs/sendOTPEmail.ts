@@ -17,9 +17,6 @@ export const sentOTPEmailJob = async (
 ) => {
   const { email, username, retriesLeft = MAX_RETRIES } = job.attrs.data;
 
-  console.log(`Running job to send OTP email to ${email}`);
-  console.log({ retriesLeft, MAX_RETRIES });
-
   try {
     // throw new Error("Simulated error for testing"); // Simulate an error for testing
     const result = await mailService.sendOTPViaEmail({
