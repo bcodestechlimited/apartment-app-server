@@ -99,6 +99,8 @@ export class AuthService {
       if (["user", "landlord", "tenant", "admin"].includes(selectedRole)) {
         role = selectedRole;
       }
+
+      console.log({ role, selectedRole, decoded });
     }
 
     const googleUser = await getGoogleUserData(code as string);
