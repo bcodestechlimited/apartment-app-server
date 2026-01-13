@@ -28,13 +28,18 @@ class MailService {
 
   private static loadTemplate(templateName: string, data: object): string {
     const templatePath = path.join(
-      __dirname,
-      "..",
+      process.cwd(),
+      "src",
       "templates",
       `${templateName}.html`
     );
 
-    console.log({ templatePath });
+    // console.log({
+    //   templatePath,
+    //   __dirname,
+    //   cwd: process.cwd(),
+    //   files: fs.readdirSync(path.join(__dirname, "..")),
+    // });
 
     const templateSource = fs.readFileSync(templatePath, "utf8");
     const compiledTemplate = handlebars.compile(templateSource);
