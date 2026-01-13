@@ -36,8 +36,11 @@ export class AuthController {
 
   // Generate Goolge Link
   static async generateGoogleLoginLink(req: Request, res: Response) {
-    const { role } = req.query;
-    const result = await AuthService.loginWithGoogle(role as string);
+    const { role, redirect } = req.query;
+    const result = await AuthService.loginWithGoogle({
+      role: role as string,
+      redirect: redirect as string,
+    });
     res.status(200).json(result);
   }
 
@@ -45,7 +48,13 @@ export class AuthController {
   static async googleCallback(req: Request, res: Response) {
     const query = req.query;
     const result = await AuthService.handleGoogleCallback(query);
-    const { token, user } = result.data as { token: string; user: IUser };
+    const { token, user, redirectPath } = result.data as {
+      token: string;
+      user: IUser;
+      redirectPath: string;
+    };
+
+    console.log("Redirect path:", redirectPath);
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -66,9 +75,15 @@ export class AuthController {
       return res.redirect(clientURLs.admin.dashboardURL);
     }
     if (user.roles.includes("landlord")) {
+      if (redirectPath) {
+        return res.redirect(clientURLs.landlord.dashboardURL + redirectPath);
+      }
       return res.redirect(clientURLs.landlord.dashboardURL);
     }
     if (user.roles.includes("tenant")) {
+      if (redirectPath) {
+        return res.redirect(clientURLs.tenant.dashboardURL + redirectPath);
+      }
       return res.redirect(clientURLs.tenant.dashboardURL);
     }
 

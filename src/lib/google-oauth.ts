@@ -1,6 +1,11 @@
 import { env } from "@/config/env.config";
 import { google } from "googleapis";
 
+export interface AuthStateOptions {
+  role?: string;
+  redirect?: string;
+}
+
 const oauth2Client = new google.auth.OAuth2({
   clientId: env.GOOGLE_CLIENT_ID!,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
@@ -9,16 +14,23 @@ const oauth2Client = new google.auth.OAuth2({
 
 const scopes = ["profile", "email"];
 
-export const generateGoogleAuthURL = (role: string) => {
+export const generateGoogleAuthURL = (options: AuthStateOptions) => {
   console.log(`${env.SERVER_BASE_URL}/api/v1/auth/google/callback`);
+
+  if (!options || Object.keys(options).length === 0) {
+    return oauth2Client.generateAuthUrl({
+      access_type: "offline",
+      prompt: "consent",
+      scope: scopes,
+    });
+  }
 
   return oauth2Client.generateAuthUrl({
     access_type: "offline",
     prompt: "consent",
     scope: scopes,
-    state: role
-      ? Buffer.from(JSON.stringify({ role })).toString("base64")
-      : undefined,
+    // JSON.stringify automatically ignores keys with 'undefined' values
+    state: Buffer.from(JSON.stringify(options)).toString("base64"),
   });
 };
 

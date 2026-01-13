@@ -18,6 +18,7 @@ import type { IQueryParams } from "@/shared/interfaces/query.interface.js";
 import {
   generateGoogleAuthURL,
   getGoogleUserData,
+  type AuthStateOptions,
 } from "@/lib/google-oauth.js";
 
 export class AuthService {
@@ -67,8 +68,11 @@ export class AuthService {
     });
   }
 
-  static async loginWithGoogle(role: string) {
-    const redirectURL = generateGoogleAuthURL(role);
+  static async loginWithGoogle({ role, redirect }: AuthStateOptions) {
+    const redirectURL = generateGoogleAuthURL({
+      role: role,
+      redirect: redirect,
+    });
     return ApiSuccess.ok("Login successful", { redirectURL });
   }
 
@@ -79,11 +83,13 @@ export class AuthService {
     }
 
     let role;
+    let redirectPath;
     if (state) {
       const decoded = JSON.parse(
         Buffer.from(state as string, "base64").toString()
       );
       const selectedRole = decoded.role || "";
+      redirectPath = decoded.redirect;
       console.log("selected role:", selectedRole);
 
       // Validate against allowed enum values
@@ -121,7 +127,7 @@ export class AuthService {
 
     const token = generateToken({ userId: user._id, roles: user.roles });
 
-    return ApiSuccess.ok("Login successful", { user, token });
+    return ApiSuccess.ok("Login successful", { user, token, redirectPath });
   }
 
   static async getUser(userId: Types.ObjectId) {
