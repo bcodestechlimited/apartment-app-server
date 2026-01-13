@@ -56,6 +56,12 @@ export class AuthService {
     console.log({ password, userPassword: user });
     await comparePassword(password, user.password as string);
 
+    if (!user.isActive) {
+      throw ApiError.forbidden(
+        "Your account has been deactivated. Kindly contact support."
+      );
+    }
+
     if (!user.isEmailVerified) {
       await this.sendOTP({ email });
       return ApiSuccess.ok("OTP has been sent to your email", { user });
