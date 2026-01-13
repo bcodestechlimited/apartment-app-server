@@ -30,9 +30,10 @@ export const sentOTPEmailJob = async (
     return done();
   } catch (err) {
     logger.error(
-      `Failed job: ${job.attrs.name}. Retrying in ${SECONDS} seconds. Retries left: ${retriesLeft}`,
-      { err }
+      `Failed job: ${job.attrs.name}. Retrying in ${SECONDS} seconds. Retries left: ${retriesLeft}`
     );
+
+    logger.error(`Error: ${err}`);
 
     logger.error(
       `Next run at: ${new Date(Date.now() + SECONDS * 1000).toLocaleString(
