@@ -131,11 +131,9 @@ export class PropertyRatingService {
     return ApiSuccess.ok("Ratings retrieved successfully", ratings);
   };
   static getRatingByPropertyId = async (propertyId: string) => {
-    console.log("entering here");
     const ratings = await PropertyRating.find({
       propertyId: propertyId,
     }).populate("tenantId");
-    console.log(ratings);
     if (ratings.length === 0) {
       return ApiSuccess.ok("No ratings found for this property.");
     }

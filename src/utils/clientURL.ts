@@ -20,4 +20,5 @@ export const clientURLs = {
     roleSelectionURL: `${CLIENT_BASE_URL}/onboarding/google`,
   },
   landingPageURL: `${CLIENT_BASE_URL}/`,
+  loginURL: `${CLIENT_BASE_URL}/login`,
 };

@@ -22,8 +22,6 @@ export class WalletService {
     } else if (user.roles.includes("tenant")) {
       callback_url = `${env.CLIENT_BASE_URL}/dashboard/paystack/verify`;
     }
-    console.log("User Roles:", user.roles);
-    console.log("Callback URL:", callback_url);
     const response = await paystackClient.post("/transaction/initialize", {
       amount: amount * 100,
       email: user.email,

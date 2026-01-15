@@ -48,10 +48,11 @@ export class AuthController {
   static async googleCallback(req: Request, res: Response) {
     const query = req.query;
     const result = await AuthService.handleGoogleCallback(query);
-    const { token, user, redirectPath } = result.data as {
+    const { token, user, redirectPath, error } = result.data as {
       token: string;
       user: IUser;
       redirectPath: string;
+      error: string;
     };
 
     res.cookie("token", token, {
@@ -67,6 +68,11 @@ export class AuthController {
     // if (!user.onboarded) {
     //   return res.redirect(clientURLs.onboarding.roleSelectionURL);
     // }
+
+    if (error) {
+      return res.redirect(clientURLs.loginURL);
+    }
+
     if (user.roles.includes("admin")) {
       return res.redirect(clientURLs.admin.dashboardURL);
     }
