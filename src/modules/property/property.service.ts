@@ -102,8 +102,6 @@ export class PropertyService {
       isVerified,
     } = query;
 
-    console.log("query", query);
-
     const filterQuery: Record<string, any> = {};
 
     // const filterQuery: Record<string, any> = {
@@ -114,8 +112,6 @@ export class PropertyService {
     if (propertyType) {
       const actualPropertyType =
         PropertyService.getActualTypeFromParam(propertyType);
-
-      console.log({ actualPropertyType });
 
       if (actualPropertyType) {
         filterQuery.type = actualPropertyType;
@@ -163,8 +159,6 @@ export class PropertyService {
       filterQuery.isVerified = isVerified;
     }
 
-    console.log({ filterQuery });
-
     const { documents: properties, pagination } = await paginate({
       model: Property,
       query: filterQuery,
@@ -209,15 +203,11 @@ export class PropertyService {
       city,
     } = query;
 
-    console.log("query", query);
-
     const filterQuery: Record<string, any> = {};
 
     if (propertyType) {
       const actualPropertyType =
         PropertyService.getActualTypeFromParam(propertyType);
-
-      console.log({ actualPropertyType });
 
       if (actualPropertyType) {
         filterQuery.type = actualPropertyType;
@@ -260,8 +250,6 @@ export class PropertyService {
     if (search && search.trim()) {
       filterQuery.title = { $regex: search, $options: "i" };
     }
-
-    console.log({ filterQuery });
 
     const { documents: properties, pagination } = await paginate({
       model: Property,
@@ -334,8 +322,6 @@ export class PropertyService {
         "You do not have permission to update this property"
       );
     }
-
-    console.log({ updateData });
 
     const parsedExistingPictures = updateData.existingPictures
       ? JSON.parse(updateData.existingPictures as string)

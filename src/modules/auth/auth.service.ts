@@ -81,9 +81,17 @@ export class AuthService {
   }
 
   static async handleGoogleCallback(query: IQueryParams) {
-    const { code, state } = query;
+    console.log("entering handleGoogleCallback");
+
+    const { code, state, error } = query;
+    if (error) {
+      return ApiSuccess.ok("Login failed", { error });
+    }
     if (!code) {
       throw ApiError.badRequest("Code is required");
+    }
+    if (error) {
+      return ApiSuccess.ok("Login failed", { error });
     }
 
     let role;
