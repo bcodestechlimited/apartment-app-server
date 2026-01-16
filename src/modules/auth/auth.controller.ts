@@ -5,7 +5,6 @@ import type { UploadedFile } from "express-fileupload";
 import { clientURLs } from "@/utils/clientURL.js";
 import type { IQueryParams } from "@/shared/interfaces/query.interface.js";
 import type { Types } from "mongoose";
-import { firebaserules_v1 } from "googleapis";
 
 export class AuthController {
   // Register user
@@ -54,7 +53,7 @@ export class AuthController {
       redirectPath: string;
       error: string;
     };
-
+    console.log("redirectPath", redirectPath);
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,
@@ -77,13 +76,13 @@ export class AuthController {
       return res.redirect(clientURLs.admin.dashboardURL);
     }
     if (user.roles.includes("landlord")) {
-      if (redirectPath) {
+      if (redirectPath && redirectPath.includes("/property")) {
         return res.redirect(clientURLs.landlord.dashboardURL + redirectPath);
       }
       return res.redirect(clientURLs.landlord.dashboardURL);
     }
     if (user.roles.includes("tenant")) {
-      if (redirectPath) {
+      if (redirectPath && redirectPath.includes("/property")) {
         return res.redirect(clientURLs.tenant.dashboardURL + redirectPath);
       }
       return res.redirect(clientURLs.tenant.dashboardURL);

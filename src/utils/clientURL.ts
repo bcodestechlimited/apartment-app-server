@@ -14,7 +14,7 @@ export const clientURLs = {
     bookingRequestsURL: `${CLIENT_BASE_URL}/dashboard/bookings/requests`,
   },
   admin: {
-    dashboardURL: `${CLIENT_BASE_URL}/admin`,
+    dashboardURL: `${CLIENT_BASE_URL}/dashboard/admin`,
   },
   onboarding: {
     roleSelectionURL: `${CLIENT_BASE_URL}/onboarding/google`,

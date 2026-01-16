@@ -4,6 +4,7 @@ import { paginate } from "../../utils/paginate.js";
 import Tenant from "./tenant.model.js";
 import type { createTenantDTO } from "./tenant.interface.js";
 import type { ObjectId, Types } from "mongoose";
+import mongoose from "mongoose";
 
 export class TenantService {
   static async createTenant(payload: createTenantDTO) {
@@ -53,35 +54,132 @@ export class TenantService {
     });
   }
 
+  // static async getLandlordTenants(
+  //   landlordId: Types.ObjectId,
+  //   query: IQueryParams
+  // ) {
+  //   const { page, limit } = query;
+  //   const filterQuery = { landlord: landlordId };
+
+  //   const sort = { createdAt: -1 };
+  //   const populateOptions = [
+  //     { path: "landlord", select: "firstName lastName email" },
+  //     {
+  //       path: "user",
+  //       select:
+  //         "firstName lastName email avatar phoneNumber isDocumentVerified totalRatings  averageRating",
+  //     },
+  //     { path: "property" },
+  //   ];
+
+  //   const { documents: tenants, pagination } = await paginate({
+  //     model: Tenant,
+  //     query: filterQuery,
+  //     page,
+  //     limit,
+  //     sort: sort,
+  //     populateOptions,
+  //   });
+
+  //   return ApiSuccess.ok("Tenants retrieved successfully", {
+  //     tenants,
+  //     pagination,
+  //   });
+  // }
+
   static async getLandlordTenants(
-    landlordId: Types.ObjectId,
-    query: IQueryParams
+    landlordId: Types.ObjectId | string, // Changed from Types.ObjectId to string for safety, or keep as is
+    query: IQueryParams & { filter?: string }
   ) {
-    const { page, limit } = query;
-    const filterQuery = { landlord: landlordId };
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const filterOption = query.filter || "";
 
-    const sort = { createdAt: -1 };
-    const populateOptions = [
-      { path: "landlord", select: "firstName lastName email" },
+    const landlordObjectId = new mongoose.Types.ObjectId(landlordId);
+
+    // 1. Base Match: Find tenants belonging to this landlord
+    const pipeline: any[] = [{ $match: { landlord: landlordObjectId } }];
+
+    // 2. Lookups: Join User and Property data so we can filter/sort by them
+    pipeline.push(
       {
-        path: "user",
-        select:
-          "firstName lastName email avatar phoneNumber isDocumentVerified totalRatings  averageRating",
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+        },
       },
-      { path: "property" },
-    ];
+      { $unwind: "$user" }, // Flatten user array
+      {
+        $lookup: {
+          from: "properties",
+          localField: "property",
+          foreignField: "_id",
+          as: "property",
+        },
+      },
+      { $unwind: "$property" } // Flatten property array
+    );
 
-    const { documents: tenants, pagination } = await paginate({
-      model: Tenant,
-      query: filterQuery,
-      page,
-      limit,
-      sort: sort,
-      populateOptions,
+    // 3. Apply Dynamic Filters based on dropdown selection
+    if (filterOption === "current") {
+      pipeline.push({ $match: { isActive: true } });
+    } else if (filterOption === "past") {
+      pipeline.push({ $match: { isActive: false } });
+    }
+    // Note: sorting options don't use $match, they use $sort below
+
+    // 4. Apply Sorting
+    let sortStage: any = { createdAt: -1 }; // Default: Newest first
+
+    switch (filterOption) {
+      case "property":
+        // Sort by Property Title Alphabetically
+        sortStage = { "property.title": 1 };
+        break;
+      case "verified":
+        // Sort by Verified Users first
+        sortStage = { "user.isDocumentVerified": -1 };
+        break;
+      case "status":
+        // Sort by Active tenants first
+        sortStage = { isActive: -1 };
+        break;
+      default:
+        // Default sort is createdAt defined above
+        break;
+    }
+    pipeline.push({ $sort: sortStage });
+
+    // 5. Pagination Facet (Get data and total count in one query)
+    pipeline.push({
+      $facet: {
+        metadata: [{ $count: "total" }],
+        data: [{ $skip: skip }, { $limit: limit }],
+      },
     });
 
+    // Execute Aggregation
+    const result = await Tenant.aggregate(pipeline);
+
+    // 6. Format Response
+    const data = result[0].data;
+    const total = result[0].metadata[0]?.total || 0;
+    const totalPages = Math.ceil(total / limit);
+
+    const pagination = {
+      totalDocuments: total,
+      totalPages: totalPages,
+      currentPage: page,
+      limit: limit,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+    };
+
     return ApiSuccess.ok("Tenants retrieved successfully", {
-      tenants,
+      tenants: data,
       pagination,
     });
   }
@@ -139,6 +237,17 @@ export class TenantService {
     await tenant.save();
     return ApiSuccess.ok("Tenant reported successfully", { tenant });
   }
+
+  // static async updateTenantStatus(userId: string, isActive: boolean) {
+  //   const tenant = await Tenant.findOne({ user: userId });
+  //   if (!tenant) {
+  //     throw ApiError.notFound("Tenant not found");
+  //   }
+
+  //   tenant.isActive = isActive;
+  //   await tenant.save();
+  //   return ApiSuccess.ok("Tenant status updated successfully", { tenant });
+  // }
 }
 
 export const tenantService = new TenantService();

@@ -23,6 +23,7 @@ import { UploadService } from "@/services/upload.service";
 import { BookingService } from "../booking/booking.service";
 import mongoose from "mongoose";
 import fs from "fs/promises";
+import { TenantService, tenantService } from "../tenant/tenant.service";
 
 class UserService {
   static async createUser(userData: Partial<IUser>): Promise<IUser> {
@@ -115,6 +116,15 @@ class UserService {
     if (!user) {
       throw ApiError.notFound("User Not Found");
     }
+
+    // if (user.roles.includes("tenant")) {
+    //   console.log("updating tenant status");
+    //   await TenantService.updateTenantStatus(
+    //     user._id as string,
+    //     userData.isActive as boolean
+    //   );
+    // }
+
     return ApiSuccess.ok("User updated successfully", { user });
   }
 
