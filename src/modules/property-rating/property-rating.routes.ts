@@ -29,6 +29,6 @@ propertyRatingRouter
 
 propertyRatingRouter
   .route("/:propertyId")
-  .get(isAuth, PropertyRatingController.ratingByPropertyId);
+  .get(PropertyRatingController.ratingByPropertyId);
 
 export default propertyRatingRouter;
