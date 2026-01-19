@@ -51,6 +51,20 @@ const PropertySchema: Schema<IProperty> = new Schema(
       type: [String],
       default: [],
     },
+    otherFees: [
+      {
+        name: {
+          type: String,
+          required: [true, "Fee name is required"],
+          trim: true,
+        },
+        amount: {
+          type: Number,
+          required: [true, "Fee amount is required"],
+          min: [0, "Fee amount cannot be negative"],
+        },
+      },
+    ],
     type: {
       type: String,
       enum: Object.values(PropertyType),
@@ -140,7 +154,7 @@ const PropertySchema: Schema<IProperty> = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const Property = mongoose.model<IProperty>("Property", PropertySchema);

@@ -1,6 +1,6 @@
 import { env } from "@/config/env.config";
 
-const CLIENT_BASE_URL = `${env.CLIENT_BASE_URL}`;
+export const CLIENT_BASE_URL = `${env.CLIENT_BASE_URL}`;
 
 export const clientURLs = {
   landlord: {

@@ -18,6 +18,11 @@ export enum PricingModel {
   YEARLY = "yearly",
 }
 
+export interface IOtherFee {
+  name: string;
+  amount: number;
+}
+
 export interface IProperty extends Document {
   _id: ObjectId | string;
   user: IUser;
@@ -31,6 +36,7 @@ export interface IProperty extends Document {
   pricingModel: PricingModel;
   amenities: string[];
   facilities: string[];
+  otherFees: IOtherFee[];
   type: PropertyType;
   pictures: string[];
   isDeleted: boolean;
@@ -60,6 +66,7 @@ export interface CreatePropertyDTO {
   availabilityDate: string;
   amenities: string;
   facilities: string;
+  otherFees?: string;
   type: PropertyType;
   pictures: string[];
   pricingModel: PricingModel;
