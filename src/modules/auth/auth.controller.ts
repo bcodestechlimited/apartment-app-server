@@ -73,13 +73,19 @@ export class AuthController {
     }
 
     if (user.roles.includes("admin")) {
+      if (redirectPath && redirectPath.startsWith("/property")) {
+        return res.redirect(clientURLs.admin.dashboardURL + redirectPath);
+      }
+      if (redirectPath && redirectPath.includes("/dashboard/admin")) {
+        return res.redirect(CLIENT_BASE_URL + redirectPath);
+      }
       return res.redirect(clientURLs.admin.dashboardURL);
     }
     if (user.roles.includes("landlord")) {
       if (redirectPath && redirectPath.startsWith("/property")) {
         return res.redirect(clientURLs.landlord.dashboardURL + redirectPath);
       }
-      if (redirectPath) {
+      if (redirectPath && redirectPath.includes("/dashboard/landlord")) {
         return res.redirect(CLIENT_BASE_URL + redirectPath);
       }
       return res.redirect(clientURLs.landlord.dashboardURL);
@@ -88,7 +94,16 @@ export class AuthController {
       if (redirectPath && redirectPath.startsWith("/property")) {
         return res.redirect(clientURLs.tenant.dashboardURL + redirectPath);
       }
-      if (redirectPath) {
+
+      if (redirectPath && redirectPath.includes("/dashboard/landlord")) {
+        return res.redirect(clientURLs.tenant.dashboardURL);
+      }
+
+      if (redirectPath && redirectPath.includes("/dashboard/admin")) {
+        return res.redirect(clientURLs.tenant.dashboardURL);
+      }
+
+      if (redirectPath && redirectPath.includes("/dashboard")) {
         return res.redirect(CLIENT_BASE_URL + redirectPath);
       }
 

@@ -22,13 +22,14 @@ import { MessageService } from "../message/message.service.js";
 import { TransactionService } from "../transaction/transaction.service.js";
 import { WalletService } from "../wallet/wallet.service.js";
 import UserService from "../user/user.service.js";
+import { SystemSettingService } from "../system-settings/system-settings.service.js";
 
 export class BookingRequestService {
   // ----------------- Booking Requests -----------------
   // Create Booking Request
   static async createBookingRequest(
     bookingRequestData: any,
-    userId: Types.ObjectId
+    userId: Types.ObjectId,
   ) {
     const { propertyId, moveInDate } = bookingRequestData;
 
@@ -37,7 +38,7 @@ export class BookingRequestService {
 
     const { startDate, endDate } = calculateBookingPeriod(
       moveInDate,
-      property.pricingModel
+      property.pricingModel,
     );
 
     if (property.isDeleted) {
@@ -48,13 +49,20 @@ export class BookingRequestService {
     //   throw ApiError.forbidden("Property is still booked at the moment");
     // }
 
+    const platformFeePercentage = await SystemSettingService.getPlatformFee();
+
     const bookingRequest = await BookingRequest.create({
       tenant: userId,
       property: propertyId,
       landlord: landlordId,
       basePrice: property.price,
-      netPrice: Number(property.price) + 10000, // Add service charge from admin
-      serviceChargeAmount: 10000,
+      netPrice:
+        Number(property?.totalFees) +
+        Number((platformFeePercentage / 100) * property.price), // platform fees being handled on the frontend by calling  system settings endpint
+      otherFees: property?.otherFees,
+      serviceChargeAmount: Number(
+        (platformFeePercentage / 100) * property.price,
+      ),
       moveInDate: startDate,
       moveOutDate: endDate,
       status: "pending",
@@ -90,7 +98,7 @@ export class BookingRequestService {
 
   static async getLandlordBookingRequests(
     params: IQueryParams,
-    userId: Types.ObjectId
+    userId: Types.ObjectId,
   ) {
     const { page = 1, limit = 10 } = params;
 
@@ -131,7 +139,7 @@ export class BookingRequestService {
 
   static async getTenantBookingRequests(
     params: IQueryParams,
-    userId: Types.ObjectId
+    userId: Types.ObjectId,
   ) {
     const { page = 1, limit = 10 } = params;
 
@@ -173,11 +181,11 @@ export class BookingRequestService {
   static async updateBookingRequest(
     bookingRequestId: string,
     bookingRequestData: any,
-    userId: Types.ObjectId
+    userId: Types.ObjectId,
   ) {
     const { status } = bookingRequestData;
     const bookingRequest = await BookingRequest.findById(
-      bookingRequestId
+      bookingRequestId,
     ).populate("landlord tenant property");
 
     if (!bookingRequest) {
@@ -187,7 +195,7 @@ export class BookingRequestService {
     // Optionally enforce ownership
     if (String(bookingRequest.landlord._id) !== userId.toString()) {
       throw ApiError.forbidden(
-        "You do not have permission to update this booking request"
+        "You do not have permission to update this booking request",
       );
     }
 
@@ -198,7 +206,7 @@ export class BookingRequestService {
       await PropertyService.updateProperty(
         String(bookingRequest.property._id),
         { isAvailable: false, requestedBy: [] },
-        String(bookingRequest.landlord._id)
+        String(bookingRequest.landlord._id),
       );
 
       await scheduleBookingRequestApprovalEmailToTenant({
@@ -237,7 +245,7 @@ export class BookingRequestService {
             property: bookingRequest.property._id,
             _id: { $ne: bookingRequest._id },
           },
-          { status: "declined" }
+          { status: "declined" },
         );
       }
     }
@@ -249,7 +257,7 @@ export class BookingRequestService {
 
       await PropertyService.pullTenantFromPropertyRequestedById(
         String(bookingRequest.property._id),
-        String(bookingRequest.tenant._id)
+        String(bookingRequest.tenant._id),
       );
 
       await scheduleBookingRequestDeclined({
@@ -269,7 +277,7 @@ export class BookingRequestService {
 
   static async getBookingRequestById(bookingRequestId: string) {
     const bookingRequest = await BookingRequest.findById(
-      bookingRequestId
+      bookingRequestId,
     ).populate([
       {
         path: "property",
@@ -299,7 +307,7 @@ export class BookingRequestService {
 
   static async deleteBookingRequest(
     bookingRequestId: string,
-    userId: Types.ObjectId
+    userId: Types.ObjectId,
   ) {
     const bookingRequest = await BookingRequest.findById(bookingRequestId);
     if (!bookingRequest) {
@@ -309,7 +317,7 @@ export class BookingRequestService {
     // Optionally enforce ownership
     if (bookingRequest.landlord.toString() !== userId.toString()) {
       throw ApiError.forbidden(
-        "You do not have permission to delete this booking request"
+        "You do not have permission to delete this booking request",
       );
     }
 
@@ -320,7 +328,7 @@ export class BookingRequestService {
 
   static async generatePaymentLink(bookingRequestId: string) {
     const bookingRequest = await BookingRequest.findById(
-      bookingRequestId
+      bookingRequestId,
     ).populate([
       {
         path: "tenant",
@@ -333,7 +341,7 @@ export class BookingRequestService {
 
     if (bookingRequest.status !== "approved") {
       throw ApiError.badRequest(
-        "Payment link can only be generated for approved booking requests"
+        "Payment link can only be generated for approved booking requests",
       );
     }
 
@@ -350,7 +358,7 @@ export class BookingRequestService {
 
   static async handlePaymentSuccess(
     bookingRequestId: string,
-    transactionReference: string
+    transactionReference: string,
   ) {
     const existingPaymentReference = await BookingRequest.findOne({
       paymentReference: transactionReference,
@@ -364,9 +372,8 @@ export class BookingRequestService {
 
     if (!bookingRequest) throw ApiError.notFound("Booking request not found");
 
-    const { data } = await PaymentService.verifyPayStackPayment(
-      transactionReference
-    );
+    const { data } =
+      await PaymentService.verifyPayStackPayment(transactionReference);
 
     if (data?.status !== "success") {
       throw ApiError.badRequest("Transasction Reference Invalid");
@@ -381,9 +388,15 @@ export class BookingRequestService {
     await bookingRequest.save();
 
     const landlordWallet = await WalletService.getWalletByUserId(
-      bookingRequest.landlord._id as string
+      bookingRequest.landlord._id as string,
     );
-    landlordWallet.balance += bookingRequest.netPrice;
+
+    console.log("landlordWallet", landlordWallet);
+    console.log("bookingRequest", bookingRequest);
+    const transactionAmount = Number(bookingRequest.netPrice) || 0;
+    const serviceFee = Number(bookingRequest.serviceChargeAmount) || 0;
+    const amountToCredit = transactionAmount - serviceFee;
+    landlordWallet.balance += amountToCredit;
     await landlordWallet.save();
     // Create the actual booking
     const booking = new Booking({
@@ -414,7 +427,7 @@ export class BookingRequestService {
 
     await PropertyService.addToBookedBy(
       bookingRequest.tenant._id,
-      bookingRequest.property._id
+      bookingRequest.property._id,
     );
 
     //Create Transaction
@@ -432,7 +445,7 @@ export class BookingRequestService {
     // Create Chat between tenant and landlord
     await MessageService.getOrCreateConversation(
       bookingRequest.tenant._id as string,
-      bookingRequest.landlord._id as string
+      bookingRequest.landlord._id as string,
     );
 
     await booking.save();
@@ -443,7 +456,7 @@ export class BookingRequestService {
 
     await PropertyService.updatePropertyRevenue(
       booking.property._id,
-      booking.netPrice
+      booking.netPrice,
     );
 
     await schedulePaymentSuccessEmail({

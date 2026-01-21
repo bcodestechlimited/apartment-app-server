@@ -30,6 +30,7 @@ import landlordRatingRouter from "./modules/landord-rating/landlord-rating.route
 import ReportRouter from "./modules/report/report.routes";
 // import favouriteRouter from "./modules/favourite/favourite.route";
 import savedPropertiesRouter from "./modules/saved-properties/saved-properties.routes";
+import systemSettingsRouter from "./modules/system-settings/system-settings.routes";
 const app = express();
 const server = createServer(app);
 const port = process.env.PORT || 3000;
@@ -44,7 +45,7 @@ app.use(
     tempFileDir: "/tmp/",
     parseNested: true,
     // debug: true,
-  })
+  }),
 );
 app.use(
   cors({
@@ -56,7 +57,7 @@ app.use(
       "https://havenlease.com",
     ],
     credentials: true,
-  })
+  }),
 );
 app.use(morgan("dev"));
 app.get("/", (req, res) => {
@@ -78,6 +79,7 @@ app.use("/api/v1/property-rating", propertyRatingRouter);
 app.use("/api/v1/tenant-rating", tenantRatingRouter);
 app.use("/api/v1/save-properties", savedPropertiesRouter);
 app.use("/api/v1/report", ReportRouter);
+app.use("/api/v1/system-settings", systemSettingsRouter);
 // app.use("/api/v1/favourite", favouriteRouter);
 
 // Admin routes

@@ -349,6 +349,19 @@ export class PropertyService {
       ? JSON.parse(updateData.facilities as string)
       : property.facilities || [];
 
+    let parsedOtherFees = [];
+
+    if (updateData.otherFees) {
+      try {
+        parsedOtherFees = JSON.parse(updateData.otherFees);
+      } catch (error) {
+        throw new ApiError(
+          400,
+          "Invalid format for 'Other Fees'. Please check your input.",
+        );
+      }
+    }
+
     let updatePropertyPayload = {
       ...updateData,
       amenities: parsedAmenities,
