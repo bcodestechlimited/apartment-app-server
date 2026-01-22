@@ -34,6 +34,7 @@ export class BookingRequestService {
     const { propertyId, moveInDate } = bookingRequestData;
 
     const property = await PropertyService.getPropertyDocumentById(propertyId);
+    console.log("property in booking request", property);
     const landlordId = property.user;
 
     const { startDate, endDate } = calculateBookingPeriod(
@@ -58,11 +59,9 @@ export class BookingRequestService {
       basePrice: property.price,
       netPrice:
         Number(property?.totalFees) +
-        Number((platformFeePercentage / 100) * property.price), // platform fees being handled on the frontend by calling  system settings endpint
+        Number((platformFeePercentage / 100) * property.price),
       otherFees: property?.otherFees,
-      serviceChargeAmount: Number(
-        (platformFeePercentage / 100) * property.price,
-      ),
+      platformFee: Number((platformFeePercentage / 100) * property.price),
       moveInDate: startDate,
       moveOutDate: endDate,
       status: "pending",
@@ -394,7 +393,7 @@ export class BookingRequestService {
     console.log("landlordWallet", landlordWallet);
     console.log("bookingRequest", bookingRequest);
     const transactionAmount = Number(bookingRequest.netPrice) || 0;
-    const serviceFee = Number(bookingRequest.serviceChargeAmount) || 0;
+    const serviceFee = Number(bookingRequest.platformFee) || 0;
     const amountToCredit = transactionAmount - serviceFee;
     landlordWallet.balance += amountToCredit;
     await landlordWallet.save();
@@ -407,7 +406,8 @@ export class BookingRequestService {
       moveOutDate: bookingRequest.moveOutDate,
       basePrice: bookingRequest.basePrice,
       netPrice: bookingRequest.netPrice,
-      serviceChargeAmount: bookingRequest.serviceChargeAmount,
+      platformFee: bookingRequest.platformFee,
+      otherFees: bookingRequest.otherFees,
       paymentStatus: "success",
       paymentMethod: bookingRequest.paymentMethod,
       paymentProvider: bookingRequest.paymentProvider,
@@ -432,7 +432,7 @@ export class BookingRequestService {
 
     //Create Transaction
     await TransactionService.createTransaction({
-      user: bookingRequest.tenant._id,
+      user: bookingRequest.tenant._id as string,
       transactionType: "payment",
       amount: bookingRequest.netPrice,
       adminApproval: "approved",

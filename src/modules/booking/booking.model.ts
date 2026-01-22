@@ -25,15 +25,29 @@ const BookingHistorySchema: Schema<IBookingHistory> = new Schema({
     min: [0, "Net price must be a positive number"],
     default: 0,
   },
-  serviceChargeAmount: {
+  platformFee: {
     type: Number,
-    min: [0, "Service charge amount must be a positive number"],
+    min: [0, "platform fee amount must be a positive number"],
     default: 0,
   },
   paymentStatus: {
     type: String,
     enum: ["pending", "success", "failed"],
   },
+  otherFees: [
+    {
+      name: {
+        type: String,
+        required: [true, "Fee name is required"],
+        trim: true,
+      },
+      amount: {
+        type: Number,
+        required: [true, "Fee amount is required"],
+        min: [0, "Fee amount cannot be negative"],
+      },
+    },
+  ],
   paymentMethod: {
     type: String,
     enum: ["cash", "card", "bank_transfer"],
@@ -88,11 +102,25 @@ const BookingSchema: Schema<IBooking> = new Schema(
       min: [0, "Net price must be a positive number"],
       default: 0,
     },
-    serviceChargeAmount: {
+    platformFee: {
       type: Number,
-      min: [0, "Service charge amount must be a positive number"],
+      min: [0, "platform fee amount must be a positive number"],
       default: 0,
     },
+    otherFees: [
+      {
+        name: {
+          type: String,
+          required: [true, "Fee name is required"],
+          trim: true,
+        },
+        amount: {
+          type: Number,
+          required: [true, "Fee amount is required"],
+          min: [0, "Fee amount cannot be negative"],
+        },
+      },
+    ],
     paymentStatus: {
       type: String,
       enum: ["pending", "success", "failed"],
@@ -123,7 +151,7 @@ const BookingSchema: Schema<IBooking> = new Schema(
       default: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Booking = mongoose.model<IBooking>("Booking", BookingSchema);
@@ -132,5 +160,5 @@ export default Booking;
 
 export const BookingHistory = mongoose.model<IBookingHistory>(
   "BookingHistory",
-  BookingHistorySchema
+  BookingHistorySchema,
 );

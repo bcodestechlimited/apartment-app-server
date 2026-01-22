@@ -349,11 +349,15 @@ export class PropertyService {
       ? JSON.parse(updateData.facilities as string)
       : property.facilities || [];
 
-    let parsedOtherFees = [];
+    let parsedOtherFees = property.otherFees || [];
 
     if (updateData.otherFees) {
       try {
-        parsedOtherFees = JSON.parse(updateData.otherFees);
+        if (typeof updateData.otherFees === "string") {
+          parsedOtherFees = JSON.parse(updateData.otherFees);
+        } else {
+          parsedOtherFees = updateData.otherFees;
+        }
       } catch (error) {
         throw new ApiError(
           400,
@@ -361,12 +365,14 @@ export class PropertyService {
         );
       }
     }
+    // property.otherFees = parsedOtherFees;
 
     let updatePropertyPayload = {
       ...updateData,
       amenities: parsedAmenities,
       facilities: parsedFacilities,
       pictures: parsedExistingPictures,
+      otherFees: parsedOtherFees,
       isVerified: false,
     };
 

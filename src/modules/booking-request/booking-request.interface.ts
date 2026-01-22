@@ -1,6 +1,11 @@
 import type { IProperty } from "../property/property.interface";
 import type { IUser } from "../user/user.interface";
 
+interface IOtherFee {
+  name: string;
+  amount: number;
+}
+
 export interface IBookingRequest {
   property: IProperty;
   tenant: IUser;
@@ -8,8 +13,9 @@ export interface IBookingRequest {
   moveInDate: Date;
   moveOutDate: Date;
   basePrice: number;
+  otherFees: IOtherFee[];
   netPrice: number; // Price after discounts or fees
-  serviceChargeAmount: number; // Additional fees for the booking
+  platformFee: number; // Additional fees for the booking
   paymentDue?: Date;
   status: "pending" | "approved" | "declined" | "expired";
   paymentStatus: "pending" | "success" | "failed";
