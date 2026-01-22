@@ -8,6 +8,7 @@ import {
 } from "../jobs/sendBookingRequest";
 import { sendBookingRequestDeclinedEmailToTenant } from "../jobs/sendBookingRequestDeclined";
 import { sendPaymentReminderToTenant } from "../jobs/sendPaymentReminder.job";
+import { sendContactMessage } from "@/jobs/sendContactMeMessage";
 
 function addDbToUri(uri: string, dbName: string): string {
   const [base, query = ""] = uri.split("?"); // 1️⃣ split once
@@ -19,7 +20,7 @@ const agenda = new Agenda({
   db: {
     address: addDbToUri(
       env.MONGODB_URI,
-      env.NODE_ENV === "production" ? "Haven-Lease" : "Haven-Lease-Staging"
+      env.NODE_ENV === "production" ? "Haven-Lease" : "Haven-Lease-Staging",
     ),
     collection: "agendaJobs",
   },
@@ -28,16 +29,17 @@ const agenda = new Agenda({
 
 // Jobs
 agenda.define("send_otp_email", sentOTPEmailJob);
+agenda.define("send_contact_us_email", sendContactMessage);
 
 agenda.define("send_booking_request_to_landlord", sendBookingRequestToLandlord);
 agenda.define("send_booking_request_to_tenant", sendBookingRequestToTenant);
 agenda.define(
   "send_booking_request_declined_email_to_tenant",
-  sendBookingRequestDeclinedEmailToTenant
+  sendBookingRequestDeclinedEmailToTenant,
 );
 agenda.define(
   "expire_booking_request_after_24_hours",
-  expireBookingRequestAfter24Hours
+  expireBookingRequestAfter24Hours,
 );
 
 agenda.define("send_payment_reminder_to_tenant", sendPaymentReminderToTenant);
