@@ -25,7 +25,7 @@ const SECONDS = 30;
 
 export const sendBookingRequestToLandlord = async (
   job: Job<SendBookingRequestData>,
-  done: (error?: Error) => void
+  done: (error?: Error) => void,
 ) => {
   const {
     landlordName,
@@ -39,7 +39,7 @@ export const sendBookingRequestToLandlord = async (
   logger.info(
     `Running job to send booking request to landlord - Name: ${
       landlordName ?? "Landlord"
-    }, Email: ${landlordEmail}`
+    }, Email: ${landlordEmail}`,
   );
 
   try {
@@ -58,13 +58,13 @@ export const sendBookingRequestToLandlord = async (
   } catch (err) {
     logger.error(
       `Failed to send booking request email to ${landlordEmail}. Retrying in ${SECONDS} seconds. Retries left: ${retriesLeft}`,
-      { err }
+      { err },
     );
 
     logger.error(
       `Next run at: ${new Date(Date.now() + SECONDS * 1000).toLocaleString(
-        "en-NG"
-      )}`
+        "en-NG",
+      )}`,
     );
 
     if (job.attrs.data.retriesLeft === undefined) {
@@ -73,7 +73,7 @@ export const sendBookingRequestToLandlord = async (
 
     if (job.attrs.data.retriesLeft <= 0) {
       logger.error(
-        `Giving up on sending booking request email to ${landlordEmail}: reached ${MAX_RETRIES} failed retries. Removing job...`
+        `Giving up on sending booking request email to ${landlordEmail}: reached ${MAX_RETRIES} failed retries. Removing job...`,
       );
       await job.remove();
       logger.error(`Job removed`);
@@ -89,7 +89,7 @@ export const sendBookingRequestToLandlord = async (
 
 export const sendBookingRequestToTenant = async (
   job: Job<SendBookingRequestData>,
-  done: (error?: Error) => void
+  done: (error?: Error) => void,
 ) => {
   const {
     tenantName,
@@ -103,7 +103,7 @@ export const sendBookingRequestToTenant = async (
   logger.info(
     `Running job to send booking request to tenant - Name: ${
       tenantName ?? "Anon"
-    }, Email: ${tenantEmail}`
+    }, Email: ${tenantEmail}`,
   );
 
   try {
@@ -122,13 +122,13 @@ export const sendBookingRequestToTenant = async (
   } catch (err) {
     logger.error(
       `Failed to send booking request email to ${tenantEmail}. Retrying in ${SECONDS} seconds. Retries left: ${retriesLeft}`,
-      { err }
+      { err },
     );
 
     logger.error(
       `Next run at: ${new Date(Date.now() + SECONDS * 1000).toLocaleString(
-        "en-NG"
-      )}`
+        "en-NG",
+      )}`,
     );
 
     if (job.attrs.data.retriesLeft === undefined) {
@@ -137,7 +137,7 @@ export const sendBookingRequestToTenant = async (
 
     if (job.attrs.data.retriesLeft <= 0) {
       logger.error(
-        `Giving up on sending booking request email to ${tenantEmail}: reached ${MAX_RETRIES} failed retries. Removing job...`
+        `Giving up on sending booking request email to ${tenantEmail}: reached ${MAX_RETRIES} failed retries. Removing job...`,
       );
       await job.remove();
       logger.error(`Job removed`);
@@ -152,7 +152,7 @@ export const sendBookingRequestToTenant = async (
 };
 
 export const expireBookingRequestAfter24Hours = async (
-  job: Job<SendBookingRequestData>
+  job: Job<SendBookingRequestData>,
 ) => {
   const { bookingRequestId, propertyId, tenantUserId } = job.attrs.data;
   // Expire the booking request
@@ -163,7 +163,7 @@ export const expireBookingRequestAfter24Hours = async (
   // Remove user from the property
   await Property.findByIdAndUpdate(
     { _id: propertyId },
-    { $pull: { users: tenantUserId } }
+    { $pull: { users: tenantUserId } },
   );
 
   await job.remove();
@@ -176,6 +176,6 @@ export const scheduleBookingRequest = async (data: SendBookingRequestData) => {
   await agenda.schedule(
     "24 hours from now",
     "expire_booking_request_after_24_hours",
-    data
+    data,
   );
 };

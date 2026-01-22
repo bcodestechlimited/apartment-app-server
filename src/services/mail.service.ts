@@ -17,6 +17,7 @@ interface EmailOptions {
   text?: string;
   html?: string;
   from?: string;
+  replyTo?: string;
 }
 
 class MailService {
@@ -31,7 +32,7 @@ class MailService {
       process.cwd(),
       "src",
       "templates",
-      `${templateName}.html`
+      `${templateName}.html`,
     );
 
     // console.log({
@@ -52,6 +53,7 @@ class MailService {
     text,
     html,
     from,
+    replyTo,
   }: EmailOptions): Promise<SentMessageInfo> {
     try {
       const mailOptions = {
@@ -60,6 +62,7 @@ class MailService {
         subject,
         text,
         html,
+        replyTo,
       };
 
       console.log({ mailOptions });
@@ -411,6 +414,44 @@ class MailService {
       subject,
       text: emailText,
       html,
+    });
+  }
+
+  public async sendContactUsEmail({
+    name,
+    email,
+    subject,
+    message,
+  }: {
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+  }): Promise<SentMessageInfo> {
+    const adminEmail =
+      process.env.CONTACT_EMAIL || "eguavoenemmanuel2019@gmail.com";
+
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+        <h2 style="color: #2563eb;">New Contact Message</h2>
+        <p><strong>From:</strong> ${name} (<a href="mailto:${email}">${email}</a>)</p>
+        <p><strong>Subject:</strong> ${subject}</p>
+        <hr style="border: 1px solid #eee; margin: 20px 0;" />
+        <div style="background-color: #f9fafb; padding: 15px; border-radius: 5px;">
+          <strong>Message:</strong><br/>
+          <p style="white-space: pre-wrap;">${message}</p>
+        </div>
+      </div>
+    `;
+
+    // 2. Send the email
+    return await this.sendEmail({
+      to: adminEmail,
+      from: process.env.MAIL_FROM,
+      replyTo: email,
+      subject: `New Contact Msg: ${subject}`,
+      text: `Name: ${name}\nEmail: ${email}\nSubject: ${subject}\n\nMessage:\n${message}`,
+      html: htmlContent,
     });
   }
 }

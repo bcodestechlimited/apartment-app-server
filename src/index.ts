@@ -31,6 +31,7 @@ import ReportRouter from "./modules/report/report.routes";
 // import favouriteRouter from "./modules/favourite/favourite.route";
 import savedPropertiesRouter from "./modules/saved-properties/saved-properties.routes";
 import systemSettingsRouter from "./modules/system-settings/system-settings.routes";
+import contactUsRouter from "./modules/contact/contact.routes";
 const app = express();
 const server = createServer(app);
 const port = process.env.PORT || 3000;
@@ -80,6 +81,7 @@ app.use("/api/v1/tenant-rating", tenantRatingRouter);
 app.use("/api/v1/save-properties", savedPropertiesRouter);
 app.use("/api/v1/report", ReportRouter);
 app.use("/api/v1/system-settings", systemSettingsRouter);
+app.use("/api/v1/contact-us", contactUsRouter);
 // app.use("/api/v1/favourite", favouriteRouter);
 
 // Admin routes
