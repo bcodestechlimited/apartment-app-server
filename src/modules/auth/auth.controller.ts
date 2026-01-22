@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { AuthService } from "./auth.service.js";
 import type { AuthenticatedUser, IUser } from "../user/user.interface.js";
 import type { UploadedFile } from "express-fileupload";
-import { clientURLs } from "@/utils/clientURL.js";
+import { CLIENT_BASE_URL, clientURLs } from "@/utils/clientURL.js";
 import type { IQueryParams } from "@/shared/interfaces/query.interface.js";
 import type { Types } from "mongoose";
 
@@ -73,18 +73,40 @@ export class AuthController {
     }
 
     if (user.roles.includes("admin")) {
+      if (redirectPath && redirectPath.startsWith("/property")) {
+        return res.redirect(clientURLs.admin.dashboardURL + redirectPath);
+      }
+      if (redirectPath && redirectPath.includes("/dashboard/admin")) {
+        return res.redirect(CLIENT_BASE_URL + redirectPath);
+      }
       return res.redirect(clientURLs.admin.dashboardURL);
     }
     if (user.roles.includes("landlord")) {
-      if (redirectPath && redirectPath.includes("/property")) {
+      if (redirectPath && redirectPath.startsWith("/property")) {
         return res.redirect(clientURLs.landlord.dashboardURL + redirectPath);
+      }
+      if (redirectPath && redirectPath.includes("/dashboard/landlord")) {
+        return res.redirect(CLIENT_BASE_URL + redirectPath);
       }
       return res.redirect(clientURLs.landlord.dashboardURL);
     }
     if (user.roles.includes("tenant")) {
-      if (redirectPath && redirectPath.includes("/property")) {
+      if (redirectPath && redirectPath.startsWith("/property")) {
         return res.redirect(clientURLs.tenant.dashboardURL + redirectPath);
       }
+
+      if (redirectPath && redirectPath.includes("/dashboard/landlord")) {
+        return res.redirect(clientURLs.tenant.dashboardURL);
+      }
+
+      if (redirectPath && redirectPath.includes("/dashboard/admin")) {
+        return res.redirect(clientURLs.tenant.dashboardURL);
+      }
+
+      if (redirectPath && redirectPath.includes("/dashboard")) {
+        return res.redirect(CLIENT_BASE_URL + redirectPath);
+      }
+
       return res.redirect(clientURLs.tenant.dashboardURL);
     }
 
@@ -164,7 +186,7 @@ export class AuthController {
     const result = await AuthService.updateUserPersonalInfo(
       userId,
       userData,
-      files
+      files,
     );
     res.status(200).json(result);
   }

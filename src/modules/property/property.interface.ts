@@ -18,12 +18,18 @@ export enum PricingModel {
   YEARLY = "yearly",
 }
 
+export interface IOtherFee {
+  name: string;
+  amount: number;
+}
+
 export interface IProperty extends Document {
   _id: ObjectId | string;
   user: IUser;
   title: string;
   description: string;
   price: number;
+  totalFees: number;
   // location: string;
   address: string;
   state: string;
@@ -31,6 +37,7 @@ export interface IProperty extends Document {
   pricingModel: PricingModel;
   amenities: string[];
   facilities: string[];
+  otherFees: IOtherFee[];
   type: PropertyType;
   pictures: string[];
   isDeleted: boolean;
@@ -44,6 +51,7 @@ export interface IProperty extends Document {
   availabilityDate: Date;
   numberOfBedrooms?: number;
   numberOfBathrooms?: number;
+  isEnsuite?: boolean;
   // For workspaces
   seatingCapacity?: string;
   requestedBy: (IUser | Types.ObjectId)[];
@@ -54,12 +62,14 @@ export interface CreatePropertyDTO {
   title: string;
   description: string;
   price: string;
+  totalFees: number;
   address: string;
   state: string;
   lga: string;
   availabilityDate: string;
   amenities: string;
   facilities: string;
+  otherFees?: string;
   type: PropertyType;
   pictures: string[];
   pricingModel: PricingModel;
@@ -67,6 +77,7 @@ export interface CreatePropertyDTO {
   // For standard-rental / serviced-apartment
   numberOfBedRooms?: string;
   numberOfBathrooms?: string;
+  isEnsuite?: boolean;
 
   // For workspaces
   availability?: string[];
@@ -76,6 +87,9 @@ export interface CreatePropertyDTO {
 export interface UpdatePropertyDTO {
   description: string;
   price: string;
+  otherFees?: string;
+  totalFees: number;
+
   location: string;
   amenities: string;
   facilities: string;
@@ -89,6 +103,7 @@ export interface UpdatePropertyDTO {
   // For standard-rental / serviced-apartment
   numberOfBathrooms?: string;
   numberOfBedrooms?: string;
+  isEnsuite?: boolean;
 
   // For workspaces
   availability?: string[];

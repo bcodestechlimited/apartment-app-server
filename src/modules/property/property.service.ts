@@ -52,12 +52,26 @@ export class PropertyService {
   static async createProperty(
     propertyData: CreatePropertyDTO,
     files: { pictures: UploadedFile[] },
-    userId: Types.ObjectId
+    userId: Types.ObjectId,
   ) {
     const parsedAmenities = JSON.parse(propertyData.amenities);
     const parsedFacilities = JSON.parse(propertyData.facilities);
     propertyData.amenities = parsedAmenities;
     propertyData.facilities = parsedFacilities;
+
+    let parsedOtherFees = [];
+
+    if (propertyData.otherFees) {
+      try {
+        parsedOtherFees = JSON.parse(propertyData.otherFees);
+      } catch (error) {
+        throw new ApiError(
+          400,
+          "Invalid format for 'Other Fees'. Please check your input.",
+        );
+      }
+    }
+    propertyData.otherFees = parsedOtherFees;
 
     const isAvailable = new Date(propertyData.availabilityDate) <= new Date();
 
@@ -74,10 +88,10 @@ export class PropertyService {
     const uploadedPictures = await Promise.all(
       pictures.map(async (picture: UploadedFile) => {
         const { secure_url } = await UploadService.uploadToCloudinary(
-          picture.tempFilePath
+          picture.tempFilePath,
         );
         return secure_url;
-      })
+      }),
     );
 
     property.pictures = uploadedPictures as string[];
@@ -267,7 +281,7 @@ export class PropertyService {
 
   static async getLandlordProperties(
     userId: string | Types.ObjectId,
-    query: IQueryParams
+    query: IQueryParams,
   ) {
     const { limit = 10, page = 1, type } = query;
     const filterQuery: Record<string, any> = { user: userId };
@@ -307,7 +321,7 @@ export class PropertyService {
     propertyId: string,
     updateData: Partial<UpdatePropertyDTO>,
     userId: Types.ObjectId | string,
-    files?: { newPictures: UploadedFile | UploadedFile[] }
+    files?: { newPictures: UploadedFile | UploadedFile[] },
   ) {
     const { newPictures } = files ?? {};
 
@@ -319,7 +333,7 @@ export class PropertyService {
     // Optionally enforce ownership
     if (String(property.user._id) !== userId.toString()) {
       throw ApiError.forbidden(
-        "You do not have permission to update this property"
+        "You do not have permission to update this property",
       );
     }
 
@@ -335,11 +349,30 @@ export class PropertyService {
       ? JSON.parse(updateData.facilities as string)
       : property.facilities || [];
 
+    let parsedOtherFees = property.otherFees || [];
+
+    if (updateData.otherFees) {
+      try {
+        if (typeof updateData.otherFees === "string") {
+          parsedOtherFees = JSON.parse(updateData.otherFees);
+        } else {
+          parsedOtherFees = updateData.otherFees;
+        }
+      } catch (error) {
+        throw new ApiError(
+          400,
+          "Invalid format for 'Other Fees'. Please check your input.",
+        );
+      }
+    }
+    // property.otherFees = parsedOtherFees;
+
     let updatePropertyPayload = {
       ...updateData,
       amenities: parsedAmenities,
       facilities: parsedFacilities,
       pictures: parsedExistingPictures,
+      otherFees: parsedOtherFees,
       isVerified: false,
     };
 
@@ -351,10 +384,10 @@ export class PropertyService {
       const newlyUploadedPictures = await Promise.all(
         newPictures.map(async (picture: UploadedFile) => {
           const { secure_url } = await UploadService.uploadToCloudinary(
-            picture.tempFilePath
+            picture.tempFilePath,
           );
           return secure_url;
-        })
+        }),
       );
 
       updatePropertyPayload.pictures = [
@@ -369,7 +402,7 @@ export class PropertyService {
       }
 
       const { secure_url } = await UploadService.uploadToCloudinary(
-        newPictures.tempFilePath
+        newPictures.tempFilePath,
       );
 
       updatePropertyPayload.pictures = [
@@ -386,7 +419,7 @@ export class PropertyService {
   static async adminUpdateProperty(
     propertyId: string,
     updateData: Partial<UpdatePropertyDTO>,
-    files?: { newPictures: UploadedFile | UploadedFile[] }
+    files?: { newPictures: UploadedFile | UploadedFile[] },
   ) {
     const { newPictures } = files ?? {};
 
@@ -422,10 +455,10 @@ export class PropertyService {
       const newlyUploadedPictures = await Promise.all(
         newPictures.map(async (picture: UploadedFile) => {
           const { secure_url } = await UploadService.uploadToCloudinary(
-            picture.tempFilePath
+            picture.tempFilePath,
           );
           return secure_url;
-        })
+        }),
       );
 
       updatePropertyPayload.pictures = [
@@ -440,7 +473,7 @@ export class PropertyService {
       }
 
       const { secure_url } = await UploadService.uploadToCloudinary(
-        newPictures.tempFilePath
+        newPictures.tempFilePath,
       );
 
       updatePropertyPayload.pictures = [
@@ -464,7 +497,7 @@ export class PropertyService {
 
     if (property.user.toString() !== userId.toString()) {
       throw ApiError.forbidden(
-        "You do not have permission to delete this property"
+        "You do not have permission to delete this property",
       );
     }
 
@@ -476,12 +509,12 @@ export class PropertyService {
 
   static async addToBookedBy(
     userId: ObjectId | string,
-    propertyId: ObjectId | string
+    propertyId: ObjectId | string,
   ) {
     const property = await Property.findOneAndUpdate(
       { _id: propertyId },
       { $addToSet: { bookedBy: userId } },
-      { new: true }
+      { new: true },
     );
     if (!property) {
       throw ApiError.notFound("Property not found");
@@ -504,7 +537,7 @@ export class PropertyService {
 
   static async pullTenantFromPropertyRequestedById(
     propertyId: string,
-    tenantId: string
+    tenantId: string,
   ) {
     await Property.findByIdAndUpdate(propertyId, {
       $pull: { requestedBy: tenantId },
@@ -513,7 +546,7 @@ export class PropertyService {
 
   static async updatePropertyRevenue(
     propertyId: string | Types.ObjectId | ObjectId,
-    amount: number
+    amount: number,
   ) {
     return await Property.findByIdAndUpdate(propertyId, {
       $inc: { totalRevenue: amount },
@@ -522,7 +555,7 @@ export class PropertyService {
 
   static async calculateAVerageRatingOnRatingCreated(
     propertyId: string,
-    newRating: number
+    newRating: number,
   ) {
     const property = await Property.findById(propertyId);
     if (!property) return;
@@ -539,7 +572,7 @@ export class PropertyService {
   static async calculateAVerageRatingOnRatingUpdated(
     propertyId: string,
     oldRating: number,
-    newRating: number
+    newRating: number,
   ) {
     const property = await Property.findById(propertyId);
     if (!property) return;
@@ -554,7 +587,7 @@ export class PropertyService {
 
   static async calculateAVerageRatingOnRatingDeleted(
     propertyId: string,
-    deletedRating: number
+    deletedRating: number,
   ) {
     const property = await Property.findById(propertyId);
     if (!property) return;

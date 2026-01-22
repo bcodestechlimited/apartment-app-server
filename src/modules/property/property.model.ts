@@ -43,6 +43,12 @@ const PropertySchema: Schema<IProperty> = new Schema(
       min: [0, "Price must be a positive number"],
       default: 0,
     },
+    totalFees: {
+      type: Number,
+      required: [true, "Please provide a property total fees"],
+      min: [0, "Total fees must be a positive number"],
+      default: 0,
+    },
     amenities: {
       type: [String],
       default: [],
@@ -51,6 +57,20 @@ const PropertySchema: Schema<IProperty> = new Schema(
       type: [String],
       default: [],
     },
+    otherFees: [
+      {
+        name: {
+          type: String,
+          required: [true, "Fee name is required"],
+          trim: true,
+        },
+        amount: {
+          type: Number,
+          required: [true, "Fee amount is required"],
+          min: [0, "Fee amount cannot be negative"],
+        },
+      },
+    ],
     type: {
       type: String,
       enum: Object.values(PropertyType),
@@ -71,6 +91,10 @@ const PropertySchema: Schema<IProperty> = new Schema(
       type: Number,
       min: [1, "Number of bathrooms must be at least 1"],
       default: 1,
+    },
+    isEnsuite: {
+      type: Boolean,
+      default: false,
     },
     availabilityDate: {
       type: Date,
@@ -140,7 +164,7 @@ const PropertySchema: Schema<IProperty> = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const Property = mongoose.model<IProperty>("Property", PropertySchema);

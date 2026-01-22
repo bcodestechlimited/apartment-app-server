@@ -3,6 +3,10 @@ import type { ObjectId } from "mongoose";
 import type { IUser } from "../user/user.interface";
 import type { IProperty } from "../property/property.interface";
 
+export interface IOtherFee {
+  name: string;
+  amount: number;
+}
 export interface IBooking {
   property: IProperty;
   tenant: IUser;
@@ -11,7 +15,8 @@ export interface IBooking {
   moveOutDate: Date;
   basePrice: number;
   netPrice: number; // Price after discounts or fees
-  serviceChargeAmount: number; // Additional fees for the booking
+  platformFee: number; // Additional fees for the booking
+  otherFees: IOtherFee[];
   paymentDue: Date; // Date when payment is due
   status: "active" | "expired";
   paymentStatus: "pending" | "success" | "failed";
@@ -31,6 +36,8 @@ export interface IBookingHistory {
   endDate: Date;
   basePrice: number;
   netPrice: number; // Price after discounts or fees
+  platformFee: number;
+  otherFees: IOtherFee[];
   serviceChargeAmount: number;
   paymentStatus: "pending" | "success" | "failed";
   paymentMethod: "cash" | "card" | "bank_transfer";

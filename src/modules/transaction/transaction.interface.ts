@@ -23,7 +23,7 @@ export interface ITransaction extends Document {
 }
 
 export interface createTransactionDTO {
-  user: Types.ObjectId;
+  user: Types.ObjectId | string;
   transactionType: "withdrawal" | "deposit" | "transfer" | "payment";
   amount: number;
   provider: "paystack" | "flutterwave";

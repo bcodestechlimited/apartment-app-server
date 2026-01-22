@@ -16,6 +16,7 @@ export class WalletService {
     await this.getWalletByUserId(userId);
 
     const user = await UserService.findUserById(userId);
+
     let callback_url = "";
     if (user.roles.includes("landlord")) {
       callback_url = `${env.CLIENT_BASE_URL}/dashboard/landlord/paystack/verify`;

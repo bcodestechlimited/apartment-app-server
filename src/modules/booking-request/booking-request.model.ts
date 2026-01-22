@@ -36,9 +36,26 @@ const BookingRequestSchema: Schema<IBookingRequest> = new Schema(
       min: [0, "Net price must be a positive number"],
       default: 0,
     },
-    serviceChargeAmount: {
+    otherFees: {
+      type: [
+        {
+          name: {
+            type: String,
+            required: [true, "Fee name is required"],
+            trim: true,
+          },
+          amount: {
+            type: Number,
+            required: [true, "Fee amount is required"],
+            min: [0, "Fee amount cannot be negative"],
+          },
+        },
+      ],
+      default: [],
+    },
+    platformFee: {
       type: Number,
-      min: [0, "Service charge amount must be a positive number"],
+      min: [0, "Platform fee must be a positive number"],
       default: 0,
     },
     paymentDue: {
@@ -73,12 +90,12 @@ const BookingRequestSchema: Schema<IBookingRequest> = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const BookingRequest = mongoose.model<IBookingRequest>(
   "BookingRequest",
-  BookingRequestSchema
+  BookingRequestSchema,
 );
 
 export default BookingRequest;

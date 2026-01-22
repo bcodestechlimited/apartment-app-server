@@ -12,7 +12,7 @@ export class BookingRequestController {
     const { userId } = req.user as AuthenticatedUser;
     const result = await BookingRequestService.createBookingRequest(
       bookingData,
-      userId
+      userId,
     );
     res.status(201).json(result);
   }
@@ -23,7 +23,7 @@ export class BookingRequestController {
     const { userId } = req.user as AuthenticatedUser;
     const result = await BookingRequestService.getLandlordBookingRequests(
       query,
-      userId
+      userId,
     );
     res.status(200).json(result);
   }
@@ -34,7 +34,7 @@ export class BookingRequestController {
     const { userId } = req.user as AuthenticatedUser;
     const result = await BookingRequestService.getLandlordBookingRequests(
       query,
-      userId
+      userId,
     );
     res.status(200).json(result);
   }
@@ -45,7 +45,7 @@ export class BookingRequestController {
     const { userId } = req.user as AuthenticatedUser;
     const result = await BookingRequestService.getTenantBookingRequests(
       query,
-      userId
+      userId,
     );
     res.status(200).json(result);
   }
@@ -58,7 +58,7 @@ export class BookingRequestController {
     const result = await BookingRequestService.updateBookingRequest(
       bookingRequestId as string,
       bookingData,
-      userId
+      userId,
     );
     res.status(200).json(result);
   }
@@ -69,7 +69,7 @@ export class BookingRequestController {
     const { userId } = req.user as AuthenticatedUser;
     const result = await BookingRequestService.deleteBookingRequest(
       bookingRequestId as string,
-      userId
+      userId,
     );
     res.status(200).json(result);
   }
@@ -78,7 +78,7 @@ export class BookingRequestController {
   static async getBookingRequestById(req: Request, res: Response) {
     const { bookingRequestId } = req.params;
     const result = await BookingRequestService.getBookingRequestById(
-      bookingRequestId as string
+      bookingRequestId as string,
     );
     res.status(200).json(result);
   }
@@ -87,7 +87,7 @@ export class BookingRequestController {
   static async generatePaymentLink(req: Request, res: Response) {
     const { bookingRequestId } = req.params;
     const result = await BookingRequestService.generatePaymentLink(
-      bookingRequestId as string
+      bookingRequestId as string,
     );
     res.status(200).json(result);
   }
@@ -99,11 +99,11 @@ export class BookingRequestController {
     // await PaymentService.verifyPaystackSignature(req);
     const result = await BookingRequestService.handlePaymentSuccess(
       bookingRequestId as string,
-      trxref as string
+      trxref as string,
     );
 
     res.redirect(
-      `${env.CLIENT_BASE_URL}/dashboard/bookings/requests?bookingRequestId=${result.data.bookingRequest._id}`
+      `${env.CLIENT_BASE_URL}/dashboard/bookings/requests?bookingRequestId=${result.data.bookingRequest._id}`,
     );
     // res.status(200).json(result);
   }
