@@ -447,7 +447,7 @@ class MailService {
     // 2. Send the email
     return await this.sendEmail({
       to: adminEmail,
-      from: process.env.MAIL_FROM,
+      from: adminEmail,
       replyTo: email,
       subject: `New Contact Msg: ${subject}`,
       text: `Name: ${name}\nEmail: ${email}\nSubject: ${subject}\n\nMessage:\n${message}`,
