@@ -507,6 +507,22 @@ export class PropertyService {
     return ApiSuccess.ok("Property deleted successfully");
   }
 
+  static async softDeleteProperty(id: string, userId: Types.ObjectId) {
+    const property = await Property.findById(id);
+    if (!property) {
+      throw ApiError.notFound("Property not found");
+    }
+
+    if (property.user.toString() !== userId.toString()) {
+      throw ApiError.forbidden(
+        "You do not have permission to delete this property",
+      );
+    }
+    property.isDeleted = true;
+    await property.save();
+    return ApiSuccess.ok("Property deleted successfully", { property });
+  }
+
   static async addToBookedBy(
     userId: ObjectId | string,
     propertyId: ObjectId | string,
@@ -606,6 +622,19 @@ export class PropertyService {
     }
 
     await property.save();
+  }
+
+  static async updatePropertyAvailability(
+    propertyId: string,
+    isAvailable: boolean,
+  ) {
+    const property = await Property.findById(propertyId);
+    if (!property) return ApiError.notFound("Property not found");
+    property.isAvailable = isAvailable;
+    await property.save();
+    return ApiSuccess.ok("Property availability updated successfully", {
+      property,
+    });
   }
 }
 

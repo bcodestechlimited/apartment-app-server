@@ -1,7 +1,7 @@
 import express from "express";
 import methodNotAllowed from "../../middleware/methodNotAllowed.js";
 import { PropertyController } from "./property.controller.js";
-import { isAuth } from "../../middleware/auth.js";
+import { isAuth, isLandlord } from "../../middleware/auth.js";
 import { validateBody } from "../../middleware/validateSchema.js";
 import { PropertySchemas } from "./property.schema.js";
 
@@ -14,13 +14,24 @@ router
     isAuth,
     PropertySchemas.validateImages,
     validateBody(PropertySchemas.createPropertySchema),
-    PropertyController.createProperty
+    PropertyController.createProperty,
   )
   .all(methodNotAllowed);
 
 router
   .route("/landlord")
-  .get(isAuth, PropertyController.getAllLandlordProperties) // public or protected as needed
+  .get(isAuth, PropertyController.getAllLandlordProperties)
+  // public or protected as needed
+  .all(methodNotAllowed);
+
+router
+  .route("/soft-delete/:id")
+  .delete(isAuth, PropertyController.softDeleteProperty)
+  .all(methodNotAllowed);
+
+router
+  .route("/landlord/update-availability")
+  .patch(isAuth, isLandlord, PropertyController.updatePropertyAvailability)
   .all(methodNotAllowed);
 
 router
@@ -30,7 +41,7 @@ router
     isAuth,
     PropertySchemas.validateUpdateImages,
     validateBody(PropertySchemas.updatePropertySchema),
-    PropertyController.updateProperty
+    PropertyController.updateProperty,
   )
   .delete(isAuth, PropertyController.deleteProperty)
   .all(methodNotAllowed);

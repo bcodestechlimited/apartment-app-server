@@ -16,7 +16,7 @@ export class PropertyController {
     const result = await PropertyService.createProperty(
       propertyData,
       files,
-      userId
+      userId,
     );
     res.status(201).json(result);
   }
@@ -48,7 +48,7 @@ export class PropertyController {
     console.log("landlordId", landlordId);
     const result = await PropertyService.getLandlordProperties(
       landlordId as string,
-      query
+      query,
     );
     res.status(200).json(result);
   }
@@ -70,7 +70,7 @@ export class PropertyController {
       propertyId as string,
       propertyData,
       userId,
-      files
+      files,
     );
     res.status(200).json(result);
   }
@@ -81,7 +81,7 @@ export class PropertyController {
     const result = await PropertyService.adminUpdateProperty(
       propertyId as string,
       propertyData,
-      files
+      files,
     );
     res.status(200).json(result);
   }
@@ -92,7 +92,29 @@ export class PropertyController {
     const { userId } = req.user as AuthenticatedUser;
     const result = await PropertyService.deleteProperty(
       propertyId as string,
-      userId
+      userId,
+    );
+    res.status(200).json(result);
+  }
+
+  static async updatePropertyAvailability(req: Request, res: Response) {
+    const { isAvailable, propertyId } = req.body as {
+      isAvailable: boolean;
+      propertyId: string;
+    };
+    const result = await PropertyService.updatePropertyAvailability(
+      propertyId as string,
+      isAvailable,
+    );
+    res.status(200).json(result);
+  }
+
+  static async softDeleteProperty(req: Request, res: Response) {
+    const { id } = req.params;
+    const { userId } = req.user as AuthenticatedUser;
+    const result = await PropertyService.softDeleteProperty(
+      id as string,
+      userId,
     );
     res.status(200).json(result);
   }
