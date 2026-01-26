@@ -710,7 +710,7 @@ export class PropertySchemas {
 
     // Validate files are present
     if (!pictures || !Array.isArray(pictures)) {
-      throw ApiError.badRequest("Pictures are required");
+      throw ApiError.badRequest("Please upload at least three images");
     }
 
     if (pictures.length <= 2) {

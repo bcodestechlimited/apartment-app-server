@@ -53,6 +53,12 @@ export class AuthController {
       redirectPath: string;
       error: string;
     };
+
+    if (!user.isActive) {
+      return res.redirect(
+        `${clientURLs.loginURL}?login-error=account_blocked&provider=google`,
+      );
+    }
     console.log("redirectPath", redirectPath);
     res.cookie("token", token, {
       httpOnly: true,
@@ -125,6 +131,29 @@ export class AuthController {
       message: "Logout successful",
       data: null,
     });
+  }
+
+  // src/modules/auth/auth.controller.ts
+
+  static async completeOnboarding(req: Request, res: Response) {
+    const { userId } = req.user as AuthenticatedUser;
+    const { role } = req.body;
+    console.log("role in complete onboarding", role);
+
+    const { user, token } = await AuthService.updateUserRoleAndOnboard(
+      userId,
+      role,
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 3 * 24 * 60 * 60 * 1000,
+      path: "/",
+    });
+
+    res.status(200).json({ success: true, data: { user, token } });
   }
 
   // Get user data

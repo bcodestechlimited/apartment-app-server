@@ -325,7 +325,10 @@ export class BookingRequestService {
     return ApiSuccess.ok("Booking request deleted successfully");
   }
 
-  static async generatePaymentLink(bookingRequestId: string) {
+  static async generatePaymentLink(
+    bookingRequestId: string,
+    userId: Types.ObjectId,
+  ) {
     const bookingRequest = await BookingRequest.findById(
       bookingRequestId,
     ).populate([

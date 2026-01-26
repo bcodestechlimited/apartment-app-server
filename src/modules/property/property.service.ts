@@ -12,6 +12,7 @@ import type { IQueryParams } from "../../shared/interfaces/query.interface.js";
 import { paginate } from "../../utils/paginate.js";
 import { TenantService } from "../tenant/tenant.service.js";
 import UserService from "../user/user.service.js";
+import type { AuthenticatedUser } from "../user/user.interface.js";
 
 export class PropertyService {
   static async getPropertyDocumentById(propertyId: string | ObjectId) {
@@ -218,6 +219,8 @@ export class PropertyService {
     } = query;
 
     const filterQuery: Record<string, any> = {};
+
+    filterQuery.isVerified = true;
 
     if (propertyType) {
       const actualPropertyType =

@@ -86,8 +86,10 @@ export class BookingRequestController {
   // Generate Payment Link for Booking Request
   static async generatePaymentLink(req: Request, res: Response) {
     const { bookingRequestId } = req.params;
+    const user = req.user as AuthenticatedUser;
     const result = await BookingRequestService.generatePaymentLink(
       bookingRequestId as string,
+      user.userId,
     );
     res.status(200).json(result);
   }
