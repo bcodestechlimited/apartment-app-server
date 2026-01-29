@@ -3,19 +3,23 @@ import type { IQueryParams } from "../../shared/interfaces/query.interface.js";
 import { paginate } from "../../utils/paginate.js";
 import Tenant from "./tenant.model.js";
 import type { createTenantDTO } from "./tenant.interface.js";
-import type { ObjectId, Types } from "mongoose";
+import type { ClientSession, ObjectId, Types } from "mongoose";
 import mongoose from "mongoose";
 
 export class TenantService {
-  static async createTenant(payload: createTenantDTO) {
-    const tenant = await Tenant.create({
+  static async createTenant(payload: createTenantDTO, session?: ClientSession) {
+    const tenantData = {
       user: payload.user,
       landlord: payload.landlord,
       property: payload.property,
       moveInDate: payload.moveInDate,
       endDate: payload.endDate || null,
       isActive: true,
-    });
+    };
+
+    const tenant = session
+      ? (await Tenant.create([tenantData], { session }))[0]
+      : await Tenant.create(tenantData);
 
     return ApiSuccess.created("Tenant created successfully", { tenant });
   }
@@ -89,7 +93,7 @@ export class TenantService {
 
   static async getLandlordTenants(
     landlordId: Types.ObjectId | string, // Changed from Types.ObjectId to string for safety, or keep as is
-    query: IQueryParams & { filter?: string }
+    query: IQueryParams & { filter?: string },
   ) {
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 10;
@@ -120,7 +124,7 @@ export class TenantService {
           as: "property",
         },
       },
-      { $unwind: "$property" } // Flatten property array
+      { $unwind: "$property" }, // Flatten property array
     );
 
     // 3. Apply Dynamic Filters based on dropdown selection

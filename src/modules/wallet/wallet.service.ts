@@ -1,10 +1,10 @@
 import { ApiError, ApiSuccess } from "../../utils/responseHandler.js";
 import { paginate } from "../../utils/paginate.js";
-import type { ObjectId, PopulateOptions, Types } from "mongoose";
+import type { ClientSession, ObjectId, PopulateOptions, Types } from "mongoose";
 import type { IQueryParams } from "@/shared/interfaces/query.interface.js";
 import Wallet from "./wallet.model.js";
 import { TransactionService } from "../transaction/transaction.service.js";
-import type { UpdateWalletDTO } from "./wallet.interface.js";
+import type { IWallet, UpdateWalletDTO } from "./wallet.interface.js";
 import paystackClient from "@/lib/paystackClient.js";
 import { AxiosError } from "axios";
 import logger from "@/utils/logger.js";
@@ -48,13 +48,15 @@ export class WalletService {
 
   static async verifyTopUpWallet(userId: Types.ObjectId, reference: string) {
     const response = await paystackClient.get(
-      `/transaction/verify/${reference}`
+      `/transaction/verify/${reference}`,
     );
     if (response.data.data.status === "success") {
       // Handle successful payment here
-      const transaction = await TransactionService.getTransactionByReference(
-        reference
-      );
+      const transaction =
+        await TransactionService.getTransactionByReference(reference);
+      if (!transaction) {
+        throw ApiError.notFound("Transaction not found");
+      }
       console.log("Transaction found:", transaction);
       if (transaction.status === "success") {
         return ApiSuccess.ok("Wallet already topped up");
@@ -72,17 +74,28 @@ export class WalletService {
     throw ApiError.badRequest("Payment not successful");
   }
 
-  static async getWalletByUserId(userId: Types.ObjectId | string) {
-    const existingWallet = await Wallet.findOne({ user: userId });
+  static async getWalletByUserId(
+    userId: Types.ObjectId | string,
+    session?: ClientSession,
+  ): Promise<IWallet> {
+    const existingWallet = await Wallet.findOne({ user: userId }).session(
+      session || null,
+    );
 
-    if (!existingWallet) {
-      const wallet = await Wallet.create({
-        user: userId,
-      });
-      return wallet;
+    if (existingWallet) {
+      return existingWallet;
     }
 
-    return existingWallet;
+    // Create new wallet
+    const walletData = { user: userId, balance: 0 };
+
+    if (session) {
+      const [newWallet] = await Wallet.create([walletData], { session });
+      return newWallet as IWallet;
+    }
+
+    const newWallet = await Wallet.create(walletData);
+    return newWallet;
   }
 
   static async getWallet(userId: Types.ObjectId) {
@@ -123,7 +136,7 @@ export class WalletService {
     console.log({ bankCode, accountNumber });
 
     const response = await paystackClient.get(
-      `/bank/resolve?account_number=${accountNumber}&bank_code=${bankCode}`
+      `/bank/resolve?account_number=${accountNumber}&bank_code=${bankCode}`,
     );
     console.log("Response:", response);
     return ApiSuccess.ok("Bank Details Verified Successfully", response.data);
@@ -138,13 +151,13 @@ export class WalletService {
 
     if (amount < 15000) {
       throw ApiError.badRequest(
-        "Withdrawal amount should be at least 15,000 naira"
+        "Withdrawal amount should be at least 15,000 naira",
       );
     }
 
     if (amount > 300000) {
       throw ApiError.badRequest(
-        "Withdrawal amount can't be above 300,000 naira"
+        "Withdrawal amount can't be above 300,000 naira",
       );
     }
 
@@ -158,7 +171,7 @@ export class WalletService {
 
     if (userWallet.isBlocked) {
       throw ApiError.forbidden(
-        "Your wallet has been disabled. Please contact the admin"
+        "Your wallet has been disabled. Please contact the admin",
       );
     }
 
@@ -199,7 +212,7 @@ export class WalletService {
 
   static async updateWallet(
     userId: Types.ObjectId,
-    updatedWalletDetails: UpdateWalletDTO
+    updatedWalletDetails: UpdateWalletDTO,
   ) {
     const wallet = await this.getWalletByUserId(userId);
 
@@ -224,7 +237,7 @@ export class WalletService {
 
       await UserService.updateUserPaystackReceipientCode(
         userId,
-        wallet.recipientCode as string
+        wallet.recipientCode as string,
       );
 
       return ApiSuccess.ok("Wallet Updated", { wallet });

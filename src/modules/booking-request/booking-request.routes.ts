@@ -13,7 +13,7 @@ router
   .post(
     isAuth,
     validateBody(BookingRequestSchemas.createBookingRequest),
-    BookingRequestController.createBookingRequest
+    BookingRequestController.createBookingRequest,
   )
   .all(methodNotAllowed);
 
@@ -33,13 +33,13 @@ router
   .patch(
     isAuth,
     validateBody(BookingRequestSchemas.updateBookingRequest),
-    BookingRequestController.updateBookingRequest
+    BookingRequestController.updateBookingRequest,
   )
   .all(methodNotAllowed);
 
 router
   .route("/:bookingRequestId/pay")
-  .get(isAuth, BookingRequestController.generatePaymentLink)
+  .post(isAuth, BookingRequestController.generatePaymentLink)
   .all(methodNotAllowed);
 
 // Verify payment for booking request

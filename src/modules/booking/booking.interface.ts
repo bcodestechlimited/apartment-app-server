@@ -40,8 +40,8 @@ export interface IBookingHistory {
   otherFees: IOtherFee[];
   serviceChargeAmount: number;
   paymentStatus: "pending" | "success" | "failed";
-  paymentMethod: "cash" | "card" | "bank_transfer";
-  paymentProvider: "paystack" | "flutterwave";
+  paymentMethod: "cash" | "card" | "bank_transfer" | "wallet";
+  paymentProvider: "paystack" | "flutterwave" | "wallet";
   paymentReference: string;
   status: "active" | "expired" | "cancelled";
   movedToHistoryAt: Date;

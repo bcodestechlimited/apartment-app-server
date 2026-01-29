@@ -69,12 +69,12 @@ const BookingRequestSchema: Schema<IBookingRequest> = new Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["cash", "card", "bank_transfer"],
+      enum: ["cash", "card", "bank_transfer", "wallet"],
       default: "bank_transfer",
     },
     paymentProvider: {
       type: String,
-      enum: ["paystack", "flutterwave"],
+      enum: ["paystack", "flutterwave", "wallet"],
       default: "paystack",
     },
     paymentReference: {

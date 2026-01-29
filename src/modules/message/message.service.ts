@@ -1,11 +1,13 @@
 import { Message } from "./message.model";
 import { ApiError, ApiSuccess } from "../../utils/responseHandler";
 import type {
+  ClientSession,
   ObjectId,
   TypeExpressionOperatorReturningObjectId,
   Types,
 } from "mongoose";
 import Conversation from "./message.model";
+import type { IConversation } from "./message.interface";
 
 export class MessageService {
   // Fetch all conversations for a user
@@ -100,23 +102,39 @@ export class MessageService {
   static async getOrCreateConversation(
     user1: string | Types.ObjectId,
     user2: string | Types.ObjectId,
-    content?: string
-  ) {
+    content?: string,
+    session?: ClientSession,
+  ): Promise<{
+    message: string;
+    data: { conversation: IConversation };
+  }> {
     console.log({ user1, user2 });
 
-    let conversation = await Conversation.findOne({
+    const existingConversation = await Conversation.findOne({
       participants: { $all: [user1, user2] },
-    });
+    }).session(session || null);
 
-    if (!conversation) {
-      conversation = new Conversation({
-        participants: [user1, user2],
-        lastMessage: content,
+    if (existingConversation) {
+      return ApiSuccess.ok("Conversation ready", {
+        conversation: existingConversation,
       });
-      await conversation.save();
     }
 
-    return ApiSuccess.ok("Conversation ready", { conversation });
+    // Create new conversation
+    const conversationData = {
+      participants: [user1, user2],
+      lastMessage: content,
+    };
+
+    const newConversation = session
+      ? ((
+          await Conversation.create([conversationData], { session })
+        )[0] as IConversation)
+      : await Conversation.create(conversationData);
+
+    return ApiSuccess.ok("Conversation ready", {
+      conversation: newConversation,
+    });
   }
 }
 

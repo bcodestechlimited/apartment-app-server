@@ -1,4 +1,4 @@
-import type { ObjectId, Types } from "mongoose";
+import type { ClientSession, ObjectId, Types } from "mongoose";
 import { ApiError, ApiSuccess } from "../../utils/responseHandler";
 import { hashPassword } from "../../utils/validationUtils";
 import type {
@@ -81,7 +81,7 @@ class UserService {
   }
   static async updateUser(
     userId: Types.ObjectId,
-    userData: Partial<updateUserDTO>
+    userData: Partial<updateUserDTO>,
   ): Promise<IUser> {
     const { document, preferences, ...otherFields } = userData;
 
@@ -108,7 +108,7 @@ class UserService {
   }
   static async updateUserByAdmin(
     userId: string,
-    userData: Partial<updateUserDTO>
+    userData: Partial<updateUserDTO>,
   ) {
     const user = await User.findOneAndUpdate({ _id: userId }, userData, {
       new: true,
@@ -197,7 +197,7 @@ class UserService {
 
   // Personal Info
   static async getUserPersonalInfo(
-    userId: Types.ObjectId
+    userId: Types.ObjectId,
   ): Promise<IPersonalInfo> {
     let personalInfo = await PersonalInfo.findOne({ user: userId });
 
@@ -211,7 +211,7 @@ class UserService {
   static async updateUserInformation(
     userId: Types.ObjectId,
     userData: any,
-    files?: { avatar?: UploadedFile }
+    files?: { avatar?: UploadedFile },
   ): Promise<IPersonalInfo> {
     // console.log({ userId, userData, files });
     const UpdatedUserData = {
@@ -220,7 +220,7 @@ class UserService {
 
     if (files && files.avatar) {
       const { secure_url } = await UploadService.uploadToCloudinary(
-        files.avatar.tempFilePath
+        files.avatar.tempFilePath,
       );
       UpdatedUserData.avatar = secure_url as string;
       await fs.unlink(files.avatar.tempFilePath).catch(console.error);
@@ -237,7 +237,7 @@ class UserService {
         new: true,
         runValidators: true,
         upsert: false,
-      }
+      },
     );
 
     // console.log(" personal info", { personalInfo });
@@ -273,7 +273,7 @@ class UserService {
 
   static async updateUserEmployment(
     userId: Types.ObjectId,
-    userData: any
+    userData: any,
   ): Promise<IEmployment> {
     console.log({ userId, userData });
 
@@ -283,7 +283,7 @@ class UserService {
       {
         // new: true,
         runValidators: true,
-      }
+      },
     );
 
     console.log({ employment });
@@ -300,7 +300,7 @@ class UserService {
 
   // Documents
   static async getUserDocuments(
-    userId: Types.ObjectId | string
+    userId: Types.ObjectId | string,
   ): Promise<IDocument[]> {
     let userDocuments = await Document.find({ user: userId }).sort({
       createdAt: -1,
@@ -359,7 +359,7 @@ class UserService {
         acc[item._id] = item.count;
         return acc;
       },
-      { pending: 0, approved: 0, rejected: 0 }
+      { pending: 0, approved: 0, rejected: 0 },
     );
 
     const { documents, pagination } = await paginate({
@@ -385,7 +385,7 @@ class UserService {
     const document = await Document.findByIdAndUpdate(
       id,
       { status: "approved" },
-      { new: true }
+      { new: true },
     );
     if (!document) {
       throw ApiError.notFound("Document Not Found");
@@ -399,7 +399,7 @@ class UserService {
     const document = await Document.findByIdAndUpdate(
       id,
       { status: "rejected" },
-      { new: true }
+      { new: true },
     );
     if (!document) {
       throw ApiError.notFound("Document Not Found");
@@ -410,7 +410,7 @@ class UserService {
 
   static async uploadUserDocument(
     userId: Types.ObjectId,
-    files?: { document?: UploadedFile }
+    files?: { document?: UploadedFile },
   ): Promise<IDocument[]> {
     console.log({ userId, files, document: files?.document });
 
@@ -421,7 +421,7 @@ class UserService {
     if (files && files.document) {
       const { document } = files;
       const { secure_url } = await UploadService.uploadToCloudinary(
-        document.tempFilePath
+        document.tempFilePath,
       );
 
       payload.fileUrl = secure_url as string;
@@ -456,7 +456,7 @@ class UserService {
 
   static async updateUserNextOfKin(
     userId: Types.ObjectId,
-    userData: any
+    userData: any,
   ): Promise<INextOfKin> {
     let nextOfKin = await NextOfKin.findOneAndUpdate(
       { user: userId },
@@ -464,7 +464,7 @@ class UserService {
       {
         // new: true,
         runValidators: true,
-      }
+      },
     );
 
     if (!nextOfKin) {
@@ -492,7 +492,7 @@ class UserService {
 
   static async updateUserGuarantor(
     userId: Types.ObjectId,
-    userData: any
+    userData: any,
   ): Promise<IGuarantor> {
     console.log({ userId, userData });
 
@@ -502,7 +502,7 @@ class UserService {
       {
         // new: true,
         runValidators: true,
-      }
+      },
     );
 
     if (!userGuarantor) {
@@ -573,7 +573,7 @@ class UserService {
 
   static async addToSavedProperties(
     userId: Types.ObjectId,
-    propertyId: Types.ObjectId
+    propertyId: Types.ObjectId,
   ) {
     const user = await this.findUserById(userId);
     user.savedProperties.push(propertyId);
@@ -583,12 +583,12 @@ class UserService {
 
   static async removeFromSavedProperties(
     userId: Types.ObjectId,
-    propertyId: string
+    propertyId: string,
   ) {
     const user = await User.findByIdAndUpdate(
       userId,
       { $pull: { savedProperties: propertyId } },
-      { new: true }
+      { new: true },
     );
     if (!user) {
       throw ApiError.notFound("User Not Found");
@@ -605,7 +605,7 @@ class UserService {
   }
 
   static async syncUserPaymentStatus(
-    userId: ObjectId | string | Types.ObjectId
+    userId: ObjectId | string | Types.ObjectId,
   ): Promise<void> {
     // 1. Fetch all bookings for this tenant that aren't 'success'
     const unresolvedBookings =
@@ -616,7 +616,7 @@ class UserService {
     if (unresolvedBookings.length > 0) {
       // 2. Check if ANY booking has failed
       const hasFailed = unresolvedBookings.some(
-        (b) => b.paymentStatus === "failed"
+        (b) => b.paymentStatus === "failed",
       );
 
       if (hasFailed) {
@@ -634,7 +634,7 @@ class UserService {
     const document = await User.findByIdAndUpdate(
       id,
       { isDocumentVerified: true },
-      { new: true }
+      { new: true },
     );
     if (!document) {
       throw ApiError.notFound("Document Not Found");
@@ -646,7 +646,7 @@ class UserService {
     const document = await User.findByIdAndUpdate(
       id,
       { isDocumentVerified: false },
-      { new: true }
+      { new: true },
     );
     if (!document) {
       throw ApiError.notFound("Document Not Found");
@@ -691,7 +691,7 @@ class UserService {
 
   static async getLandlordForAdmin(userId: ObjectId | string) {
     const landlord = await User.findById(userId).populate(
-      "activeBookingsCount"
+      "activeBookingsCount",
     );
     if (!landlord) {
       throw ApiError.notFound("Landlord not found");
@@ -705,7 +705,8 @@ class UserService {
       propertiesDelta?: number;
       earningsDelta?: number;
       newStatus?: "Verified" | "Pending" | "Failed";
-    }
+    },
+    session?: ClientSession,
   ) {
     const incrementFields: any = {};
     if (update.propertiesDelta)
@@ -716,15 +717,19 @@ class UserService {
     const updateFields: any = {};
     if (update.newStatus) updateFields.verificationStatus = update.newStatus;
 
-    return await User.findByIdAndUpdate(userId, {
-      $inc: incrementFields,
-      $set: updateFields,
-    });
+    return await User.findByIdAndUpdate(
+      userId,
+      {
+        $inc: incrementFields,
+        $set: updateFields,
+      },
+      { session },
+    );
   }
 
   static calculateAVerageRatingonRatingCreated = async (
     UserId: Types.ObjectId | string,
-    newRating: number
+    newRating: number,
   ) => {
     const landlord = await User.findById(UserId);
     if (!landlord) throw ApiError.notFound("Landlord not found.");
@@ -742,7 +747,7 @@ class UserService {
   static calculateAVerageRatingonRatingUpdated = async (
     UserId: Types.ObjectId | string,
     oldRating: number,
-    newRating: number
+    newRating: number,
   ) => {
     const landlord = await User.findById(UserId);
     if (!landlord) throw ApiError.notFound("Landlord not found.");
@@ -759,7 +764,7 @@ class UserService {
 
   static calculateAVerageRatingonRatingDeleted = async (
     UserId: Types.ObjectId | string,
-    deletedRating: number
+    deletedRating: number,
   ) => {
     const landlord = await User.findById(UserId);
     if (!landlord) throw ApiError.notFound("Landlord not found.");
@@ -797,7 +802,7 @@ class UserService {
 
   static async updateUserPaystackReceipientCode(
     userId: Types.ObjectId | ObjectId,
-    code: string
+    code: string,
   ) {
     const user = await User.findById(userId);
     if (!user) throw ApiError.notFound("User not found.");
