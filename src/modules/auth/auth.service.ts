@@ -11,7 +11,7 @@ import { ApiError, ApiSuccess } from "../../utils/responseHandler.js";
 import { generateToken } from "../../config/token.js";
 import type { ObjectId, Types } from "mongoose";
 import agenda from "../../lib/agenda.js";
-import type { updateUserDTO } from "../user/user.interface.js";
+import type { updateUserDTO, UserRolesEnum } from "../user/user.interface.js";
 import type { UploadedFile } from "express-fileupload";
 import { UploadService } from "../../services/upload.service.js";
 import type { IQueryParams } from "@/shared/interfaces/query.interface.js";
@@ -41,7 +41,7 @@ export class AuthService {
 
     return ApiSuccess.created(
       `Registration successful. OTP will be sent to ${email} shortly.`,
-      { user }
+      { user },
     );
   }
 
@@ -56,7 +56,7 @@ export class AuthService {
 
     if (!user.isActive) {
       throw ApiError.forbidden(
-        "Your account has been deactivated. Kindly contact support."
+        "Your account has been deactivated. Kindly contact support.",
       );
     }
 
@@ -98,7 +98,7 @@ export class AuthService {
     let redirectPath;
     if (state) {
       const decoded = JSON.parse(
-        Buffer.from(state as string, "base64").toString()
+        Buffer.from(state as string, "base64").toString(),
       );
       const selectedRole = decoded.role || "";
       redirectPath = decoded.redirect;
@@ -140,6 +140,19 @@ export class AuthService {
     return ApiSuccess.ok("Login successful", { user, token, redirectPath });
   }
 
+  // src/modules/auth/auth.service.ts
+
+  static async updateUserRoleAndOnboard(
+    userId: Types.ObjectId,
+    role: UserRolesEnum,
+  ) {
+    const user = await UserService.updateUser(userId, { roles: role });
+
+    const token = generateToken({ userId: user._id, roles: user.roles });
+
+    return { user, token };
+  }
+
   static async getUser(userId: Types.ObjectId) {
     const user = await UserService.findUserById(userId);
     user.password = undefined;
@@ -150,7 +163,7 @@ export class AuthService {
   static async updateUser(
     userId: Types.ObjectId,
     userData: Partial<updateUserDTO>,
-    files?: { document?: UploadedFile; avatar?: UploadedFile }
+    files?: { document?: UploadedFile; avatar?: UploadedFile },
   ) {
     const UpdatedUserData = {
       ...userData,
@@ -169,7 +182,7 @@ export class AuthService {
 
     if (files && files.avatar) {
       const { secure_url } = await UploadService.uploadToCloudinary(
-        files.avatar.tempFilePath
+        files.avatar.tempFilePath,
       );
       UpdatedUserData.avatar = secure_url as string;
     }
@@ -244,12 +257,12 @@ export class AuthService {
   static async updateUserPersonalInfo(
     userId: Types.ObjectId,
     userData: any,
-    files?: any
+    files?: any,
   ) {
     const personalInfo = await UserService.updateUserInformation(
       userId,
       userData,
-      files
+      files,
     );
 
     return ApiSuccess.ok("Personal Info Updated Successfully", {
@@ -268,7 +281,7 @@ export class AuthService {
   static async updateUserEmployment(userId: Types.ObjectId, userData: any) {
     const userEmployment = await UserService.updateUserEmployment(
       userId,
-      userData
+      userData,
     );
 
     return ApiSuccess.ok("User employment Updated Successfully", {
@@ -338,7 +351,7 @@ export class AuthService {
   static async updateUserDocuments(
     userId: Types.ObjectId,
     userData: Partial<updateUserDTO>,
-    files?: { document?: UploadedFile; avatar?: UploadedFile }
+    files?: { document?: UploadedFile; avatar?: UploadedFile },
   ) {
     const UpdatedUserData = {
       ...userData,
@@ -357,7 +370,7 @@ export class AuthService {
 
     if (files && files.avatar) {
       const { secure_url } = await UploadService.uploadToCloudinary(
-        files.avatar.tempFilePath
+        files.avatar.tempFilePath,
       );
       UpdatedUserData.avatar = secure_url as string;
     }
@@ -372,7 +385,7 @@ export class AuthService {
   static async updateUserNotification(
     userId: Types.ObjectId,
     userData: Partial<updateUserDTO>,
-    files?: { document?: UploadedFile; avatar?: UploadedFile }
+    files?: { document?: UploadedFile; avatar?: UploadedFile },
   ) {
     const UpdatedUserData = {
       ...userData,
@@ -391,7 +404,7 @@ export class AuthService {
 
     if (files && files.avatar) {
       const { secure_url } = await UploadService.uploadToCloudinary(
-        files.avatar.tempFilePath
+        files.avatar.tempFilePath,
       );
       UpdatedUserData.avatar = secure_url as string;
     }

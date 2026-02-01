@@ -10,12 +10,12 @@ const TransactionSchema: Schema<ITransaction> = new Schema(
     },
     provider: {
       type: String,
-      enum: ["paystack", "flutterwave"],
+      enum: ["paystack", "flutterwave", "wallet"],
       required: true,
     },
     transactionType: {
       type: String,
-      enum: ["withdrawal", "deposit", "transfer", "payment"],
+      enum: ["withdrawal", "deposit", "transfer", "payment", "debit"],
       required: true,
     },
     amount: {
@@ -67,7 +67,7 @@ const TransactionSchema: Schema<ITransaction> = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 TransactionSchema.pre("save", function (next) {
@@ -87,6 +87,6 @@ TransactionSchema.pre("save", function (next) {
 
 const Transaction = mongoose.model<ITransaction>(
   "Transaction",
-  TransactionSchema
+  TransactionSchema,
 );
 export default Transaction;

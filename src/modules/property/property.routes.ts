@@ -18,6 +18,11 @@ router
   )
   .all(methodNotAllowed);
 
+// router
+//   .route("/public")
+//   .get(PropertyController.getProperties) //for public route
+//   .all(methodNotAllowed);
+
 router
   .route("/landlord")
   .get(isAuth, PropertyController.getAllLandlordProperties)

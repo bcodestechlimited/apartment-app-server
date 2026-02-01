@@ -14,7 +14,7 @@ router
     isAuth,
     validateBody(authSchemas.update),
     authSchemas.validateFiles,
-    AuthController.updateUser
+    AuthController.updateUser,
   )
   .all(methodNotAllowed);
 
@@ -26,6 +26,11 @@ router
 router
   .route("/signin")
   .post(validateBody(authSchemas.login), AuthController.login)
+  .all(methodNotAllowed);
+
+router
+  .route("/complete-onboarding")
+  .post(isAuth, AuthController.completeOnboarding)
   .all(methodNotAllowed);
 
 router
@@ -70,7 +75,7 @@ router
   .patch(
     isAuth,
     validateBody(authSchemas.updatePersonalInfo),
-    AuthController.updatePersonalInfo
+    AuthController.updatePersonalInfo,
   )
   .all(methodNotAllowed);
 
@@ -80,7 +85,7 @@ router
   .patch(
     isAuth,
     validateBody(authSchemas.updateUserEmployment),
-    AuthController.updateUserEmployment
+    AuthController.updateUserEmployment,
   )
   .all(methodNotAllowed);
 
@@ -96,7 +101,7 @@ router
   .patch(
     isAuth,
     validateBody(authSchemas.updateNextOfKin),
-    AuthController.updateUserNextOfKin
+    AuthController.updateUserNextOfKin,
   )
   .all(methodNotAllowed);
 
@@ -106,7 +111,7 @@ router
   .patch(
     isAuth,
     validateBody(authSchemas.updateGuarantor),
-    AuthController.updateUserGuarantor
+    AuthController.updateUserGuarantor,
   )
   .all(methodNotAllowed);
 

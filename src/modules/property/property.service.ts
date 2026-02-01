@@ -5,13 +5,14 @@ import {
   type CreatePropertyDTO,
   type UpdatePropertyDTO,
 } from "./property.interface.js";
-import type { ObjectId, Types } from "mongoose";
+import type { ClientSession, ObjectId, Types } from "mongoose";
 import { UploadService } from "../../services/upload.service.js";
 import type { UploadedFile } from "express-fileupload";
 import type { IQueryParams } from "../../shared/interfaces/query.interface.js";
 import { paginate } from "../../utils/paginate.js";
 import { TenantService } from "../tenant/tenant.service.js";
 import UserService from "../user/user.service.js";
+import type { AuthenticatedUser } from "../user/user.interface.js";
 
 export class PropertyService {
   static async getPropertyDocumentById(propertyId: string | ObjectId) {
@@ -217,7 +218,9 @@ export class PropertyService {
       city,
     } = query;
 
-    const filterQuery: Record<string, any> = {};
+    const filterQuery: Record<string, any> = { isDeleted: { $ne: true } };
+
+    filterQuery.isVerified = true;
 
     if (propertyType) {
       const actualPropertyType =
@@ -284,7 +287,10 @@ export class PropertyService {
     query: IQueryParams,
   ) {
     const { limit = 10, page = 1, type } = query;
-    const filterQuery: Record<string, any> = { user: userId };
+    const filterQuery: Record<string, any> = {
+      user: userId,
+      isDeleted: { $ne: true },
+    };
 
     if (type) {
       const propertyType = PropertyService.getActualTypeFromParam(type);
@@ -322,6 +328,7 @@ export class PropertyService {
     updateData: Partial<UpdatePropertyDTO>,
     userId: Types.ObjectId | string,
     files?: { newPictures: UploadedFile | UploadedFile[] },
+    isVerified?: boolean,
   ) {
     const { newPictures } = files ?? {};
 
@@ -373,7 +380,7 @@ export class PropertyService {
       facilities: parsedFacilities,
       pictures: parsedExistingPictures,
       otherFees: parsedOtherFees,
-      isVerified: false,
+      isVerified: isVerified ?? false,
     };
 
     if (newPictures && Array.isArray(newPictures) && newPictures.length > 0) {
@@ -526,15 +533,18 @@ export class PropertyService {
   static async addToBookedBy(
     userId: ObjectId | string,
     propertyId: ObjectId | string,
+    session?: ClientSession,
   ) {
     const property = await Property.findOneAndUpdate(
       { _id: propertyId },
       { $addToSet: { bookedBy: userId } },
-      { new: true },
+      { new: true, session },
     );
+
     if (!property) {
       throw ApiError.notFound("Property not found");
     }
+
     return ApiSuccess.ok("Property booked successfully", { property });
   }
 
@@ -563,10 +573,15 @@ export class PropertyService {
   static async updatePropertyRevenue(
     propertyId: string | Types.ObjectId | ObjectId,
     amount: number,
+    session?: ClientSession,
   ) {
-    return await Property.findByIdAndUpdate(propertyId, {
-      $inc: { totalRevenue: amount },
-    });
+    return await Property.findByIdAndUpdate(
+      propertyId,
+      {
+        $inc: { totalRevenue: amount },
+      },
+      { session },
+    );
   }
 
   static async calculateAVerageRatingOnRatingCreated(

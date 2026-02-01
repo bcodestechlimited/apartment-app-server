@@ -50,11 +50,11 @@ const BookingHistorySchema: Schema<IBookingHistory> = new Schema({
   ],
   paymentMethod: {
     type: String,
-    enum: ["cash", "card", "bank_transfer"],
+    enum: ["cash", "card", "bank_transfer", "wallet"],
   },
   paymentProvider: {
     type: String,
-    enum: ["paystack", "flutterwave"],
+    enum: ["paystack", "flutterwave", "wallet"],
   },
   paymentReference: String,
   status: {
@@ -128,12 +128,12 @@ const BookingSchema: Schema<IBooking> = new Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["cash", "card", "bank_transfer"],
+      enum: ["cash", "card", "bank_transfer", "wallet"],
       default: "bank_transfer",
     },
     paymentProvider: {
       type: String,
-      enum: ["paystack", "flutterwave"],
+      enum: ["paystack", "flutterwave", "wallet"],
       default: "paystack",
     },
     paymentReference: {

@@ -87,11 +87,11 @@ export class PaymentService {
 
   static async verifyPayStackPayment(reference: string): Promise<{
     message: string;
-    data: Partial<{ status: string; amount: number }>;
+    data: Partial<{ status: string; amount: number; channel: string }>;
   }> {
     try {
       const response = await paystackClient.get(
-        `/transaction/verify/${reference}`
+        `/transaction/verify/${reference}`,
       );
 
       if (response.data.data.status === "success") {
@@ -111,7 +111,7 @@ export class PaymentService {
           throw ApiError.badRequest(message);
         }
         throw ApiError.badRequest(
-          "Verification Failed" + error?.response?.data
+          "Verification Failed" + error?.response?.data,
         );
       }
       throw ApiError.internalServerError("Something went wrong");
@@ -138,7 +138,7 @@ export class PaymentService {
       .catch((e) => {
         console.log(e?.data);
         throw ApiError.internalServerError(
-          `[Paystack] Error transfering funds: ${e.message}`
+          `[Paystack] Error transfering funds: ${e.message}`,
         );
       });
     if (res) {

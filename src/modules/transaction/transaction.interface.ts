@@ -3,7 +3,7 @@ import type { IUser } from "../user/user.interface";
 
 export interface ITransaction extends Document {
   user: IUser;
-  transactionType: "withdrawal" | "deposit" | "transfer" | "payment";
+  transactionType: "withdrawal" | "deposit" | "transfer" | "payment" | "debit";
   amount: number;
   bankName?: string;
   bankAccountNumber?: string;
@@ -16,7 +16,7 @@ export interface ITransaction extends Document {
   approvalDate?: Date;
   rejectionReason?: string;
 
-  provider: "paystack" | "flutterwave";
+  provider: "paystack" | "flutterwave" | "wallet";
 
   createdAt?: Date;
   updatedAt?: Date;
@@ -24,9 +24,9 @@ export interface ITransaction extends Document {
 
 export interface createTransactionDTO {
   user: Types.ObjectId | string;
-  transactionType: "withdrawal" | "deposit" | "transfer" | "payment";
+  transactionType: "withdrawal" | "deposit" | "transfer" | "payment" | "debit";
   amount: number;
-  provider: "paystack" | "flutterwave";
+  provider: "paystack" | "flutterwave" | "wallet";
   reference?: string;
   bankName?: string;
   bankAccountNumber?: string;

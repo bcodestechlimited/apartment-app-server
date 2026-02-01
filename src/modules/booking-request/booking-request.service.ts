@@ -1,5 +1,5 @@
 import { ApiError, ApiSuccess } from "../../utils/responseHandler.js";
-import type { ObjectId, Types } from "mongoose";
+import type { ClientSession, ObjectId, Types } from "mongoose";
 import {
   propertyService,
   PropertyService,
@@ -23,6 +23,7 @@ import { TransactionService } from "../transaction/transaction.service.js";
 import { WalletService } from "../wallet/wallet.service.js";
 import UserService from "../user/user.service.js";
 import { SystemSettingService } from "../system-settings/system-settings.service.js";
+import mongoose from "mongoose";
 
 export class BookingRequestService {
   // ----------------- Booking Requests -----------------
@@ -206,6 +207,8 @@ export class BookingRequestService {
         String(bookingRequest.property._id),
         { isAvailable: false, requestedBy: [] },
         String(bookingRequest.landlord._id),
+        undefined,
+        true,
       );
 
       await scheduleBookingRequestApprovalEmailToTenant({
@@ -325,83 +328,435 @@ export class BookingRequestService {
     return ApiSuccess.ok("Booking request deleted successfully");
   }
 
-  static async generatePaymentLink(bookingRequestId: string) {
-    const bookingRequest = await BookingRequest.findById(
-      bookingRequestId,
-    ).populate([
-      {
-        path: "tenant",
-      },
-    ]);
+  // static async generatePaymentLink(
+  //   bookingRequestId: string,
+  //   userId: Types.ObjectId,
+  //   useWallet: boolean,
+  // ) {
+  //   const bookingRequest = await BookingRequest.findById(
+  //     bookingRequestId,
+  //   ).populate([
+  //     {
+  //       path: "tenant",
+  //     },
+  //   ]);
 
-    if (!bookingRequest) {
-      throw ApiError.notFound("Booking request not found");
-    }
+  //   if (!bookingRequest) {
+  //     throw ApiError.notFound("Booking request not found");
+  //   }
 
-    if (bookingRequest.status !== "approved") {
-      throw ApiError.badRequest(
-        "Payment link can only be generated for approved booking requests",
+  // if (bookingRequest.status !== "approved") {
+  //   throw ApiError.badRequest(
+  //     "Payment link can only be generated for approved booking requests",
+  //   );
+  // }
+
+  //   const response = await PaymentService.payWithPayStack({
+  //     amount: bookingRequest.netPrice,
+  //     email: bookingRequest.tenant.email,
+  //     bookingRequestId: bookingRequest._id.toString(),
+  //   });
+
+  //   return ApiSuccess.ok("Payment link generated successfully", {
+  //     paymentURL: response.authorizationUrl,
+  //   });
+  // }
+
+  // src/modules/booking-request/booking-request.service.ts
+
+  // static async generatePaymentLink(
+  //   bookingRequestId: string,
+  //   // userId: string,
+  //   useWallet: boolean,
+  // ) {
+  //   const bookingRequest = await BookingRequest.findById(
+  //     bookingRequestId,
+  //   ).populate([
+  //     {
+  //       path: "tenant",
+  //     },
+  //   ]);
+  //   if (!bookingRequest) {
+  //     throw ApiError.notFound("Booking request not found");
+  //   }
+  //   if (bookingRequest.status !== "approved") {
+  //     throw ApiError.badRequest(
+  //       "Payment link can only be generated for approved booking requests",
+  //     );
+  //   }
+  //   const totalAmount = bookingRequest.netPrice;
+  //   let amountToChargeExternally = totalAmount;
+
+  //   if (useWallet) {
+  //     const wallet = await WalletService.getWalletByUserId(
+  //       bookingRequest.tenant._id as string,
+  //     );
+  //     if (wallet.balance > 0) {
+  //       const deduction = Math.min(wallet.balance, totalAmount);
+  //       wallet.balance -= deduction;
+  //       amountToChargeExternally = totalAmount - deduction;
+  //       await wallet.save();
+
+  //       // Log wallet deduction
+  //       await TransactionService.createTransaction({
+  //         user: bookingRequest.tenant._id as string,
+  //         transactionType: "debit",
+  //         reference: `wallet_deduction_${bookingRequestId}`, // Generate a unique reference for the transactionbookingRequestId,
+  //         amount: deduction,
+  //         description: `Wallet payment for booking ${bookingRequestId}`,
+  //         status: "success",
+  //         adminApproval: "approved",
+  //         approvalDate: new Date(),
+  //         provider: "wallet",
+  //       });
+  //     }
+  //   }
+
+  //   // If fully paid via wallet
+  //   if (amountToChargeExternally <= 0) {
+  //     const result = await this.handlePaymentSuccess(
+  //       bookingRequestId,
+  //       "WALLET_PAY",
+  //     );
+  //     return ApiSuccess.ok("Payment successful", { bookingRequest: result });
+  //   }
+
+  //   // Pay remainder via Paystack
+  //   const user = await UserService.findUserById(
+  //     bookingRequest.tenant._id as string,
+  //   );
+  //   const paystackSession = await PaymentService.payWithPayStack({
+  //     email: user.email,
+  //     amount: amountToChargeExternally,
+  //     bookingRequestId,
+  //   });
+
+  //   return ApiSuccess.ok("Payment link generated", {
+  //     paymentURL: paystackSession.authorizationUrl,
+  //   });
+  // }
+
+  // static async handlePaymentSuccess(
+  //   bookingRequestId: string,
+  //   transactionReference: string,
+  // ) {
+  //   const existingPaymentReference = await BookingRequest.findOne({
+  //     paymentReference: transactionReference,
+  //   });
+
+  //   if (existingPaymentReference) {
+  //     throw ApiError.badRequest("Payment reference has already been used.");
+  //   }
+
+  //   const bookingRequest = await BookingRequest.findById(bookingRequestId);
+
+  //   if (!bookingRequest) throw ApiError.notFound("Booking request not found");
+
+  //   const { data } =
+  //     await PaymentService.verifyPayStackPayment(transactionReference);
+
+  //   if (data?.status !== "success") {
+  //     throw ApiError.badRequest("Transasction Reference Invalid");
+  //   }
+
+  //   if (data?.amount && data?.amount / 100 !== bookingRequest.netPrice) {
+  //     throw ApiError.badRequest("Reference amount Mismatch");
+  //   }
+
+  //   bookingRequest.paymentStatus = "success";
+  //   bookingRequest.paymentReference = transactionReference;
+  //   await bookingRequest.save();
+
+  //   const landlordWallet = await WalletService.getWalletByUserId(
+  //     bookingRequest.landlord._id as string,
+  //   );
+
+  //   console.log("landlordWallet", landlordWallet);
+  //   console.log("bookingRequest", bookingRequest);
+  //   const transactionAmount = Number(bookingRequest.netPrice) || 0;
+  //   const serviceFee = Number(bookingRequest.platformFee) || 0;
+  //   const amountToCredit = transactionAmount - serviceFee;
+  //   landlordWallet.balance += amountToCredit;
+  //   await landlordWallet.save();
+  //   // Create the actual booking
+  //   const booking = new Booking({
+  //     tenant: bookingRequest.tenant,
+  //     landlord: bookingRequest.landlord,
+  //     property: bookingRequest.property,
+  //     moveInDate: bookingRequest.moveInDate,
+  //     moveOutDate: bookingRequest.moveOutDate,
+  //     basePrice: bookingRequest.basePrice,
+  //     netPrice: bookingRequest.netPrice,
+  //     platformFee: bookingRequest.platformFee,
+  //     otherFees: bookingRequest.otherFees,
+  //     paymentStatus: "success",
+  //     paymentMethod: bookingRequest.paymentMethod,
+  //     paymentProvider: bookingRequest.paymentProvider,
+  //     paymentReference: transactionReference,
+  //     paymentDue: bookingRequest.moveOutDate, // set it to a day before and send reminder base on pricing model
+  //   });
+
+  //   // Create Tenant
+  //   await TenantService.createTenant({
+  //     user: bookingRequest.tenant._id,
+  //     landlord: bookingRequest.landlord._id,
+  //     property: bookingRequest.property._id,
+  //     moveInDate: bookingRequest.moveInDate,
+  //     moveOutDate: bookingRequest.moveOutDate,
+  //     isActive: true,
+  //   });
+
+  //   await PropertyService.addToBookedBy(
+  //     bookingRequest.tenant._id,
+  //     bookingRequest.property._id,
+  //   );
+
+  //   //Create Transaction
+  //   await TransactionService.createTransaction({
+  //     user: bookingRequest.tenant._id as string,
+  //     transactionType: "payment",
+  //     amount: bookingRequest.netPrice,
+  //     adminApproval: "approved",
+  //     approvalDate: new Date(),
+  //     provider: "paystack",
+  //     reference: transactionReference,
+  //     status: "success",
+  //   });
+
+  //   // Create Chat between tenant and landlord
+  //   await MessageService.getOrCreateConversation(
+  //     bookingRequest.tenant._id as string,
+  //     bookingRequest.landlord._id as string,
+  //   );
+
+  //   await booking.save();
+
+  //   await UserService.updateLandlordStats(booking.landlord._id as string, {
+  //     earningsDelta: booking.netPrice,
+  //   });
+
+  //   await PropertyService.updatePropertyRevenue(
+  //     booking.property._id,
+  //     booking.netPrice,
+  //   );
+
+  //   await schedulePaymentSuccessEmail({
+  //     landlordName: bookingRequest.landlord.firstName,
+  //     landlordEmail: bookingRequest.landlord.email,
+  //     tenantName: bookingRequest.tenant.firstName,
+  //     tenantEmail: bookingRequest.tenant.email,
+  //     propertyName: bookingRequest.property.description,
+  //     moveInDate: formatPrettyDate(bookingRequest.moveInDate),
+  //     landlordDashboardUrl: clientURLs.landlord.dashboardURL,
+  //     tenantDashboardUrl: clientURLs.tenant.dashboardURL,
+  //   });
+
+  //   return ApiSuccess.ok("Payment successful", { bookingRequest });
+  // }
+
+  static async generatePaymentLink(
+    bookingRequestId: string,
+    useWallet: boolean,
+  ) {
+    const session = await mongoose.startSession();
+
+    try {
+      const result = await session.withTransaction(async () => {
+        const bookingRequest = await BookingRequest.findById(bookingRequestId)
+          .populate([{ path: "tenant" }])
+          .session(session);
+
+        if (!bookingRequest) {
+          throw ApiError.notFound("Booking request not found");
+        }
+
+        if (bookingRequest.status !== "approved") {
+          throw ApiError.badRequest(
+            "Payment link can only be generated for approved booking requests",
+          );
+        }
+
+        const totalAmount = bookingRequest.netPrice;
+        let amountToChargeExternally = totalAmount;
+        let deduction = 0;
+        const wallet = await WalletService.getWalletByUserId(
+          bookingRequest.tenant._id as string,
+          session,
+        );
+        const walletTx = await TransactionService.getTransactionByReference(
+          `wallet_deduction_${bookingRequestId}`,
+          session,
+        );
+
+        if (useWallet) {
+          if (wallet && wallet.balance > 0) {
+            deduction = Math.min(wallet.balance, totalAmount);
+            // wallet.balance -= deduction;
+            amountToChargeExternally = totalAmount - deduction;
+
+            if (!walletTx) {
+              await TransactionService.createTransaction(
+                {
+                  user: bookingRequest.tenant._id as string,
+                  transactionType: "debit",
+                  reference: `wallet_deduction_${bookingRequestId}`,
+                  amount: deduction,
+                  description: `Wallet payment for booking ${bookingRequestId}`,
+                  status: "pending",
+                  adminApproval: "approved",
+                  approvalDate: new Date(),
+                  provider: "wallet",
+                },
+                session,
+              );
+            }
+          }
+        }
+
+        // If fully paid via wallet
+        if (amountToChargeExternally <= 0) {
+          wallet.balance -= totalAmount;
+          walletTx?.amount == totalAmount;
+          await walletTx?.save({ session });
+          await wallet.save({ session });
+
+          const result = await this.handlePaymentSuccess(
+            bookingRequestId,
+            "WALLET_PAY",
+            session,
+          );
+          return { fullyPaid: true, result };
+        }
+
+        return { fullyPaid: false, amountToChargeExternally, bookingRequest };
+      });
+
+      // If fully paid via wallet, return success
+      if (result.fullyPaid) {
+        return ApiSuccess.ok("Payment successful", {
+          bookingRequest: result.result?.data.bookingRequest,
+        });
+      }
+
+      // Pay remainder via Paystack (outside transaction)
+      const user = await UserService.findUserById(
+        result?.bookingRequest?.tenant._id as string,
       );
+
+      const paystackSession = await PaymentService.payWithPayStack({
+        email: user.email,
+        amount: result.amountToChargeExternally as number,
+        bookingRequestId,
+      });
+
+      return ApiSuccess.ok("Payment link generated", {
+        paymentURL: paystackSession.authorizationUrl,
+      });
+    } catch (error) {
+      // Transaction automatically rolled back
+      throw error;
     }
-
-    const response = await PaymentService.payWithPayStack({
-      amount: bookingRequest.netPrice,
-      email: bookingRequest.tenant.email,
-      bookingRequestId: bookingRequest._id.toString(),
-    });
-
-    return ApiSuccess.ok("Payment link generated successfully", {
-      paymentURL: response.authorizationUrl,
-    });
   }
 
   static async handlePaymentSuccess(
     bookingRequestId: string,
     transactionReference: string,
+    session?: ClientSession,
   ) {
-    const existingPaymentReference = await BookingRequest.findOne({
-      paymentReference: transactionReference,
-    });
+    if (transactionReference !== "WALLET_PAY") {
+      const existingPaymentReference = await BookingRequest.findOne({
+        paymentReference: transactionReference,
+      }).session(session || null);
 
-    if (existingPaymentReference) {
-      throw ApiError.badRequest("Payment reference has already been used.");
+      if (existingPaymentReference) {
+        throw ApiError.badRequest("Payment reference has already been used.");
+      }
     }
 
-    const bookingRequest = await BookingRequest.findById(bookingRequestId);
+    const bookingRequest = await BookingRequest.findById(bookingRequestId)
+      .populate("landlord tenant property")
+      .session(session || null);
 
     if (!bookingRequest) throw ApiError.notFound("Booking request not found");
 
-    const { data } =
-      await PaymentService.verifyPayStackPayment(transactionReference);
+    // 1. Calculate the split
+    const walletContribution = await this.getWalletContribution(
+      bookingRequestId,
+      session,
+    );
+    const wallet = await WalletService.getWalletByUserId(
+      bookingRequest.tenant._id as string,
+      session,
+    );
+    const walletTx = await TransactionService.getTransactionByReference(
+      `wallet_deduction_${bookingRequestId}`,
+      session,
+    );
+    const expectedPaystackAmount =
+      (bookingRequest.netPrice || 0) - walletContribution;
 
-    if (data?.status !== "success") {
-      throw ApiError.badRequest("Transasction Reference Invalid");
+    // 2. Verification and Dynamic Method Detection
+    if (transactionReference === "WALLET_PAY") {
+      bookingRequest.paymentProvider = "wallet";
+      bookingRequest.paymentMethod = "wallet";
+      walletTx!.status = "success";
+      await walletTx!.save({ session });
+    } else {
+      const { data } =
+        await PaymentService.verifyPayStackPayment(transactionReference);
+
+      if (data?.status !== "success") {
+        throw ApiError.badRequest("Transaction Reference Invalid");
+      }
+
+      // Verify Paystack payment matches the remainder
+      if (data?.amount && data.amount / 100 < expectedPaystackAmount) {
+        console.log(
+          "Underpayment",
+          data?.amount,
+          " expected",
+          expectedPaystackAmount,
+          "net price",
+          bookingRequest.netPrice,
+          "wallet contribution",
+          walletContribution,
+        );
+        throw ApiError.badRequest(
+          `Underpayment: Expected ${expectedPaystackAmount}, received ${data.amount / 100}`,
+        );
+      }
+
+      wallet.balance -= walletContribution;
+
+      bookingRequest.paymentProvider = "paystack";
+      bookingRequest.paymentMethod = data?.channel || "card";
+      await wallet.save({ session });
+      walletTx!.status = "success";
+      await walletTx!.save({ session });
     }
 
-    if (data?.amount && data?.amount / 100 !== bookingRequest.netPrice) {
-      throw ApiError.badRequest("Reference amount Mismatch");
-    }
-
+    // Finalize Booking Request Status
     bookingRequest.paymentStatus = "success";
     bookingRequest.paymentReference = transactionReference;
-    await bookingRequest.save();
+    await bookingRequest.save({ session });
 
+    // Credit Landlord Wallet (Total - Platform Fee)
     const landlordWallet = await WalletService.getWalletByUserId(
       bookingRequest.landlord._id as string,
+      session,
     );
+    const amountToCredit =
+      (Number(bookingRequest.netPrice) || 0) -
+      (Number(bookingRequest.platformFee) || 0);
 
-    console.log("landlordWallet", landlordWallet);
-    console.log("bookingRequest", bookingRequest);
-    const transactionAmount = Number(bookingRequest.netPrice) || 0;
-    const serviceFee = Number(bookingRequest.platformFee) || 0;
-    const amountToCredit = transactionAmount - serviceFee;
     landlordWallet.balance += amountToCredit;
-    await landlordWallet.save();
-    // Create the actual booking
-    const booking = new Booking({
-      tenant: bookingRequest.tenant,
-      landlord: bookingRequest.landlord,
-      property: bookingRequest.property,
+    await landlordWallet.save({ session });
+
+    // Create Booking
+    const bookingData = {
+      tenant: bookingRequest.tenant._id,
+      landlord: bookingRequest.landlord._id,
+      property: bookingRequest.property._id,
       moveInDate: bookingRequest.moveInDate,
       moveOutDate: bookingRequest.moveOutDate,
       basePrice: bookingRequest.basePrice,
@@ -412,65 +767,106 @@ export class BookingRequestService {
       paymentMethod: bookingRequest.paymentMethod,
       paymentProvider: bookingRequest.paymentProvider,
       paymentReference: transactionReference,
-      paymentDue: bookingRequest.moveOutDate, // set it to a day before and send reminder base on pricing model
-    });
+      paymentDue: bookingRequest.moveOutDate,
+    };
+
+    const booking = session
+      ? (await Booking.create([bookingData], { session }))[0]
+      : await Booking.create(bookingData);
+
+    // Log Paystack transaction if applicable
+    if (transactionReference !== "WALLET_PAY") {
+      await TransactionService.createTransaction(
+        {
+          user: bookingRequest.tenant._id as string,
+          transactionType: "payment",
+          amount: expectedPaystackAmount,
+          adminApproval: "approved",
+          approvalDate: new Date(),
+          provider: "paystack",
+          reference: transactionReference,
+          status: "success",
+        },
+        session,
+      );
+    }
 
     // Create Tenant
-    await TenantService.createTenant({
-      user: bookingRequest.tenant._id,
-      landlord: bookingRequest.landlord._id,
-      property: bookingRequest.property._id,
-      moveInDate: bookingRequest.moveInDate,
-      moveOutDate: bookingRequest.moveOutDate,
-      isActive: true,
-    });
+    await TenantService.createTenant(
+      {
+        user: bookingRequest.tenant._id,
+        landlord: bookingRequest.landlord._id,
+        property: bookingRequest.property._id,
+        moveInDate: bookingRequest.moveInDate,
+        moveOutDate: bookingRequest.moveOutDate,
+        isActive: true,
+      },
+      session,
+    );
 
+    // Update Property bookedBy
     await PropertyService.addToBookedBy(
       bookingRequest.tenant._id,
       bookingRequest.property._id,
+      session,
     );
 
-    //Create Transaction
-    await TransactionService.createTransaction({
-      user: bookingRequest.tenant._id as string,
-      transactionType: "payment",
-      amount: bookingRequest.netPrice,
-      adminApproval: "approved",
-      approvalDate: new Date(),
-      provider: "paystack",
-      reference: transactionReference,
-      status: "success",
-    });
-
-    // Create Chat between tenant and landlord
+    // Create or get conversation
     await MessageService.getOrCreateConversation(
       bookingRequest.tenant._id as string,
       bookingRequest.landlord._id as string,
+      undefined,
+      session,
     );
 
-    await booking.save();
+    // Save booking (only if not using session, since create with session already saves)
+    if (!session) {
+      await booking?.save();
+    }
 
-    await UserService.updateLandlordStats(booking.landlord._id as string, {
-      earningsDelta: booking.netPrice,
-    });
+    // Update landlord stats
+    await UserService.updateLandlordStats(
+      booking?.landlord._id as string,
+      { earningsDelta: booking?.netPrice },
+      session,
+    );
 
+    // Update property revenue
     await PropertyService.updatePropertyRevenue(
-      booking.property._id,
-      booking.netPrice,
+      booking?.property._id as string,
+      booking?.netPrice as number,
+      session,
     );
 
+    // Schedule payment success email (non-blocking, outside transaction is fine)
     await schedulePaymentSuccessEmail({
       landlordName: bookingRequest.landlord.firstName,
       landlordEmail: bookingRequest.landlord.email,
       tenantName: bookingRequest.tenant.firstName,
       tenantEmail: bookingRequest.tenant.email,
-      propertyName: bookingRequest.property.description,
+      propertyName:
+        bookingRequest.property.title || bookingRequest.property.description,
       moveInDate: formatPrettyDate(bookingRequest.moveInDate),
       landlordDashboardUrl: clientURLs.landlord.dashboardURL,
       tenantDashboardUrl: clientURLs.tenant.dashboardURL,
     });
 
     return ApiSuccess.ok("Payment successful", { bookingRequest });
+  }
+
+  private static async getWalletContribution(
+    bookingRequestId: string,
+    session?: ClientSession,
+  ): Promise<number> {
+    try {
+      const walletTx = await TransactionService.getTransactionByReference(
+        `wallet_deduction_${bookingRequestId}`,
+        session,
+      );
+      return walletTx && walletTx.status === "pending" ? walletTx.amount : 0;
+    } catch {
+      return 0;
+    }
   }
 }
 

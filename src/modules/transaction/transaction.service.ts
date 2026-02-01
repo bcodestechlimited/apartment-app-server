@@ -6,21 +6,28 @@ import type {
   IProcessWithdrawal,
 } from "./transaction.interface.js";
 // import Transaction from "./transaction.model.js";
-import type { ObjectId, PopulateOptions, Types } from "mongoose";
+import type { ClientSession, ObjectId, PopulateOptions, Types } from "mongoose";
 import type { IQueryParams } from "@/shared/interfaces/query.interface.js";
 import Transaction from "./transaction.model.js";
 import { PaymentService } from "@/services/payment.service.js";
 import UserService from "../user/user.service.js";
 
 export class TransactionService {
-  static async createTransaction(data: createTransactionDTO) {
+  static async createTransaction(
+    data: createTransactionDTO,
+    session?: ClientSession,
+  ) {
+    if (session) {
+      const [transaction] = await Transaction.create([data], { session });
+      return transaction;
+    }
     const transaction = await Transaction.create(data);
     return transaction;
   }
 
   static async getTransactionById(
     transactionId: string,
-    populateOptions: PopulateOptions[]
+    populateOptions: PopulateOptions[],
   ) {
     const transaction = await Transaction.findById(transactionId)
       .populate("user")
@@ -35,7 +42,7 @@ export class TransactionService {
 
   static async getUserTransactions(
     userId: Types.ObjectId,
-    query: IQueryParams
+    query: IQueryParams,
   ) {
     const { page = 1, limit = 10 } = query;
     console.log("Fetching transactions for user:", userId);
@@ -89,20 +96,28 @@ export class TransactionService {
     ];
     const transaction = await this.getTransactionById(
       transactionId,
-      populateOptions
+      populateOptions,
     );
 
     return ApiSuccess.ok("Transaction retrieved successfully", transaction);
   }
 
-  static async getTransactionByReference(reference: string) {
+  static async getTransactionByReference(
+    reference: string,
+    session?: ClientSession,
+  ) {
     const populateOptions = [
       { path: "user", select: ["firstName", "lastName", "email"] },
     ];
-    const transaction = await Transaction.findOne({ reference });
-    if (!transaction) {
-      throw ApiError.notFound("Transaction not found");
-    }
+
+    const transaction = await Transaction.findOne({ reference }).session(
+      session || null,
+    );
+
+    // if (!transaction) {
+    //   throw ApiError.notFound("Transaction not found");
+    // }
+
     return transaction;
   }
 
@@ -178,13 +193,12 @@ export class TransactionService {
 
   static async processWithdrawal(
     payload: IProcessWithdrawal,
-    adminId: string | Types.ObjectId | ObjectId
+    adminId: string | Types.ObjectId | ObjectId,
   ) {
     const { transactionId, action, reason } = payload;
     console.log("Payload:", payload);
-    const transaction = await Transaction.findById(transactionId).populate(
-      "user"
-    );
+    const transaction =
+      await Transaction.findById(transactionId).populate("user");
     console.log("Transaction found:", transaction);
 
     if (!transaction || transaction.adminApproval !== "pending") {
@@ -206,7 +220,7 @@ export class TransactionService {
     if (!transaction.user.paystackRecipientCode) {
       throw new ApiError(
         400,
-        "Recipient bank details not registered with provider"
+        "Recipient bank details not registered with provider",
       );
     }
 
@@ -233,7 +247,7 @@ export class TransactionService {
 
       return new ApiSuccess(
         200,
-        "Transfer initiated successfully via Paystack"
+        "Transfer initiated successfully via Paystack",
       );
     }
     // else {
@@ -244,15 +258,15 @@ export class TransactionService {
   static async updateTransactionStatus(
     reference: string,
     status: "success" | "failed",
-    metadata?: { description?: string; reason?: string }
+    metadata?: { description?: string; reason?: string },
   ) {
     const transaction = await Transaction.findOne({ reference }).populate(
-      "user"
+      "user",
     );
 
     if (!transaction) {
       throw ApiError.notFound(
-        `Transaction with reference ${reference} not found`
+        `Transaction with reference ${reference} not found`,
       );
     }
 
@@ -274,7 +288,7 @@ export class TransactionService {
     // If a withdrawal fails, we must return the money back to the user's "totalEarnings" or wallet balance
     if (status === "failed" && transaction.transactionType === "withdrawal") {
       const user = await UserService.findUserById(
-        transaction.user._id as string
+        transaction.user._id as string,
       );
       if (user) {
         // Revert the amount back to the user
