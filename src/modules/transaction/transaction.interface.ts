@@ -5,6 +5,7 @@ export interface ITransaction extends Document {
   user: IUser;
   transactionType: "withdrawal" | "deposit" | "transfer" | "payment" | "debit";
   amount: number;
+  platformFee?: number;
   bankName?: string;
   bankAccountNumber?: string;
   bankAccountName?: string;
@@ -26,6 +27,7 @@ export interface createTransactionDTO {
   user: Types.ObjectId | string;
   transactionType: "withdrawal" | "deposit" | "transfer" | "payment" | "debit";
   amount: number;
+  platformFee?: number;
   provider: "paystack" | "flutterwave" | "wallet";
   reference?: string;
   bankName?: string;

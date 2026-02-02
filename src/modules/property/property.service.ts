@@ -646,6 +646,9 @@ export class PropertyService {
     const property = await Property.findById(propertyId);
     if (!property) return ApiError.notFound("Property not found");
     property.isAvailable = isAvailable;
+    if (isAvailable) {
+      property.availabilityDate = new Date();
+    }
     await property.save();
     return ApiSuccess.ok("Property availability updated successfully", {
       property,

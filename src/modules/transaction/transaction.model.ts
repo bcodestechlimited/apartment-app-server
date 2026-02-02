@@ -20,7 +20,12 @@ const TransactionSchema: Schema<ITransaction> = new Schema(
     },
     amount: {
       type: Number,
+
       required: true,
+    },
+    platformFee: {
+      type: Number,
+      default: 0,
     },
     bankAccountNumber: {
       type: String,
