@@ -13,6 +13,8 @@ import { paginate } from "../../utils/paginate.js";
 import { TenantService } from "../tenant/tenant.service.js";
 import UserService from "../user/user.service.js";
 import type { AuthenticatedUser } from "../user/user.interface.js";
+import agenda from "@/lib/agenda.js";
+import { PROPERTY_UPDATE_ALERT } from "@/jobs/sendPropertyUpdateAlert.js";
 
 export class PropertyService {
   static async getPropertyDocumentById(propertyId: string | ObjectId) {
@@ -117,7 +119,7 @@ export class PropertyService {
       isVerified,
     } = query;
 
-    const filterQuery: Record<string, any> = {};
+    const filterQuery: Record<string, any> = { isDeleted: { $ne: true } };
 
     // const filterQuery: Record<string, any> = {
     //   isAvailable: true,
@@ -319,6 +321,9 @@ export class PropertyService {
     if (!property) {
       throw ApiError.notFound("Property not found");
     }
+    if (property.isDeleted) {
+      throw ApiError.notFound("Property not found");
+    }
     return ApiSuccess.ok("Property retrieved successfully", { property });
   }
 
@@ -332,7 +337,7 @@ export class PropertyService {
   ) {
     const { newPictures } = files ?? {};
 
-    const property = await Property.findById(propertyId);
+    const property = await Property.findById(propertyId).populate("user");
     if (!property) {
       throw ApiError.notFound("Property not found");
     }
@@ -420,6 +425,12 @@ export class PropertyService {
 
     Object.assign(property, updatePropertyPayload);
     await property.save();
+
+    await agenda.now(PROPERTY_UPDATE_ALERT, {
+      propertyId: propertyId,
+      propertyTitle: property.title,
+      landlordName: `${property.user.firstName} ${property.user.lastName}`,
+    });
 
     return ApiSuccess.ok("Property updated successfully", { property });
   }

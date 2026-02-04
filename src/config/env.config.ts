@@ -7,6 +7,7 @@ export const env = cleanEnv(Bun.env, {
   NODE_ENV: str({
     choices: ["development", "production", "test"],
   }),
+  ADMIN_EMAIL: str(),
   PORT: port() || 3000,
   JWT_SECRET: str(),
   JWT_EXPIRES: str(),

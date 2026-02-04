@@ -1,9 +1,6 @@
 import { ApiError, ApiSuccess } from "../../utils/responseHandler.js";
-import type { ClientSession, ObjectId, Types } from "mongoose";
-import {
-  propertyService,
-  PropertyService,
-} from "../property/property.service.js";
+import type { ClientSession, Types } from "mongoose";
+import { PropertyService } from "../property/property.service.js";
 import { PaymentService } from "../../services/payment.service.js";
 import { calculateBookingPeriod } from "../../utils/calculationUtils.js";
 import { paginate } from "../../utils/paginate.js";
@@ -24,7 +21,6 @@ import { WalletService } from "../wallet/wallet.service.js";
 import UserService from "../user/user.service.js";
 import { SystemSettingService } from "../system-settings/system-settings.service.js";
 import mongoose from "mongoose";
-import Transaction from "../transaction/transaction.model.js";
 
 export class BookingRequestService {
   // ----------------- Booking Requests -----------------

@@ -454,6 +454,51 @@ class MailService {
       html: htmlContent,
     });
   }
+
+  public async sendAdminPropertyUpdateAlert({
+    adminEmail,
+    propertyTitle,
+    landlordName,
+    propertyId,
+    adminDashboardUrl,
+  }: {
+    adminEmail: string;
+    propertyTitle: string;
+    landlordName: string;
+    propertyId: string;
+    adminDashboardUrl: string;
+  }): Promise<SentMessageInfo> {
+    const subject = `🚨 Action Required: Property Updated - ${propertyTitle}`;
+    const date = new Date().getFullYear().toString();
+
+    // 1. Plain text fallback
+    const emailText = [
+      `Dear Admin,`,
+      ``,
+      `The property "${propertyTitle}" has been updated by ${landlordName}.`,
+      `As a result, its verification status has been reset and requires your review.`,
+      ``,
+      `Review property here: ${adminDashboardUrl}`,
+      ``,
+      `— Haven Lease Team`,
+    ].join("\n");
+
+    const html = MailService.loadTemplate("PropertyUpdateAlert", {
+      adminName: "Admin",
+      propertyTitle,
+      landlordName,
+      propertyId,
+      adminDashboardUrl,
+      date,
+    });
+
+    return await this.sendEmail({
+      to: adminEmail,
+      subject,
+      text: emailText,
+      html,
+    });
+  }
 }
 
 export const mailService = new MailService();
