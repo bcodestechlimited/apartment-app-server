@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Property Re-verification Required</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Inter", sans-serif;
+        background-color: #f9f9f9;
+        color: #333333;
+        font-size: 16px;
+        line-height: 1.5;
+        text-align: left;
+      }
+
+      .email-container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .email-header {
+        background-color: #004542;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .email-header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+        color: #ffffff;
+      }
+
+      .email-body {
+        padding: 30px;
+      }
+
+      .email-body h2 {
+        font-size: 22px;
+        font-weight: 500;
+        margin-bottom: 15px;
+        color: #333333;
+      }
+
+      .email-body p {
+        margin: 0 0 20px;
+        font-size: 16px;
+        color: #555555;
+      }
+
+      .highlight-box {
+        background-color: #f1f5f9;
+        padding: 15px 20px;
+        border-left: 5px solid #004542;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+
+      .highlight-box strong {
+        display: block;
+        font-size: 18px;
+        color: #004542;
+        margin-bottom: 5px;
+      }
+
+      .email-button {
+        display: inline-block;
+        margin: 30px 0 10px;
+        padding: 12px 24px;
+        background-color: #004542;
+        color: #ffffff !important;
+        font-weight: 500;
+        font-size: 16px;
+        text-decoration: none;
+        border-radius: 6px;
+        transition: background-color 0.3s ease;
+      }
+
+      .email-button:hover {
+        background-color: #006a65;
+      }
+
+      .email-footer {
+        padding: 20px;
+        background: #f1f5f9;
+        text-align: center;
+        font-size: 14px;
+        color: #777777;
+      }
+
+      .email-footer p {
+        margin: 5px 0;
+      }
+
+      .email-footer strong {
+        font-weight: 500;
+        color: #333333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="email-header">
+        <h1>Haven Lease</h1>
+      </div>
+
+      <div class="email-body">
+        <h2>Property Update Alert</h2>
+        <p>Hi {{adminName}},</p>
+        <p>
+          A property has been modified by a landlord. Following our security
+          policy, its verification status has been reset. Please review the
+          changes to ensure they meet platform standards.
+        </p>
+
+        <div class="highlight-box">
+          <strong>{{propertyTitle}}</strong>
+          <span>Landlord: <strong>{{landlordName}}</strong></span>
+          <span>Property ID: <strong>{{propertyId}}</strong></span>
+        </div>
+
+        <p>
+          You can review the updated details and re-verify the property using
+          the button below:
+        </p>
+
+        <a href="{{adminDashboardUrl}}" class="email-button">
+          Review Property
+        </a>
+
+        <p>
+          If you encounter any issues with this property, you can also use the
+          admin panel to contact the landlord directly.
+        </p>
+      </div>
+
+      <div class="email-footer">
+        <p>
+          &copy; {{date}} <strong>Haven Lease Team</strong>. All rights
+          reserved.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -9,6 +9,10 @@ import {
 import { sendBookingRequestDeclinedEmailToTenant } from "../jobs/sendBookingRequestDeclined";
 import { sendPaymentReminderToTenant } from "../jobs/sendPaymentReminder.job";
 import { sendContactMessage } from "@/jobs/sendContactMeMessage";
+import {
+  PROPERTY_UPDATE_ALERT,
+  sendPropertyUpdateAlertJob,
+} from "@/jobs/sendPropertyUpdateAlert";
 
 function addDbToUri(uri: string, dbName: string): string {
   const [base, query = ""] = uri.split("?"); // 1️⃣ split once
@@ -43,6 +47,7 @@ agenda.define(
 );
 
 agenda.define("send_payment_reminder_to_tenant", sendPaymentReminderToTenant);
+agenda.define(PROPERTY_UPDATE_ALERT, sendPropertyUpdateAlertJob);
 
 export const startAgenda = async () => {
   await agenda.start();

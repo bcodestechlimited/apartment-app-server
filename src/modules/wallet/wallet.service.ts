@@ -13,6 +13,9 @@ import UserService from "../user/user.service.js";
 
 export class WalletService {
   static async topUpWallet(userId: Types.ObjectId, amount: number) {
+    if (amount <= 100) {
+      throw ApiError.badRequest("Top-up amount must be at least ₦100");
+    }
     await this.getWalletByUserId(userId);
 
     const user = await UserService.findUserById(userId);
@@ -264,8 +267,8 @@ export class WalletService {
     }
   }
 
-  static async blockUserWallet(userId: string) {
-    const wallet = await this.getWalletByUserId(userId);
+  static async blockUserWallet(userId: string | Types.ObjectId | ObjectId) {
+    const wallet = await this.getWalletByUserId(userId as string);
 
     wallet.isBlocked = false;
     await wallet.save();
@@ -273,8 +276,8 @@ export class WalletService {
     return ApiSuccess.ok("Wallet blocked successfully", { wallet });
   }
 
-  static async unBlockUserWallet(userId: string) {
-    const wallet = await this.getWalletByUserId(userId);
+  static async unBlockUserWallet(userId: string | Types.ObjectId | ObjectId) {
+    const wallet = await this.getWalletByUserId(userId as string);
 
     wallet.isBlocked = true;
     await wallet.save();

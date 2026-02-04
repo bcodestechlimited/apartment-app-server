@@ -121,12 +121,80 @@ export class TransactionService {
     return transaction;
   }
 
+  // static async getPaymentOverview(query: IQueryParams) {
+  //   const { page = 1, limit = 10, search, status, transactionType } = query;
+
+  //   // 1. Calculate Global Stats using ONLY the Transaction collection
+  //   const [revenueStats, payoutStats] = await Promise.all([
+  //     // Sum successful payments (Income)
+  //     Transaction.aggregate([
+  //       {
+  //         $match: {
+  //           transactionType: "payment",
+  //           status: "success",
+  //         },
+  //       },
+  //       { $group: { _id: null, total: { $sum: "$amount" } } },
+  //     ]),
+  //     // Sum withdrawals grouped by status (Outgoings)
+  //     Transaction.aggregate([
+  //       { $match: { transactionType: "withdrawal" } },
+  //       {
+  //         $group: {
+  //           _id: "$status",
+  //           total: { $sum: "$amount" },
+  //         },
+  //       },
+  //     ]),
+  //   ]);
+
+  //   // Parse withdrawal results
+  //   const pendingPayouts =
+  //     payoutStats.find((p) => p._id === "pending")?.total || 0;
+  //   const successfulPayouts =
+  //     payoutStats.find((p) => p._id === "success")?.total || 0;
+
+  //   // 2. Fetch Transactions for the table
+  //   const filterQuery: any = {};
+  //   if (status && status !== "all") filterQuery.status = status;
+  //   if (transactionType && transactionType !== "all")
+  //     filterQuery.transactionType = transactionType;
+  //   if (search) {
+  //     const searchRegex = new RegExp(search, "i");
+  //     filterQuery.$or = [
+  //       { reference: { $regex: searchRegex } },
+  //       { "user.email": { $regex: searchRegex } },
+  //     ];
+  //   }
+
+  //   const { documents: transactions, pagination } = await paginate({
+  //     model: Transaction,
+  //     query: filterQuery,
+  //     populateOptions: [
+  //       { path: "user", select: "firstName lastName email roles" },
+  //       { path: "approvedBy", select: "firstName lastName" },
+  //     ],
+  //     page,
+  //     limit,
+  //     sort: { createdAt: -1 },
+  //   });
+
+  //   return ApiSuccess.ok("Payments retrieved", {
+  //     transactions,
+  //     stats: {
+  //       // This will now equal 20,000 + 65,000 + 65,000 = 150,000
+  //       totalRevenue: revenueStats[0]?.total || 0,
+  //       pendingPayouts,
+  //       successfulPayouts,
+  //     },
+  //     pagination,
+  //   });
+  // }
+
   static async getPaymentOverview(query: IQueryParams) {
     const { page = 1, limit = 10, search, status, transactionType } = query;
 
-    // 1. Calculate Global Stats using ONLY the Transaction collection
     const [revenueStats, payoutStats] = await Promise.all([
-      // Sum successful payments (Income)
       Transaction.aggregate([
         {
           $match: {
@@ -134,9 +202,15 @@ export class TransactionService {
             status: "success",
           },
         },
-        { $group: { _id: null, total: { $sum: "$amount" } } },
+        {
+          $group: {
+            _id: null,
+            totalPlatformRevenue: { $sum: "$platformFee" },
+            totalTransactionVolume: { $sum: "$amount" }, // Optional: Total money moved
+          },
+        },
       ]),
-      // Sum withdrawals grouped by status (Outgoings)
+
       Transaction.aggregate([
         { $match: { transactionType: "withdrawal" } },
         {
@@ -148,22 +222,21 @@ export class TransactionService {
       ]),
     ]);
 
-    // Parse withdrawal results
     const pendingPayouts =
       payoutStats.find((p) => p._id === "pending")?.total || 0;
     const successfulPayouts =
       payoutStats.find((p) => p._id === "success")?.total || 0;
 
-    // 2. Fetch Transactions for the table
     const filterQuery: any = {};
     if (status && status !== "all") filterQuery.status = status;
     if (transactionType && transactionType !== "all")
       filterQuery.transactionType = transactionType;
+
     if (search) {
       const searchRegex = new RegExp(search, "i");
       filterQuery.$or = [
         { reference: { $regex: searchRegex } },
-        { "user.email": { $regex: searchRegex } },
+        { description: { $regex: searchRegex } },
       ];
     }
 
@@ -182,8 +255,8 @@ export class TransactionService {
     return ApiSuccess.ok("Payments retrieved", {
       transactions,
       stats: {
-        // This will now equal 20,000 + 65,000 + 65,000 = 150,000
-        totalRevenue: revenueStats[0]?.total || 0,
+        totalRevenue: revenueStats[0]?.totalPlatformRevenue || 0,
+        totalGrossVolume: revenueStats[0]?.totalTransactionVolume || 0,
         pendingPayouts,
         successfulPayouts,
       },
@@ -205,7 +278,6 @@ export class TransactionService {
       throw new ApiError(400, "Invalid or already processed transaction");
     }
 
-    // 2. Handle Rejection (No API call needed)
     if (action === "rejected") {
       transaction.adminApproval = "rejected";
       transaction.status = "failed";
@@ -214,9 +286,6 @@ export class TransactionService {
       return new ApiSuccess(200, "Withdrawal rejected successfully");
     }
 
-    // 3. Handle Approval (Trigger Paystack via Payment Service)
-
-    // Check if user has a recipient code
     if (!transaction.user.paystackRecipientCode) {
       throw new ApiError(
         400,
@@ -300,121 +369,6 @@ export class TransactionService {
     await transaction.save();
     return transaction;
   }
-
-  //   static async updateTransaction(
-  //     transactionId: string,
-  //     updateData = {},
-  //     userId: string
-  //   ) {
-  //     const { status, rejectionReason } = updateData;
-
-  //     const populateOptions = [
-  //       { path: "user", select: ["firstName", "lastName", "email"] },
-  //     ];
-
-  //     const transaction = await getTransactionById(
-  //       transactionId,
-  //       populateOptions
-  //     );
-
-  //     if (
-  //       transaction.adminApproval === "approved" ||
-  //       transaction.adminApproval === "rejected"
-  //     ) {
-  //       return ApiSuccess.ok(
-  //         `Transaction already ${transaction.adminApproval}`,
-  //         transaction
-  //       );
-  //     }
-
-  //     if (status === "rejected") {
-  //       transaction.approvedBy = userId;
-  //       transaction.adminApproval = status;
-  //       transaction.rejectionReason = rejectionReason;
-  //       await transaction.save();
-  //       //Return the amount back to their wallet
-  //       const user = await authService.findUserByIdOrEmail(transaction.user._id);
-  //       user.balance += transaction.amount;
-  //       await user.save();
-
-  //       // emailUtils
-
-  //       return ApiSuccess.ok("Withdrawal request rejected", transaction);
-  //     }
-
-  //     const wallet = await walletService.getWallet(transaction.user._id);
-  //     const withdrawalResponse = await initiatePaystackWithdrawal(
-  //       transaction.amount,
-  //       wallet.recipientCode
-  //     );
-
-  //     if (withdrawalResponse.status !== "success") {
-  //       throw ApiError.internalServerError("Paystack withdrawal failed");
-  //     }
-
-  //     transaction.approvedBy = userId;
-  //     transaction.adminApproval = status;
-  //     transaction.reference = withdrawalResponse.data.reference;
-
-  //     transaction.save();
-
-  //     return ApiSuccess.ok("Withdrawal request approved ", transaction);
-  //   }
-
-  //   static async handlePaystackWebhook(event: any) {
-  //     const { event: eventType, data } = event;
-
-  //     if (!data || !data.reference) {
-  //       throw ApiError.badRequest("Invalid webhook payload");
-  //     }
-
-  //     const transaction = await Transaction.findOne({
-  //       reference: data.reference,
-  //     });
-
-  //     if (!transaction) {
-  //       throw ApiError.notFound("Transaction not found");
-  //     }
-
-  //     transaction.reference = data.reference;
-
-  //     await transaction.save();
-
-  //     // Prevent duplicate updates
-  //     if (
-  //       transaction.status === "successful" ||
-  //       transaction.status === "failed"
-  //     ) {
-  //       return ApiSuccess.ok("Transaction already processed", transaction);
-  //     }
-
-  //     // console.log(`Paystack Webhook Event: ${eventType}`, data);
-
-  //     switch (eventType) {
-  //       case "transfer.success":
-  //         transaction.status = "successful";
-  //         break;
-
-  //       case "transfer.failed":
-  //       case "transfer.reversed":
-  //         transaction.status = "failed";
-  //         const user = await authService.findUserByIdOrEmail(
-  //           transaction.user._id
-  //         );
-  //         user.balance += transaction.amount;
-  //         await user.save();
-  //         break;
-
-  //       default:
-  //         return ApiSuccess.ok("Webhook received but no action taken");
-  //     }
-
-  //     await transaction.save();
-  //     return ApiSuccess.ok(
-  //       `Transaction updated: ${transaction.status}`,
-  //       transaction
-  //     );
-  //   }
 }
 
 export const transactionService = new TransactionService();
