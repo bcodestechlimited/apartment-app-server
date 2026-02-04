@@ -254,6 +254,7 @@ class UserService {
     // console.log("personal info user", user);
     user.personalInfo = personalInfo._id;
     user.avatar = personalInfo.avatar;
+    user.phoneNumber = personalInfo.phoneNumber;
     await user.save();
     // console.log("final personal info", { personalInfo });
 
