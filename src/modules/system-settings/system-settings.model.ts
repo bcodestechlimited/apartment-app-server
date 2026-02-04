@@ -12,7 +12,6 @@ const SystemSettingSchema: Schema<ISystemSetting> = new Schema(
     },
     supportEmail: {
       type: String,
-      required: true,
     },
   },
   { timestamps: true },
