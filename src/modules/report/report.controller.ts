@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import type { AuthenticatedUser } from "../user/user.interface";
 import { ReportService } from "./report.service";
 import type { IQueryParams } from "@/shared/interfaces/query.interface";
-import type { ICreateReport } from "./report.interface";
+import type { ICreateReport, IUpdateReportStatus } from "./report.interface";
 
 export class ReportController {
   static async createReport(req: Request, res: Response) {
@@ -23,6 +23,16 @@ export class ReportController {
     const { reportedUser } = req.params;
     const query = req.query as IQueryParams;
     const result = await ReportService.getReport(reportedUser as string, query);
+    res.status(200).json(result);
+  }
+
+  static async updateReport(req: Request, res: Response) {
+    const { reportedUser } = req.params;
+    const payload = req.body as IUpdateReportStatus;
+    const result = await ReportService.updateReport(
+      reportedUser as string,
+      payload,
+    );
     res.status(200).json(result);
   }
 }

@@ -72,7 +72,7 @@ router
     isAuth,
     isAuth,
     isAuthAdmin,
-    PropertyController.getAllLandlordPropertiesByAdmin
+    PropertyController.getAllLandlordPropertiesByAdmin,
   )
   .all(methodNotAllowed);
 
@@ -113,6 +113,7 @@ router
 router
   .route("/report/:reportedUser")
   .get(isAuth, isAuthAdmin, ReportController.getReport)
+  .patch(isAuth, isAuthAdmin, ReportController.updateReport)
   .all(methodNotAllowed);
 
 //tenant

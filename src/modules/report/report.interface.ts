@@ -17,3 +17,7 @@ export interface ICreateReport {
   reason: string;
   description?: string;
 }
+
+export interface IUpdateReportStatus {
+  status: "pending" | "reviewed" | "resolved" | "dismissed";
+}

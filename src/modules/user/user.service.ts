@@ -217,6 +217,7 @@ class UserService {
     const UpdatedUserData = {
       ...userData,
     };
+    console.log({ files });
 
     if (files && files.avatar) {
       const { secure_url } = await UploadService.uploadToCloudinary(
@@ -253,7 +254,7 @@ class UserService {
     const user = await this.findUserById(userId);
     // console.log("personal info user", user);
     user.personalInfo = personalInfo._id;
-    user.avatar = personalInfo.avatar;
+    user.avatar = UpdatedUserData.avatar;
     user.phoneNumber = personalInfo.phoneNumber;
     await user.save();
     // console.log("final personal info", { personalInfo });

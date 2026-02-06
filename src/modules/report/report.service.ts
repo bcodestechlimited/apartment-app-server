@@ -1,5 +1,5 @@
 import { ApiError, ApiSuccess } from "@/utils/responseHandler";
-import type { ICreateReport } from "./report.interface";
+import type { ICreateReport, IUpdateReportStatus } from "./report.interface";
 import Report from "./report.model";
 import UserService from "../user/user.service";
 import type { IQueryParams } from "@/shared/interfaces/query.interface";
@@ -9,14 +9,14 @@ import type { Types } from "mongoose";
 export class ReportService {
   static async createReport(
     data: ICreateReport,
-    userId: string | Types.ObjectId
+    userId: string | Types.ObjectId,
   ) {
     const existingReportedUser = await UserService.findUserById(
-      data.reportedUser as string
+      data.reportedUser as string,
     );
     if (!existingReportedUser) {
       throw ApiError.notFound(
-        "The user you are trying to report does not exist."
+        "The user you are trying to report does not exist.",
       );
     }
     const report = new Report({
@@ -86,5 +86,15 @@ export class ReportService {
       reports,
       pagination,
     };
+  }
+
+  static async updateReport(reportId: string, data: IUpdateReportStatus) {
+    const report = await Report.findById(reportId);
+    if (!report) {
+      throw ApiError.notFound("Report not found");
+    }
+    report.status = data.status;
+    await report.save();
+    return ApiSuccess.ok("Report updated successfully", { report });
   }
 }
