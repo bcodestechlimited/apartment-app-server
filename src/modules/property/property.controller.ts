@@ -8,14 +8,14 @@ export class PropertyController {
   // Create new property
   static async createProperty(req: Request, res: Response) {
     const propertyData = req.body;
-    const files = req.files as { pictures: UploadedFile[] };
+    // const files = req.files as { pictures: UploadedFile[] };
     const { userId } = req.user as AuthenticatedUser;
 
-    console.log({ propertyData, files, userId });
+    console.log({ propertyData, userId });
 
     const result = await PropertyService.createProperty(
       propertyData,
-      files,
+      // files,
       userId,
     );
     res.status(201).json(result);

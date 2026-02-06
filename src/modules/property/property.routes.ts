@@ -12,7 +12,7 @@ router
   .get(PropertyController.getProperties) // public or protected as needed
   .post(
     isAuth,
-    PropertySchemas.validateImages,
+    // PropertySchemas.validateImages,
     validateBody(PropertySchemas.createPropertySchema),
     PropertyController.createProperty,
   )
