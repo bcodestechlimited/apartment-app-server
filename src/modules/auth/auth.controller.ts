@@ -79,7 +79,7 @@ export class AuthController {
     }
 
     if (user.roles.includes("admin")) {
-      if (redirectPath && redirectPath.startsWith("/property")) {
+      if (redirectPath && redirectPath.startsWith("/properties")) {
         return res.redirect(clientURLs.admin.dashboardURL + redirectPath);
       }
       if (redirectPath && redirectPath.includes("/dashboard/admin")) {
@@ -88,7 +88,7 @@ export class AuthController {
       return res.redirect(clientURLs.admin.dashboardURL);
     }
     if (user.roles.includes("landlord")) {
-      if (redirectPath && redirectPath.startsWith("/property")) {
+      if (redirectPath && redirectPath.startsWith("/properties")) {
         return res.redirect(clientURLs.landlord.dashboardURL + redirectPath);
       }
       if (redirectPath && redirectPath.includes("/dashboard/landlord")) {
@@ -97,7 +97,7 @@ export class AuthController {
       return res.redirect(clientURLs.landlord.dashboardURL);
     }
     if (user.roles.includes("tenant")) {
-      if (redirectPath && redirectPath.startsWith("/property")) {
+      if (redirectPath && redirectPath.startsWith("/properties")) {
         return res.redirect(clientURLs.tenant.dashboardURL + redirectPath);
       }
 
@@ -211,12 +211,8 @@ export class AuthController {
   static async updatePersonalInfo(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
-    const files = req.files;
-    const result = await AuthService.updateUserPersonalInfo(
-      userId,
-      userData,
-      files,
-    );
+
+    const result = await AuthService.updateUserPersonalInfo(userId, userData);
     res.status(200).json(result);
   }
 
@@ -270,8 +266,9 @@ export class AuthController {
 
   static async uploadUserDocument(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
-    const files = req.files;
-    const result = await AuthService.uploadUserDocument(userId, files);
+    console.log(req.body);
+    const { document, name } = req.body;
+    const result = await AuthService.uploadUserDocument(userId, document, name);
     res.status(200).json(result);
   }
 

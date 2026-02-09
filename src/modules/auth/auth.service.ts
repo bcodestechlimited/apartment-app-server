@@ -252,15 +252,10 @@ export class AuthService {
       personalInfo,
     });
   }
-  static async updateUserPersonalInfo(
-    userId: Types.ObjectId,
-    userData: any,
-    files?: any,
-  ) {
+  static async updateUserPersonalInfo(userId: Types.ObjectId, userData: any) {
     const personalInfo = await UserService.updateUserInformation(
       userId,
       userData,
-      files,
     );
 
     return ApiSuccess.ok("Personal Info Updated Successfully", {
@@ -306,8 +301,16 @@ export class AuthService {
   static async rejectUserDocument(userId: Types.ObjectId) {
     return await UserService.rejectUserDocument(userId);
   }
-  static async uploadUserDocument(userId: Types.ObjectId, files: any) {
-    const userEmployment = await UserService.uploadUserDocument(userId, files);
+  static async uploadUserDocument(
+    userId: Types.ObjectId,
+    document: string,
+    name: string,
+  ) {
+    const userEmployment = await UserService.uploadUserDocument(
+      userId,
+      document,
+      name,
+    );
 
     return ApiSuccess.ok("User employment Updated Successfully", {
       userEmployment,

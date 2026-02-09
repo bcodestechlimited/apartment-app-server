@@ -19,7 +19,7 @@ class AuthSchemas {
         .string({ required_error: "Phone number is required" })
         .regex(
           /^(0)(7|8|9){1}(0|1){1}[0-9]{8}$/,
-          "Please provide a valid Nigerian phone number"
+          "Please provide a valid Nigerian phone number",
         ),
       password: z
         .string({ required_error: "Password is required" })
@@ -30,7 +30,7 @@ class AuthSchemas {
         .refine(
           (roles) =>
             roles.some((role) => ["tenant", "landlord"].includes(role)),
-          "Please provide a valid role (tenant or landlord)"
+          "Please provide a valid role (tenant or landlord)",
         ),
     })
     .strict();
@@ -149,8 +149,8 @@ class AuthSchemas {
       if (!allowedMimeTypes.includes(document.mimetype)) {
         return next(
           ApiError.badRequest(
-            `Invalid document file type: ${document.mimetype}`
-          )
+            `Invalid document file type: ${document.mimetype}`,
+          ),
         );
       }
     }
@@ -160,7 +160,7 @@ class AuthSchemas {
 
     if (!allowedAvatarMimeTypes.includes(avatar.mimetype)) {
       return next(
-        ApiError.badRequest(`Invalid avatar file type: ${avatar.mimetype}`)
+        ApiError.badRequest(`Invalid avatar file type: ${avatar.mimetype}`),
       );
     }
 
@@ -182,7 +182,7 @@ class AuthSchemas {
         .string({ required_error: "Phone number is required" })
         .regex(
           /^(0)(7|8|9){1}(0|1){1}[0-9]{8}$/,
-          "Please provide a valid Nigerian phone number"
+          "Please provide a valid Nigerian phone number",
         ),
       gender: z.enum(["male", "female", "other"], {
         required_error: "Gender is required",
@@ -194,12 +194,14 @@ class AuthSchemas {
             const date = val instanceof Date ? val : new Date(val);
             return date <= new Date();
           },
-          { message: "Date of birth cannot be in the future" }
+          { message: "Date of birth cannot be in the future" },
         )
         .optional(),
       address: z.string({ required_error: "Address is required" }),
       state: z.string({ required_error: "State is required" }),
       city: z.string({ required_error: "City is required" }),
+      avatar: z.string({ required_error: "Avatar is required" }),
+      avatarName: z.string({ required_error: "Avatar name is required" }),
     })
     .strict();
 
@@ -224,7 +226,7 @@ class AuthSchemas {
         .string({ required_error: "Phone number is required" })
         .regex(
           /^(0)(7|8|9){1}(0|1){1}[0-9]{8}$/,
-          "Please provide a valid Nigerian phone number"
+          "Please provide a valid Nigerian phone number",
         ),
       relationship: z.string({ required_error: "Relationship is required" }),
     })
@@ -241,7 +243,7 @@ class AuthSchemas {
         .string({ required_error: "Phone number is required" })
         .regex(
           /^(0)(7|8|9){1}(0|1){1}[0-9]{8}$/,
-          "Please provide a valid Nigerian phone number"
+          "Please provide a valid Nigerian phone number",
         ),
       occupation: z.string({ required_error: "Occupation is required" }),
       workAddress: z.string({ required_error: "Work address is required" }),
@@ -277,7 +279,7 @@ class AuthSchemas {
 
     if (!allowedMimeTypes.includes(document.mimetype)) {
       return next(
-        ApiError.badRequest(`Invalid document file type: ${document.mimetype}`)
+        ApiError.badRequest(`Invalid document file type: ${document.mimetype}`),
       );
     }
 

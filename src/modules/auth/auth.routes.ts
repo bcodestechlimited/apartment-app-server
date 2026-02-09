@@ -92,7 +92,7 @@ router
 router
   .route("/profile/documents")
   .get(isAuth, AuthController.getUserDocuments)
-  .post(isAuth, authSchemas.validateDocument, AuthController.uploadUserDocument)
+  .post(isAuth, AuthController.uploadUserDocument)
   .all(methodNotAllowed);
 
 router
@@ -114,15 +114,5 @@ router
     AuthController.updateUserGuarantor,
   )
   .all(methodNotAllowed);
-
-// router
-//   .route("/profile/notification")
-//   .get(isAuth, AuthController.getUserGuarantor)
-//   .patch(
-//     isAuth,
-//     validateBody(authSchemas.updateNextOfKin),
-//     AuthController.updateUserGuarantor
-//   )
-//   .all(methodNotAllowed);
 
 export default router;

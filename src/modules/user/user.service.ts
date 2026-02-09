@@ -211,25 +211,26 @@ class UserService {
   static async updateUserInformation(
     userId: Types.ObjectId,
     userData: any,
-    files?: { avatar?: UploadedFile },
+    // files?: { avatar?: UploadedFile },
   ): Promise<IPersonalInfo> {
     // console.log({ userId, userData, files });
     const UpdatedUserData = {
       ...userData,
     };
-    console.log({ files });
 
-    if (files && files.avatar) {
-      const { secure_url } = await UploadService.uploadToCloudinary(
-        files.avatar.tempFilePath,
-      );
-      UpdatedUserData.avatar = secure_url as string;
-      await fs.unlink(files.avatar.tempFilePath).catch(console.error);
-    }
+    // console.log({ files });
 
-    if (!files || !files.avatar) {
-      UpdatedUserData.avatar = "";
-    }
+    // if (files && files.avatar) {
+    //   const { secure_url } = await UploadService.uploadToCloudinary(
+    //     files.avatar.tempFilePath,
+    //   );
+    //   UpdatedUserData.avatar = secure_url as string;
+    //   await fs.unlink(files.avatar.tempFilePath).catch(console.error);
+    // }
+
+    // if (!files || !files.avatar) {
+    //   UpdatedUserData.avatar = "";
+    // }
 
     let personalInfo = await PersonalInfo.findOneAndUpdate(
       { user: userId },
@@ -412,23 +413,20 @@ class UserService {
 
   static async uploadUserDocument(
     userId: Types.ObjectId,
-    files?: { document?: UploadedFile },
+    document?: string,
+    name?: string,
   ): Promise<IDocument[]> {
-    console.log({ userId, files, document: files?.document });
+    // console.log({ userId, files, document: files?.document });
 
     let payload: Record<string, any> = {
       user: userId,
     };
 
-    if (files && files.document) {
-      const { document } = files;
-      const { secure_url } = await UploadService.uploadToCloudinary(
-        document.tempFilePath,
-      );
-
-      payload.fileUrl = secure_url as string;
-      payload.uploadedAt = Date.now();
-      payload.name = document?.name.replaceAll(" ", "_") || "Document";
+    if (document) {
+      payload.fileUrl = document;
+    }
+    if (name) {
+      payload.name = name;
     }
 
     console.log({ payload });
