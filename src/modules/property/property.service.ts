@@ -54,50 +54,56 @@ export class PropertyService {
   // Create new property
   static async createProperty(
     propertyData: CreatePropertyDTO,
-    files: { pictures: UploadedFile[] },
+    // files: { pictures: UploadedFile[] },
     userId: Types.ObjectId,
   ) {
-    const parsedAmenities = JSON.parse(propertyData.amenities);
-    const parsedFacilities = JSON.parse(propertyData.facilities);
-    propertyData.amenities = parsedAmenities;
-    propertyData.facilities = parsedFacilities;
+    const amenities =
+      typeof propertyData.amenities === "string"
+        ? JSON.parse(propertyData.amenities)
+        : propertyData.amenities;
+
+    const facilities =
+      typeof propertyData.facilities === "string"
+        ? JSON.parse(propertyData.facilities)
+        : propertyData.facilities;
 
     let parsedOtherFees = [];
-
     if (propertyData.otherFees) {
       try {
-        parsedOtherFees = JSON.parse(propertyData.otherFees);
+        parsedOtherFees =
+          typeof propertyData.otherFees === "string"
+            ? JSON.parse(propertyData.otherFees)
+            : propertyData.otherFees;
       } catch (error) {
-        throw new ApiError(
-          400,
-          "Invalid format for 'Other Fees'. Please check your input.",
-        );
+        throw new ApiError(400, "Invalid format for 'Other Fees'.");
       }
     }
-    propertyData.otherFees = parsedOtherFees;
 
     const isAvailable = new Date(propertyData.availabilityDate) <= new Date();
 
-    const { pictures } = files;
+    // const { pictures } = files;
 
     const property = new Property({
       ...propertyData,
+      amenities,
+      facilities,
+      otherFees: parsedOtherFees,
       seatingCapacity: Number(propertyData.seatingCapacity) || 1,
       user: userId,
       isAvailable: isAvailable,
       isVerified: false,
     });
 
-    const uploadedPictures = await Promise.all(
-      pictures.map(async (picture: UploadedFile) => {
-        const { secure_url } = await UploadService.uploadToCloudinary(
-          picture.tempFilePath,
-        );
-        return secure_url;
-      }),
-    );
+    // const uploadedPictures = await Promise.all(
+    //   pictures.map(async (picture: UploadedFile) => {
+    //     const { secure_url } = await UploadService.uploadToCloudinary(
+    //       picture.tempFilePath,
+    //     );
+    //     return secure_url;
+    //   }),
+    // );
 
-    property.pictures = uploadedPictures as string[];
+    // property.pictures = propertyData.pictures as string[];
     await property.save();
 
     await UserService.updateLandlordStats(userId, { propertiesDelta: 1 });
@@ -349,17 +355,17 @@ export class PropertyService {
       );
     }
 
-    const parsedExistingPictures = updateData.existingPictures
-      ? JSON.parse(updateData.existingPictures as string)
-      : property.pictures || [];
+    const parsedExistingPictures = Array.isArray(updateData.existingPictures)
+      ? updateData.existingPictures
+      : JSON.parse((updateData.existingPictures as any) || "[]");
 
-    const parsedAmenities = updateData.amenities
-      ? JSON.parse(updateData.amenities as string)
-      : property.amenities || [];
+    const parsedAmenities = Array.isArray(updateData.amenities)
+      ? updateData.amenities
+      : JSON.parse((updateData.amenities as any) || "[]");
 
-    const parsedFacilities = updateData.facilities
-      ? JSON.parse(updateData.facilities as string)
-      : property.facilities || [];
+    const parsedFacilities = Array.isArray(updateData.facilities)
+      ? updateData.facilities
+      : JSON.parse((updateData.facilities as any) || "[]");
 
     let parsedOtherFees = property.otherFees || [];
 

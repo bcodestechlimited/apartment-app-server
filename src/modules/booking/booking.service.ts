@@ -16,7 +16,7 @@ export class BookingService {
   // Create new booking
   static async createBooking(
     bookingData: CreateBookingDTO,
-    userId: ObjectId | Types.ObjectId
+    userId: ObjectId | Types.ObjectId,
   ) {
     const { propertyId } = bookingData;
 
@@ -28,43 +28,6 @@ export class BookingService {
 
     let startDate;
     let endDate;
-
-    // switch (property.pricingModel.toLowerCase()) {
-    //   case "hourly":
-    //     startDate = new Date();
-    //     endDate = new Date(startDate.getTime() + duration * 60 * 60 * 1000);
-    //     break;
-    //   case "daily":
-    //     startDate = new Date();
-    //     endDate = new Date(
-    //       startDate.getTime() + duration * 24 * 60 * 60 * 1000
-    //     );
-    //     break;
-    //   case "weekly":
-    //     startDate = new Date();
-    //     endDate = new Date(
-    //       startDate.getTime() + duration * 7 * 24 * 60 * 60 * 1000
-    //     );
-    //     break;
-    //   case "monthly":
-    //     startDate = new Date();
-    //     endDate = new Date(
-    //       startDate.getFullYear(),
-    //       startDate.getMonth() + duration,
-    //       startDate.getDate()
-    //     );
-    //     break;
-    //   case "yearly":
-    //     startDate = new Date();
-    //     endDate = new Date(
-    //       startDate.getFullYear() + duration,
-    //       startDate.getMonth(),
-    //       startDate.getDate()
-    //     );
-    //     break;
-    //   default:
-    //     throw ApiError.badRequest("Invalid pricing model");
-    // }
 
     const booking = new Booking({
       ...bookingData,
@@ -110,7 +73,7 @@ export class BookingService {
   // Get tenant bookings
   static async getTenantBookings(
     userId: ObjectId | string | Types.ObjectId,
-    query: IQueryParams
+    query: IQueryParams,
   ) {
     const { page, limit } = query;
     const filterQuery = { tenant: userId };
@@ -139,7 +102,7 @@ export class BookingService {
   // Get landlord bookings
   static async getLandlordBookings(
     userId: ObjectId | string | Types.ObjectId,
-    query: IQueryParams
+    query: IQueryParams,
   ) {
     const { page, limit } = query;
     const filterQuery = { landlord: userId };

@@ -355,7 +355,7 @@ export class BookingRequestService {
           session,
         );
         const walletTx = await TransactionService.getTransactionByReference(
-          `wallet_deduction_${bookingRequestId}`,
+          `wallet_${bookingRequestId}`,
           session,
         );
 
@@ -370,7 +370,7 @@ export class BookingRequestService {
                 {
                   user: bookingRequest.tenant._id as string,
                   transactionType: "debit",
-                  reference: `wallet_deduction_${bookingRequestId}`,
+                  reference: `wallet_${bookingRequestId}`,
                   amount: deduction,
                   description: `Wallet payment for booking ${bookingRequestId}`,
                   status: "pending",
@@ -460,7 +460,7 @@ export class BookingRequestService {
       session,
     );
     const walletTx = await TransactionService.getTransactionByReference(
-      `wallet_deduction_${bookingRequestId}`,
+      `wallet_${bookingRequestId}`,
       session,
     );
     const expectedPaystackAmount =
@@ -640,7 +640,7 @@ export class BookingRequestService {
   ): Promise<number> {
     try {
       const walletTx = await TransactionService.getTransactionByReference(
-        `wallet_deduction_${bookingRequestId}`,
+        `wallet_${bookingRequestId}`,
         session,
       );
       return walletTx && walletTx.status === "pending" ? walletTx.amount : 0;
