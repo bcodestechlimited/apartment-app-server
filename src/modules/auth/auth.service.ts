@@ -84,6 +84,7 @@ export class AuthService {
     console.log("entering handleGoogleCallback");
 
     const { code, state, error } = query;
+
     if (error) {
       return ApiSuccess.ok("Login failed", { error });
     }

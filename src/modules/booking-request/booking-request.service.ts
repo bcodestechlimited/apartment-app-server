@@ -222,10 +222,9 @@ export class BookingRequestService {
         tenantUserId: bookingRequest.tenant._id as string,
       });
 
-      // Get all pending booking requests for the same property
       const declinedRequests = await BookingRequest.find({
         property: bookingRequest.property._id,
-        _id: { $ne: bookingRequest._id }, // Exclude the accepted request
+        _id: { $ne: bookingRequest._id },
         status: "pending",
       }).populate("tenant");
 
@@ -238,7 +237,6 @@ export class BookingRequestService {
           });
         }
 
-        // Mark other booking requests for the same property as declined
         await BookingRequest.updateMany(
           {
             property: bookingRequest.property._id,
@@ -249,10 +247,8 @@ export class BookingRequestService {
       }
     }
 
-    // Handle Decline
     if (status === "declined") {
       bookingRequest.status = "declined";
-      // Notify tenant about the declined request
 
       await PropertyService.pullTenantFromPropertyRequestedById(
         String(bookingRequest.property._id),

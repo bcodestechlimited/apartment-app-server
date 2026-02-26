@@ -54,7 +54,7 @@ export class AuthController {
       error: string;
     };
 
-    if (!user.isActive) {
+    if (user && !user.isActive) {
       return res.redirect(
         `${clientURLs.loginURL}?login-error=account_blocked&provider=google`,
       );

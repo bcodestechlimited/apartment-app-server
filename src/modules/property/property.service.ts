@@ -334,6 +334,113 @@ export class PropertyService {
   }
 
   // Update property
+  // static async updateProperty(
+  //   propertyId: string,
+  //   updateData: Partial<UpdatePropertyDTO>,
+  //   userId: Types.ObjectId | string,
+  //   files?: { newPictures: UploadedFile | UploadedFile[] },
+  //   isVerified?: boolean,
+  // ) {
+  //   const { newPictures } = files ?? {};
+
+  //   const property = await Property.findById(propertyId).populate("user");
+  //   if (!property) {
+  //     throw ApiError.notFound("Property not found");
+  //   }
+
+  //   // Optionally enforce ownership
+  //   if (String(property.user._id) !== userId.toString()) {
+  //     throw ApiError.forbidden(
+  //       "You do not have permission to update this property",
+  //     );
+  //   }
+
+  //   const parsedExistingPictures = Array.isArray(updateData.existingPictures)
+  //     ? updateData.existingPictures
+  //     : JSON.parse((updateData.existingPictures as any) || "[]");
+
+  //   const parsedAmenities = Array.isArray(updateData.amenities)
+  //     ? updateData.amenities
+  //     : JSON.parse((updateData.amenities as any) || "[]");
+
+  //   const parsedFacilities = Array.isArray(updateData.facilities)
+  //     ? updateData.facilities
+  //     : JSON.parse((updateData.facilities as any) || "[]");
+
+  //   let parsedOtherFees = property.otherFees || [];
+
+  //   if (updateData.otherFees) {
+  //     try {
+  //       if (typeof updateData.otherFees === "string") {
+  //         parsedOtherFees = JSON.parse(updateData.otherFees);
+  //       } else {
+  //         parsedOtherFees = updateData.otherFees;
+  //       }
+  //     } catch (error) {
+  //       throw new ApiError(
+  //         400,
+  //         "Invalid format for 'Other Fees'. Please check your input.",
+  //       );
+  //     }
+  //   }
+  //   // property.otherFees = parsedOtherFees;
+
+  //   let updatePropertyPayload = {
+  //     ...updateData,
+  //     amenities: parsedAmenities,
+  //     facilities: parsedFacilities,
+  //     pictures: parsedExistingPictures,
+  //     otherFees: parsedOtherFees,
+  //     isVerified: isVerified ?? false,
+  //   };
+
+  //   if (newPictures && Array.isArray(newPictures) && newPictures.length > 0) {
+  //     const length = newPictures.length;
+  //     if (parsedExistingPictures.length + length > 5) {
+  //       throw ApiError.badRequest("You can only upload a maximum of 5 images");
+  //     }
+  //     const newlyUploadedPictures = await Promise.all(
+  //       newPictures.map(async (picture: UploadedFile) => {
+  //         const { secure_url } = await UploadService.uploadToCloudinary(
+  //           picture.tempFilePath,
+  //         );
+  //         return secure_url;
+  //       }),
+  //     );
+
+  //     updatePropertyPayload.pictures = [
+  //       ...parsedExistingPictures,
+  //       ...newlyUploadedPictures.filter((picture) => picture !== undefined),
+  //     ];
+  //   }
+
+  //   if (newPictures && !Array.isArray(newPictures)) {
+  //     if (parsedExistingPictures.length + 1 > 5) {
+  //       throw ApiError.badRequest("You can only upload a maximum of 5 images");
+  //     }
+
+  //     const { secure_url } = await UploadService.uploadToCloudinary(
+  //       newPictures.tempFilePath,
+  //     );
+
+  //     updatePropertyPayload.pictures = [
+  //       ...parsedExistingPictures,
+  //       secure_url as string,
+  //     ];
+  //   }
+
+  //   Object.assign(property, updatePropertyPayload);
+  //   await property.save();
+
+  //   await agenda.now(PROPERTY_UPDATE_ALERT, {
+  //     propertyId: propertyId,
+  //     propertyTitle: property.title,
+  //     landlordName: `${property.user.firstName} ${property.user.lastName}`,
+  //   });
+
+  //   return ApiSuccess.ok("Property updated successfully", { property });
+  // }
+
   static async updateProperty(
     propertyId: string,
     updateData: Partial<UpdatePropertyDTO>,
@@ -341,6 +448,8 @@ export class PropertyService {
     files?: { newPictures: UploadedFile | UploadedFile[] },
     isVerified?: boolean,
   ) {
+    console.log({ propertyId, updateData, userId, files, isVerified });
+
     const { newPictures } = files ?? {};
 
     const property = await Property.findById(propertyId).populate("user");
@@ -348,33 +457,38 @@ export class PropertyService {
       throw ApiError.notFound("Property not found");
     }
 
-    // Optionally enforce ownership
     if (String(property.user._id) !== userId.toString()) {
       throw ApiError.forbidden(
         "You do not have permission to update this property",
       );
     }
 
-    const parsedExistingPictures = Array.isArray(updateData.existingPictures)
-      ? updateData.existingPictures
-      : JSON.parse((updateData.existingPictures as any) || "[]");
+    let updatePropertyPayload: any = {
+      ...updateData,
+      isVerified: isVerified ?? property.isVerified ?? false,
+    };
 
-    const parsedAmenities = Array.isArray(updateData.amenities)
-      ? updateData.amenities
-      : JSON.parse((updateData.amenities as any) || "[]");
+    // Only parse and update amenities if provided
+    if (updateData.amenities !== undefined) {
+      updatePropertyPayload.amenities = Array.isArray(updateData.amenities)
+        ? updateData.amenities
+        : JSON.parse((updateData.amenities as any) || "[]");
+    }
 
-    const parsedFacilities = Array.isArray(updateData.facilities)
-      ? updateData.facilities
-      : JSON.parse((updateData.facilities as any) || "[]");
+    // Only parse and update facilities if provided
+    if (updateData.facilities !== undefined) {
+      updatePropertyPayload.facilities = Array.isArray(updateData.facilities)
+        ? updateData.facilities
+        : JSON.parse((updateData.facilities as any) || "[]");
+    }
 
-    let parsedOtherFees = property.otherFees || [];
-
-    if (updateData.otherFees) {
+    // Only parse and update otherFees if provided
+    if (updateData.otherFees !== undefined) {
       try {
         if (typeof updateData.otherFees === "string") {
-          parsedOtherFees = JSON.parse(updateData.otherFees);
+          updatePropertyPayload.otherFees = JSON.parse(updateData.otherFees);
         } else {
-          parsedOtherFees = updateData.otherFees;
+          updatePropertyPayload.otherFees = updateData.otherFees;
         }
       } catch (error) {
         throw new ApiError(
@@ -383,50 +497,55 @@ export class PropertyService {
         );
       }
     }
-    // property.otherFees = parsedOtherFees;
 
-    let updatePropertyPayload = {
-      ...updateData,
-      amenities: parsedAmenities,
-      facilities: parsedFacilities,
-      pictures: parsedExistingPictures,
-      otherFees: parsedOtherFees,
-      isVerified: isVerified ?? false,
-    };
+    // Only handle pictures if existingPictures is provided or if there are new pictures
+    if (updateData.existingPictures !== undefined || newPictures) {
+      const parsedExistingPictures = updateData.existingPictures
+        ? Array.isArray(updateData.existingPictures)
+          ? updateData.existingPictures
+          : JSON.parse((updateData.existingPictures as any) || "[]")
+        : property.pictures || [];
 
-    if (newPictures && Array.isArray(newPictures) && newPictures.length > 0) {
-      const length = newPictures.length;
-      if (parsedExistingPictures.length + length > 5) {
-        throw ApiError.badRequest("You can only upload a maximum of 5 images");
-      }
-      const newlyUploadedPictures = await Promise.all(
-        newPictures.map(async (picture: UploadedFile) => {
-          const { secure_url } = await UploadService.uploadToCloudinary(
-            picture.tempFilePath,
+      updatePropertyPayload.pictures = parsedExistingPictures;
+
+      if (newPictures && Array.isArray(newPictures) && newPictures.length > 0) {
+        const length = newPictures.length;
+        if (parsedExistingPictures.length + length > 5) {
+          throw ApiError.badRequest(
+            "You can only upload a maximum of 5 images",
           );
-          return secure_url;
-        }),
-      );
+        }
+        const newlyUploadedPictures = await Promise.all(
+          newPictures.map(async (picture: UploadedFile) => {
+            const { secure_url } = await UploadService.uploadToCloudinary(
+              picture.tempFilePath,
+            );
+            return secure_url;
+          }),
+        );
 
-      updatePropertyPayload.pictures = [
-        ...parsedExistingPictures,
-        ...newlyUploadedPictures.filter((picture) => picture !== undefined),
-      ];
-    }
-
-    if (newPictures && !Array.isArray(newPictures)) {
-      if (parsedExistingPictures.length + 1 > 5) {
-        throw ApiError.badRequest("You can only upload a maximum of 5 images");
+        updatePropertyPayload.pictures = [
+          ...parsedExistingPictures,
+          ...newlyUploadedPictures.filter((picture) => picture !== undefined),
+        ];
       }
 
-      const { secure_url } = await UploadService.uploadToCloudinary(
-        newPictures.tempFilePath,
-      );
+      if (newPictures && !Array.isArray(newPictures)) {
+        if (parsedExistingPictures.length + 1 > 5) {
+          throw ApiError.badRequest(
+            "You can only upload a maximum of 5 images",
+          );
+        }
 
-      updatePropertyPayload.pictures = [
-        ...parsedExistingPictures,
-        secure_url as string,
-      ];
+        const { secure_url } = await UploadService.uploadToCloudinary(
+          newPictures.tempFilePath,
+        );
+
+        updatePropertyPayload.pictures = [
+          ...parsedExistingPictures,
+          secure_url as string,
+        ];
+      }
     }
 
     Object.assign(property, updatePropertyPayload);
@@ -440,6 +559,7 @@ export class PropertyService {
 
     return ApiSuccess.ok("Property updated successfully", { property });
   }
+
   static async adminUpdateProperty(
     propertyId: string,
     updateData: Partial<UpdatePropertyDTO>,
