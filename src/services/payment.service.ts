@@ -131,12 +131,10 @@ export class PaymentService {
   }
 
   static async transferFunds(data: PaystackDisbursementInput) {
-    console.log("now in transferFunds", data);
     const res = await paystackClient
       .post(`/transfer`, { ...data })
       .then(({ data }) => data)
       .catch((e) => {
-        console.log(e?.data);
         throw ApiError.internalServerError(
           `[Paystack] Error transfering funds: ${e.message}`,
         );

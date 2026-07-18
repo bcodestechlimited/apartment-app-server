@@ -34,7 +34,6 @@ export class BookingController {
   static async getTenantBookingsByAdmin(req: Request, res: Response) {
     const { userId } = req.params;
     const query = req.query;
-    console.log("getTenantBookingsByAdmin", userId, query);
     const result = await BookingService.getTenantBookings(
       userId as string,
       query

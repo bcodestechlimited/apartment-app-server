@@ -108,7 +108,6 @@ export class MessageService {
     message: string;
     data: { conversation: IConversation };
   }> {
-    console.log({ user1, user2 });
 
     const existingConversation = await Conversation.findOne({
       participants: { $all: [user1, user2] },

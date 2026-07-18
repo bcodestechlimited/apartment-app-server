@@ -48,6 +48,7 @@ app.use(
     // debug: true,
   }),
 );
+
 app.use(
   cors({
     origin: [
@@ -56,7 +57,13 @@ app.use(
       "https://apartment-app-client.vercel.app",
       "https://www.havenlease.com",
       "https://havenlease.com",
+      "http://192.168.8.101:5173",
+      "http://192.168.0.200:5173",
+      "192.168.8.101:5173",
+      "http://localhost:5173",
+      "http://192.168.8.100:5173",
     ],
+    // origin: "*",
     credentials: true,
   }),
 );

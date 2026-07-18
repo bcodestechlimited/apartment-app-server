@@ -45,7 +45,6 @@ export class TransactionService {
     query: IQueryParams,
   ) {
     const { page = 1, limit = 10 } = query;
-    console.log("Fetching transactions for user:", userId);
     const filterQuery = { user: userId };
     const sort = { createdAt: -1 };
     const populateOptions = [
@@ -269,10 +268,8 @@ export class TransactionService {
     adminId: string | Types.ObjectId | ObjectId,
   ) {
     const { transactionId, action, reason } = payload;
-    console.log("Payload:", payload);
     const transaction =
       await Transaction.findById(transactionId).populate("user");
-    console.log("Transaction found:", transaction);
 
     if (!transaction || transaction.adminApproval !== "pending") {
       throw new ApiError(400, "Invalid or already processed transaction");

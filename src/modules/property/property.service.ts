@@ -448,7 +448,6 @@ export class PropertyService {
     files?: { newPictures: UploadedFile | UploadedFile[] },
     isVerified?: boolean,
   ) {
-    console.log({ propertyId, updateData, userId, files, isVerified });
 
     const { newPictures } = files ?? {};
 
@@ -686,7 +685,6 @@ export class PropertyService {
   }
 
   static async isBookedBy(userId: Types.ObjectId) {
-    console.log({ userId });
     const isBookedBy = await Property.findOne({
       bookedBy: { $in: [userId] },
     });

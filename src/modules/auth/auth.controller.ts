@@ -1,23 +1,23 @@
 import type { Request, Response } from "express";
-import { AuthService } from "./auth.service.js";
 import type { AuthenticatedUser, IUser } from "../user/user.interface.js";
 import type { UploadedFile } from "express-fileupload";
 import { CLIENT_BASE_URL, clientURLs } from "@/utils/clientURL.js";
 import type { IQueryParams } from "@/shared/interfaces/query.interface.js";
 import type { Types } from "mongoose";
+import { authService } from "./auth.service.js";
 
-export class AuthController {
+class AuthController {
   // Register user
-  static async register(req: Request, res: Response) {
+   async register(req: Request, res: Response) {
     const userData = req.body;
-    const result = await AuthService.register(userData);
+    const result = await authService.register(userData);
     res.status(201).json(result);
   }
 
   // Login user
-  static async login(req: Request, res: Response) {
+   async login(req: Request, res: Response) {
     const userData = req.body;
-    const result = await AuthService.login(userData);
+    const result = await authService.login(userData);
     const { token } = result.data;
 
     res.cookie("token", token, {
@@ -34,9 +34,9 @@ export class AuthController {
   }
 
   // Generate Goolge Link
-  static async generateGoogleLoginLink(req: Request, res: Response) {
+   async generateGoogleLoginLink(req: Request, res: Response) {
     const { role, redirect } = req.query;
-    const result = await AuthService.loginWithGoogle({
+    const result = await authService.loginWithGoogle({
       role: role as string,
       redirect: redirect as string,
     });
@@ -44,9 +44,9 @@ export class AuthController {
   }
 
   // Google Login
-  static async googleCallback(req: Request, res: Response) {
+   async googleCallback(req: Request, res: Response) {
     const query = req.query;
-    const result = await AuthService.handleGoogleCallback(query);
+    const result = await authService.handleGoogleCallback(query);
     const { token, user, redirectPath, error } = result.data as {
       token: string;
       user: IUser;
@@ -123,7 +123,7 @@ export class AuthController {
     return res.redirect(clientURLs.landingPageURL);
   }
 
-  static async logout(req: Request, res: Response) {
+   async logout(req: Request, res: Response) {
     res.clearCookie("token", { path: "/" });
     res.status(200).json({
       success: true,
@@ -135,12 +135,11 @@ export class AuthController {
 
   // src/modules/auth/auth.controller.ts
 
-  static async completeOnboarding(req: Request, res: Response) {
+   async completeOnboarding(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const { role } = req.body;
-    console.log("role in complete onboarding", role);
 
-    const { user, token } = await AuthService.updateUserRoleAndOnboard(
+    const { user, token } = await authService.updateUserRoleAndOnboard(
       userId,
       role,
     );
@@ -157,144 +156,145 @@ export class AuthController {
   }
 
   // Get user data
-  static async getUser(req: Request, res: Response) {
+   async getUser(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
-    const result = await AuthService.getUser(userId);
+    const result = await authService.getUser(userId);
     res.status(200).json(result);
   }
 
   //
-  static async updateUser(req: Request, res: Response) {
+   async updateUser(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
     const files = req.files as
       | { document?: UploadedFile; avatar?: UploadedFile }
       | undefined;
-    const result = await AuthService.updateUser(userId, userData, files);
+    const result = await authService.updateUser(userId, userData, files);
     res.status(200).json(result);
   }
 
   // Send OTP
-  static async sendOTP(req: Request, res: Response) {
+   async sendOTP(req: Request, res: Response) {
     const { email } = req.body;
-    const result = await AuthService.sendOTP({ email });
+    const result = await authService.sendOTP({ email });
     res.status(200).json(result);
   }
 
   // Verify OTP
-  static async verifyOTP(req: Request, res: Response) {
+   async verifyOTP(req: Request, res: Response) {
     const { email, otp } = req.body;
-    const result = await AuthService.verifyOTP({ email, otp });
+    const result = await authService.verifyOTP({ email, otp });
     res.status(200).json(result);
   }
 
   // Forgot password
-  static async forgotPassword(req: Request, res: Response) {
+   async forgotPassword(req: Request, res: Response) {
     const { email } = req.body;
-    const result = await AuthService.forgotPassword({ email });
+    const result = await authService.forgotPassword({ email });
     res.status(200).json(result);
   }
 
   // Reset password
-  static async resetPassword(req: Request, res: Response) {
+   async resetPassword(req: Request, res: Response) {
     const { email, otp, password } = req.body;
-    const result = await AuthService.resetPassword({ email, otp, password });
+    const result = await authService.resetPassword({ email, otp, password });
     res.status(200).json(result);
   }
 
   // Profile - Personal Info
-  static async getPersonalInfo(req: Request, res: Response) {
+   async getPersonalInfo(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
-    const result = await AuthService.getUserPersonalInfo(userId);
+    const result = await authService.getUserPersonalInfo(userId);
     res.status(200).json(result);
   }
-  static async updatePersonalInfo(req: Request, res: Response) {
+   async updatePersonalInfo(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
 
-    const result = await AuthService.updateUserPersonalInfo(userId, userData);
+    const result = await authService.updateUserPersonalInfo(userId, userData);
     res.status(200).json(result);
   }
 
   // Profile - Employment
-  static async getUserEmployment(req: Request, res: Response) {
+   async getUserEmployment(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
-    const result = await AuthService.getUserEmployment(userId);
+    const result = await authService.getUserEmployment(userId);
     res.status(200).json(result);
   }
-  static async updateUserEmployment(req: Request, res: Response) {
+   async updateUserEmployment(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
-    const result = await AuthService.updateUserEmployment(userId, userData);
+    const result = await authService.updateUserEmployment(userId, userData);
     res.status(200).json(result);
   }
 
   // Profile - Documents
-  static async getUserDocuments(req: Request, res: Response) {
+   async getUserDocuments(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
-    const result = await AuthService.getUserDocuments(userId);
+    const result = await authService.getUserDocuments(userId);
     res.status(200).json(result);
   }
 
-  // static async getUserDocument(req: Request, res: Response) {
+  //  async getUserDocument(req: Request, res: Response) {
   //   const { UserId } = req.params;
-  //   const result = await AuthService.getUserDocument(UserId);
+  //   const result = await authService.getUserDocument(UserId);
   //   res.status(200).json(result);
   // }
 
-  static async getAllUserDocuments(req: Request, res: Response) {
+   async getAllUserDocuments(req: Request, res: Response) {
     const query = req.query as IQueryParams;
-    const result = await AuthService.getAllUserDocuments(query);
+    const result = await authService.getAllUserDocuments(query);
     res.status(200).json(result);
   }
 
-  static async verifyUserDocument(req: Request, res: Response) {
+   async verifyUserDocument(req: Request, res: Response) {
     const { documentId } = req.params as unknown as {
       documentId: Types.ObjectId;
     };
-    const result = await AuthService.verifyUserDocument(documentId);
+    const result = await authService.verifyUserDocument(documentId);
     res.status(200).json(result);
   }
 
-  static async rejectUserDocument(req: Request, res: Response) {
+   async rejectUserDocument(req: Request, res: Response) {
     const { documentId } = req.params as unknown as {
       documentId: Types.ObjectId;
     };
-    const result = await AuthService.rejectUserDocument(documentId);
+    const result = await authService.rejectUserDocument(documentId);
     res.status(200).json(result);
   }
 
-  static async uploadUserDocument(req: Request, res: Response) {
+   async uploadUserDocument(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
-    console.log(req.body);
     const { document, name } = req.body;
-    const result = await AuthService.uploadUserDocument(userId, document, name);
+    const result = await authService.uploadUserDocument(userId, document, name);
     res.status(200).json(result);
   }
 
   // Profile - Next Of Kin
-  static async getUserNextOfKin(req: Request, res: Response) {
+   async getUserNextOfKin(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
-    const result = await AuthService.getUserNextOfKin(userId);
+    const result = await authService.getUserNextOfKin(userId);
     res.status(200).json(result);
   }
-  static async updateUserNextOfKin(req: Request, res: Response) {
+   async updateUserNextOfKin(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
-    const result = await AuthService.updateUserNextOfKin(userId, userData);
+    const result = await authService.updateUserNextOfKin(userId, userData);
     res.status(200).json(result);
   }
 
   // Profile - Guarantor
-  static async getUserGuarantor(req: Request, res: Response) {
+   async getUserGuarantor(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
-    const result = await AuthService.getUserGuarantor(userId);
+    const result = await authService.getUserGuarantor(userId);
     res.status(200).json(result);
   }
-  static async updateUserGuarantor(req: Request, res: Response) {
+   async updateUserGuarantor(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
-    const result = await AuthService.updateUserGuarantor(userId, userData);
+    const result = await authService.updateUserGuarantor(userId, userData);
     res.status(200).json(result);
   }
 }
+
+export const authController = new AuthController();

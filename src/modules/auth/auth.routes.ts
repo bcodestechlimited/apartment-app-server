@@ -1,117 +1,117 @@
 import express from "express";
 import methodNotAllowed from "../../middleware/methodNotAllowed.js";
-import { AuthController } from "./auth.controller.js";
 import { isAuth } from "../../middleware/auth.js";
 import { validateBody } from "../../middleware/validateSchema.js";
 import { authSchemas } from "./auth.schema.js";
+import { authController } from "./auth.controller.js";
 
 const router = express.Router();
 
 router
   .route("/")
-  .get(isAuth, AuthController.getUser)
+  .get(isAuth, authController.getUser)
   .patch(
     isAuth,
     validateBody(authSchemas.update),
     authSchemas.validateFiles,
-    AuthController.updateUser,
+    authController.updateUser,
   )
   .all(methodNotAllowed);
 
 router
   .route("/signup")
-  .post(validateBody(authSchemas.register), AuthController.register)
+  .post(validateBody(authSchemas.register), authController.register)
   .all(methodNotAllowed);
 
 router
   .route("/signin")
-  .post(validateBody(authSchemas.login), AuthController.login)
+  .post(validateBody(authSchemas.login), authController.login)
   .all(methodNotAllowed);
 
 router
   .route("/complete-onboarding")
-  .post(isAuth, AuthController.completeOnboarding)
+  .post(isAuth, authController.completeOnboarding)
   .all(methodNotAllowed);
 
 router
   .route("/logout")
-  .get(isAuth, AuthController.logout)
+  .get(isAuth, authController.logout)
   .all(methodNotAllowed);
 
 router
   .route("/send-otp")
-  .post(validateBody(authSchemas.sendOTP), AuthController.sendOTP)
+  .post(validateBody(authSchemas.sendOTP), authController.sendOTP)
   .all(methodNotAllowed);
 
 router
   .route("/verify-otp")
-  .post(validateBody(authSchemas.verifyOTP), AuthController.verifyOTP)
+  .post(validateBody(authSchemas.verifyOTP), authController.verifyOTP)
   .all(methodNotAllowed);
 
 router
   .route("/forgot-password")
-  .post(validateBody(authSchemas.forgotPassword), AuthController.forgotPassword)
+  .post(validateBody(authSchemas.forgotPassword), authController.forgotPassword)
   .all(methodNotAllowed);
 
 router
   .route("/reset-password")
-  .post(validateBody(authSchemas.resetPassword), AuthController.resetPassword)
+  .post(validateBody(authSchemas.resetPassword), authController.resetPassword)
   .all(methodNotAllowed);
 
 router
   .route("/google")
-  .get(AuthController.generateGoogleLoginLink)
+  .get(authController.generateGoogleLoginLink)
   .all(methodNotAllowed);
 
 router
   .route("/google/callback")
-  .get(AuthController.googleCallback)
+  .get(authController.googleCallback)
   .all(methodNotAllowed);
 
 // Profile
 router
   .route("/profile/personal-info")
-  .get(isAuth, AuthController.getPersonalInfo)
+  .get(isAuth, authController.getPersonalInfo)
   .patch(
     isAuth,
     validateBody(authSchemas.updatePersonalInfo),
-    AuthController.updatePersonalInfo,
+    authController.updatePersonalInfo,
   )
   .all(methodNotAllowed);
 
 router
   .route("/profile/employment")
-  .get(isAuth, AuthController.getUserEmployment)
+  .get(isAuth, authController.getUserEmployment)
   .patch(
     isAuth,
     validateBody(authSchemas.updateUserEmployment),
-    AuthController.updateUserEmployment,
+    authController.updateUserEmployment,
   )
   .all(methodNotAllowed);
 
 router
   .route("/profile/documents")
-  .get(isAuth, AuthController.getUserDocuments)
-  .post(isAuth, AuthController.uploadUserDocument)
+  .get(isAuth, authController.getUserDocuments)
+  .post(isAuth, authController.uploadUserDocument)
   .all(methodNotAllowed);
 
 router
   .route("/profile/next-of-kin")
-  .get(isAuth, AuthController.getUserNextOfKin)
+  .get(isAuth, authController.getUserNextOfKin)
   .patch(
     isAuth,
     validateBody(authSchemas.updateNextOfKin),
-    AuthController.updateUserNextOfKin,
+    authController.updateUserNextOfKin,
   )
   .all(methodNotAllowed);
 
 router
   .route("/profile/guarantor")
-  .get(isAuth, AuthController.getUserGuarantor)
+  .get(isAuth, authController.getUserGuarantor)
   .patch(
     isAuth,
     validateBody(authSchemas.updateGuarantor),
-    AuthController.updateUserGuarantor,
+    authController.updateUserGuarantor,
   )
   .all(methodNotAllowed);
 

@@ -7,7 +7,6 @@ export class SavedPropertiesController {
   static async saveProperty(req: Request, res: Response) {
     const { propertyId } = req.body;
     const { userId } = req.user as AuthenticatedUser;
-    console.log("save properties details", { propertyId, userId });
     const result = await SavedPropertiesService.saveProperty({
       userId,
       propertyId,
@@ -19,7 +18,6 @@ export class SavedPropertiesController {
   // Get authenticated user's saved properties
   static async getUserSavedProperties(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
-    console.log("userId", userId);
     const result = await SavedPropertiesService.getUserSavedProperties(userId);
 
     res.status(200).json(result);

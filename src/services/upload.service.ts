@@ -3,7 +3,7 @@ import cloudinary from "../lib/cloudinary";
 
 export class UploadService {
   static async uploadToCloudinary(
-    tempFilePath: string
+    tempFilePath: string,
   ): Promise<Partial<UploadApiResponse>> {
     let num = 0;
     let error: any;
@@ -15,13 +15,10 @@ export class UploadService {
             use_filename: true,
             folder: "Haven-Lease",
             resource_type: "auto",
-          }
+          },
         );
         return { secure_url, public_id };
       } catch (err) {
-        console.log(`Error uploading to cloudinary`, { err });
-        console.log(`Retry attempt ${num + 1}`);
-
         num++;
         error = err;
       }

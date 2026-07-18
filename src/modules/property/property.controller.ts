@@ -11,7 +11,6 @@ export class PropertyController {
     // const files = req.files as { pictures: UploadedFile[] };
     const { userId } = req.user as AuthenticatedUser;
 
-    console.log({ propertyData, userId });
 
     const result = await PropertyService.createProperty(
       propertyData,
@@ -45,7 +44,6 @@ export class PropertyController {
   static async getAllLandlordPropertiesByAdmin(req: Request, res: Response) {
     const query = req.query as IQueryParams;
     const { landlordId } = req.params;
-    console.log("landlordId", landlordId);
     const result = await PropertyService.getLandlordProperties(
       landlordId as string,
       query,

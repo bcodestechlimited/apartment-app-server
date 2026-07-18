@@ -21,4 +21,7 @@ export const env = cleanEnv(Bun.env, {
   PAYSTACK_PUBLIC_KEY: str(),
   GOOGLE_CLIENT_ID: str(),
   GOOGLE_CLIENT_SECRET: str(),
+
+  SOURCE_URI: str(),
+  DESTINATION_URI: str(),
 });

@@ -383,7 +383,6 @@ export class PropertySchemas {
 
     const newPictures = req.files as { newPictures: UploadedFile[] };
 
-    // console.log({ newPictures });
 
     // Validate files are present
     if (!newPictures || !Array.isArray(newPictures)) {

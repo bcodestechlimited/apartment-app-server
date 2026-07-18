@@ -11,15 +11,13 @@ export async function hashPassword(password: string): Promise<string> {
     cost: 10,
   });
 
-  console.log({ hashPassworddddd: hashedPassword });
-
   return hashedPassword;
 }
 
 // Compares password
 export async function comparePassword(
   incomingPassword: string,
-  existingPassword: string
+  existingPassword: string,
 ): Promise<void> {
   if (!incomingPassword || !existingPassword) {
     throw ApiError.badRequest("Please provide a password");

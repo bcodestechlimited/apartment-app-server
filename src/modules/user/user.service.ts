@@ -54,8 +54,6 @@ class UserService {
 
     const hashedPassword = await hashPassword(password as string);
 
-    console.log({ hashedPassword });
-
     const user = new User({
       firstName: firstName || "",
       lastName: lastName || "",
@@ -93,8 +91,6 @@ class UserService {
         preferences: userData.preferences,
       },
     };
-
-    console.log({ updatedFields });
 
     const user = await User.findOneAndUpdate({ _id: userId }, updatedFields, {
       new: true,
@@ -213,12 +209,10 @@ class UserService {
     userData: any,
     // files?: { avatar?: UploadedFile },
   ): Promise<IPersonalInfo> {
-    // console.log({ userId, userData, files });
     const UpdatedUserData = {
       ...userData,
     };
 
-    // console.log({ files });
 
     // if (files && files.avatar) {
     //   const { secure_url } = await UploadService.uploadToCloudinary(
@@ -253,12 +247,10 @@ class UserService {
     }
 
     const user = await this.findUserById(userId);
-    // console.log("personal info user", user);
     user.personalInfo = personalInfo._id;
     user.avatar = UpdatedUserData.avatar;
     user.phoneNumber = personalInfo.phoneNumber;
     await user.save();
-    // console.log("final personal info", { personalInfo });
 
     return personalInfo;
   }
@@ -289,7 +281,6 @@ class UserService {
       },
     );
 
-    console.log({ employment });
 
     if (!employment) {
       employment = await Employment.create({ ...userData, user: userId });
@@ -329,7 +320,6 @@ class UserService {
       ];
     }
 
-    console.log({ filterQuery });
     if (verificationStatus) {
       filterQuery.status = verificationStatus;
     }
@@ -416,7 +406,6 @@ class UserService {
     document?: string,
     name?: string,
   ): Promise<IDocument[]> {
-    // console.log({ userId, files, document: files?.document });
 
     let payload: Record<string, any> = {
       user: userId,
@@ -429,7 +418,6 @@ class UserService {
       payload.name = name;
     }
 
-    console.log({ payload });
 
     const newDocument = await Document.create({ ...payload, user: userId });
     const user = await this.findUserById(userId);
@@ -494,7 +482,6 @@ class UserService {
     userId: Types.ObjectId,
     userData: any,
   ): Promise<IGuarantor> {
-    console.log({ userId, userData });
 
     let userGuarantor = await Guarantor.findOneAndUpdate(
       { user: userId },
@@ -520,7 +507,6 @@ class UserService {
   static async getTenantsForAdmin(query: IQueryParams) {
     const { limit = 10, page = 1, status, isVerified, search } = query;
 
-    console.log({ limit, page, status, isVerified, search });
 
     // 1. Basic filter: always restrict to tenants
     const filterQuery: any = { roles: "tenant" };

@@ -32,7 +32,6 @@ export class BookingRequestService {
     const { propertyId, moveInDate } = bookingRequestData;
 
     const property = await PropertyService.getPropertyDocumentById(propertyId);
-    console.log("property in booking request", property);
     const landlordId = property.user;
 
     const { startDate, endDate } = calculateBookingPeriod(

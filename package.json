@@ -13,7 +13,8 @@
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "script:test": "bun run src/scripts/test.ts",
-    "scripts:create-module": "bun run /src/scripts/create-module.ts"
+    "scripts:create-module": "bun run /src/scripts/create-module.ts",
+    "scripts:clone-db": "bun run /src/scripts/clone-db.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",

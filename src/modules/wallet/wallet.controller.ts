@@ -7,9 +7,7 @@ export class WalletController {
   static async topUpWallet(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const { amount } = req.body;
-    console.log("Amount:", amount);
     const result = await WalletService.topUpWallet(userId, amount);
-    console.log("Result:", result);
     res.status(200).json(result);
   }
 
@@ -18,7 +16,7 @@ export class WalletController {
     const { reference } = req.params;
     const result = await WalletService.verifyTopUpWallet(
       userId,
-      reference as string
+      reference as string,
     );
     res.status(200).json(result);
   }
@@ -36,7 +34,7 @@ export class WalletController {
     };
     const result = await WalletService.verifyAccountNumber(
       bankCode,
-      accountNumber
+      accountNumber,
     );
     res.status(200).json(result);
   }
@@ -45,7 +43,6 @@ export class WalletController {
   static async updateUserWallet(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const walletDetails = req.body;
-    console.log("Wallet Details:", walletDetails);
     const result = await WalletService.updateWallet(userId, walletDetails);
     res.status(200).json(result);
   }
@@ -80,15 +77,15 @@ export class WalletController {
 
   // Block a wallet
   static async blockUserWallet(req: Request, res: Response) {
-    const { userId } = req.user as AuthenticatedUser;
-    const result = await WalletService.blockUserWallet(userId);
+    const { userId } = req.params;
+    const result = await WalletService.blockUserWallet(userId!);
     res.status(200).json(result);
   }
 
   // Unblock a wallet
   static async unBlockUserWallet(req: Request, res: Response) {
-    const { userId } = req.user as AuthenticatedUser;
-    const result = await WalletService.unBlockUserWallet(userId);
+    const { userId } = req.params;
+    const result = await WalletService.unBlockUserWallet(userId!);
     res.status(200).json(result);
   }
 }

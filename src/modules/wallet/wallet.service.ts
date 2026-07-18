@@ -60,7 +60,6 @@ export class WalletService {
       if (!transaction) {
         throw ApiError.notFound("Transaction not found");
       }
-      console.log("Transaction found:", transaction);
       if (transaction.status === "success") {
         return ApiSuccess.ok("Wallet already topped up");
       }
@@ -68,9 +67,7 @@ export class WalletService {
       await transaction.save();
 
       const userWallet = await this.getWalletByUserId(userId);
-      console.log("User Wallet before topup:", userWallet);
       userWallet.balance += transaction.amount;
-      console.log("User Wallet after topup:", userWallet);
       await userWallet.save();
       return ApiSuccess.ok("Wallet Topup Successful", { wallet: userWallet });
     }
@@ -135,13 +132,9 @@ export class WalletService {
   }
 
   static async verifyAccountNumber(bankCode: string, accountNumber: string) {
-    console.log("entering verifyAccountNumber");
-    console.log({ bankCode, accountNumber });
-
     const response = await paystackClient.get(
       `/bank/resolve?account_number=${accountNumber}&bank_code=${bankCode}`,
     );
-    console.log("Response:", response);
     return ApiSuccess.ok("Bank Details Verified Successfully", response.data);
   }
 
@@ -248,7 +241,6 @@ export class WalletService {
       if (error instanceof AxiosError) {
         const { response } = error;
 
-        console.log({ data: response?.data });
 
         if (
           response?.data?.message ===

@@ -57,7 +57,7 @@ class MailService {
   }: EmailOptions): Promise<SentMessageInfo> {
     try {
       const mailOptions = {
-        from: from || "Haven Lease <support@hrcoreapp.com>",
+        from: "Haven Lease <no-reply@havenlease.com>",
         to,
         subject,
         text,
@@ -65,7 +65,11 @@ class MailService {
         replyTo,
       };
 
-      console.log({ mailOptions });
+      console.log({
+        to,
+        subject,
+        from: mailOptions.from,
+      });
 
       const sentMessageInfo = await this.transporter.sendMail(mailOptions);
       return sentMessageInfo;

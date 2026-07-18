@@ -7,7 +7,6 @@ import type { ICreateReport, IUpdateReportStatus } from "./report.interface";
 export class ReportController {
   static async createReport(req: Request, res: Response) {
     const payload = req.body as ICreateReport;
-    console.log({ payload });
     const { userId } = req.user as AuthenticatedUser;
     const result = await ReportService.createReport(payload, userId);
     res.status(201).json(result);

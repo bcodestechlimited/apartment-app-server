@@ -6,7 +6,7 @@ import { TransactionController } from "../transaction/transaction.controller";
 import { UserController } from "../user/user.controller";
 import { PropertyController } from "../property/property.controller";
 import { TenantRatingController } from "../tenant-rating/tenant-rating.controller";
-import { AuthController } from "../auth/auth.controller";
+import { authController } from "../auth/auth.controller";
 import { ReportController } from "../report/report.controller";
 import { BookingController } from "../booking/booking.controller";
 
@@ -85,17 +85,17 @@ router
 //document
 router
   .route("/documents")
-  .get(isAuth, isAuthAdmin, AuthController.getAllUserDocuments)
+  .get(isAuth, isAuthAdmin, authController.getAllUserDocuments)
   .all(methodNotAllowed);
 
 router
   .route("/documents/:documentId/verify")
-  .patch(isAuth, isAuthAdmin, AuthController.verifyUserDocument)
+  .patch(isAuth, isAuthAdmin, authController.verifyUserDocument)
   .all(methodNotAllowed);
 
 router
   .route("/documents/:documentId/reject")
-  .patch(isAuth, isAuthAdmin, AuthController.rejectUserDocument)
+  .patch(isAuth, isAuthAdmin, authController.rejectUserDocument)
   .all(methodNotAllowed);
 
 router

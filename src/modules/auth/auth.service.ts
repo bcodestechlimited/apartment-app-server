@@ -9,7 +9,7 @@ import UserService from "../user/user.service.js";
 import { comparePassword, hashPassword } from "../../utils/validationUtils.js";
 import { ApiError, ApiSuccess } from "../../utils/responseHandler.js";
 import { generateToken } from "../../config/token.js";
-import type { ObjectId, Types } from "mongoose";
+import type { Types } from "mongoose";
 import agenda from "../../lib/agenda.js";
 import type { updateUserDTO, UserRolesEnum } from "../user/user.interface.js";
 import type { UploadedFile } from "express-fileupload";
@@ -21,8 +21,8 @@ import {
   type AuthStateOptions,
 } from "@/lib/google-oauth.js";
 
-export class AuthService {
-  static async register(userData: RegisterDTO) {
+class AuthService {
+  async register(userData: RegisterDTO) {
     const { email, roles } = userData;
 
     const user = await UserService.createUser({
@@ -45,7 +45,7 @@ export class AuthService {
     );
   }
 
-  static async login(userData: LoginDTO) {
+  async login(userData: LoginDTO) {
     const { email, password } = userData;
 
     const user = await UserService.findUserByEmail(email);
@@ -72,7 +72,7 @@ export class AuthService {
     });
   }
 
-  static async loginWithGoogle({ role, redirect }: AuthStateOptions) {
+  async loginWithGoogle({ role, redirect }: AuthStateOptions) {
     const redirectURL = generateGoogleAuthURL({
       role: role,
       redirect: redirect,
@@ -80,9 +80,7 @@ export class AuthService {
     return ApiSuccess.ok("Login successful", { redirectURL });
   }
 
-  static async handleGoogleCallback(query: IQueryParams) {
-    console.log("entering handleGoogleCallback");
-
+  async handleGoogleCallback(query: IQueryParams) {
     const { code, state, error } = query;
 
     if (error) {
@@ -108,8 +106,6 @@ export class AuthService {
       if (["user", "landlord", "tenant", "admin"].includes(selectedRole)) {
         role = selectedRole;
       }
-
-      console.log({ role, selectedRole, decoded });
     }
 
     const googleUser = await getGoogleUserData(code as string);
@@ -143,10 +139,7 @@ export class AuthService {
 
   // src/modules/auth/auth.service.ts
 
-  static async updateUserRoleAndOnboard(
-    userId: Types.ObjectId,
-    role: UserRolesEnum,
-  ) {
+  async updateUserRoleAndOnboard(userId: Types.ObjectId, role: UserRolesEnum) {
     const user = await UserService.updateUser(userId, { roles: role });
 
     const token = generateToken({ userId: user._id, roles: user.roles });
@@ -154,14 +147,14 @@ export class AuthService {
     return { user, token };
   }
 
-  static async getUser(userId: Types.ObjectId) {
+  async getUser(userId: Types.ObjectId) {
     const user = await UserService.findUserById(userId);
     user.password = undefined;
     return ApiSuccess.ok("User Retrieved Successfully", {
       user,
     });
   }
-  static async updateUser(
+  async updateUser(
     userId: Types.ObjectId,
     userData: Partial<updateUserDTO>,
     files?: { document?: UploadedFile; avatar?: UploadedFile },
@@ -195,7 +188,7 @@ export class AuthService {
     });
   }
 
-  static async sendOTP({ email }: { email: string }) {
+  async sendOTP({ email }: { email: string }) {
     const user = await UserService.findUserByEmail(email);
     if (user.isEmailVerified) {
       return ApiSuccess.ok("User Already Verified");
@@ -209,7 +202,7 @@ export class AuthService {
     return ApiSuccess.ok(`OTP has been sent to ${email}`);
   }
 
-  static async verifyOTP({ email, otp }: OTPData) {
+  async verifyOTP({ email, otp }: OTPData) {
     const user = await UserService.findUserByEmail(email);
     if (user.isEmailVerified) {
       return ApiSuccess.ok("User Already Verified");
@@ -224,7 +217,7 @@ export class AuthService {
     return ApiSuccess.ok("Email Verified");
   }
 
-  static async forgotPassword({ email }: { email: string }) {
+  async forgotPassword({ email }: { email: string }) {
     const user = await UserService.findUserByEmail(email);
     if (user.provider !== "local") {
       throw ApiError.conflict("Kindly login with Google");
@@ -236,7 +229,7 @@ export class AuthService {
     return ApiSuccess.ok(`OTP has been sent to ${user.email}`);
   }
 
-  static async resetPassword({ email, otp, password }: ResetPasswordDTO) {
+  async resetPassword({ email, otp, password }: ResetPasswordDTO) {
     const user = await UserService.findUserByEmail(email);
 
     const otpExists = await OTP.findOne({ email, otp });
@@ -249,13 +242,13 @@ export class AuthService {
   }
 
   //Profile
-  static async getUserPersonalInfo(userId: Types.ObjectId) {
+  async getUserPersonalInfo(userId: Types.ObjectId) {
     const personalInfo = await UserService.getUserPersonalInfo(userId);
     return ApiSuccess.ok("Personal info retrieved successfully", {
       personalInfo,
     });
   }
-  static async updateUserPersonalInfo(userId: Types.ObjectId, userData: any) {
+  async updateUserPersonalInfo(userId: Types.ObjectId, userData: any) {
     const personalInfo = await UserService.updateUserInformation(
       userId,
       userData,
@@ -267,14 +260,14 @@ export class AuthService {
   }
 
   //Employment
-  static async getUserEmployment(userId: Types.ObjectId) {
+  async getUserEmployment(userId: Types.ObjectId) {
     const userEmployment = await UserService.getUserEmployment(userId);
     return ApiSuccess.ok("User employment retrieved successfully", {
       employment: userEmployment,
     });
   }
 
-  static async updateUserEmployment(userId: Types.ObjectId, userData: any) {
+  async updateUserEmployment(userId: Types.ObjectId, userData: any) {
     const userEmployment = await UserService.updateUserEmployment(
       userId,
       userData,
@@ -286,25 +279,25 @@ export class AuthService {
   }
 
   //Documents
-  static async getUserDocuments(userId: Types.ObjectId) {
+  async getUserDocuments(userId: Types.ObjectId) {
     const userDocuments = await UserService.getUserDocuments(userId);
     return ApiSuccess.ok("User documents retrieved successfully", {
       documents: userDocuments,
     });
   }
 
-  static async getAllUserDocuments(query: IQueryParams) {
+  async getAllUserDocuments(query: IQueryParams) {
     return await UserService.getAllUserDocuments(query);
   }
 
-  static async verifyUserDocument(userId: Types.ObjectId) {
+  async verifyUserDocument(userId: Types.ObjectId) {
     return await UserService.verifyDocument(userId);
   }
 
-  static async rejectUserDocument(userId: Types.ObjectId) {
+  async rejectUserDocument(userId: Types.ObjectId) {
     return await UserService.rejectUserDocument(userId);
   }
-  static async uploadUserDocument(
+  async uploadUserDocument(
     userId: Types.ObjectId,
     document: string,
     name: string,
@@ -321,14 +314,14 @@ export class AuthService {
   }
 
   //Next Of Kin
-  static async getUserNextOfKin(userId: Types.ObjectId) {
+  async getUserNextOfKin(userId: Types.ObjectId) {
     const nextOfKin = await UserService.getUserNextOfKin(userId);
     return ApiSuccess.ok("User next of kin retrieved successfully", {
       nextOfKin,
     });
   }
 
-  static async updateUserNextOfKin(userId: Types.ObjectId, userData: any) {
+  async updateUserNextOfKin(userId: Types.ObjectId, userData: any) {
     const nextOfKin = await UserService.updateUserNextOfKin(userId, userData);
 
     return ApiSuccess.ok("User next of kin Updated Successfully", {
@@ -337,14 +330,14 @@ export class AuthService {
   }
 
   //Guarantor
-  static async getUserGuarantor(userId: Types.ObjectId) {
+  async getUserGuarantor(userId: Types.ObjectId) {
     const guarantor = await UserService.getUserGuarantor(userId);
     return ApiSuccess.ok("User guarantor retrieved successfully", {
       guarantor,
     });
   }
 
-  static async updateUserGuarantor(userId: Types.ObjectId, userData: any) {
+  async updateUserGuarantor(userId: Types.ObjectId, userData: any) {
     const guarantor = await UserService.updateUserGuarantor(userId, userData);
 
     return ApiSuccess.ok("User guarantor Updated Successfully", {
@@ -352,7 +345,7 @@ export class AuthService {
     });
   }
 
-  static async updateUserDocuments(
+  async updateUserDocuments(
     userId: Types.ObjectId,
     userData: Partial<updateUserDTO>,
     files?: { document?: UploadedFile; avatar?: UploadedFile },
@@ -386,7 +379,7 @@ export class AuthService {
     });
   }
 
-  static async updateUserNotification(
+  async updateUserNotification(
     userId: Types.ObjectId,
     userData: Partial<updateUserDTO>,
     files?: { document?: UploadedFile; avatar?: UploadedFile },
@@ -412,8 +405,6 @@ export class AuthService {
       );
       UpdatedUserData.avatar = secure_url as string;
     }
-
-    console.log({ UpdatedUserData, files });
 
     const user = await UserService.updateUser(userId, UpdatedUserData);
     user.password = undefined;
