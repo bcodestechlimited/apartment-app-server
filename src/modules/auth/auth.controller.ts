@@ -8,14 +8,14 @@ import { authService } from "./auth.service.js";
 
 class AuthController {
   // Register user
-   async register(req: Request, res: Response) {
+  async register(req: Request, res: Response) {
     const userData = req.body;
     const result = await authService.register(userData);
     res.status(201).json(result);
   }
 
   // Login user
-   async login(req: Request, res: Response) {
+  async login(req: Request, res: Response) {
     const userData = req.body;
     const result = await authService.login(userData);
     const { token } = result.data;
@@ -24,8 +24,9 @@ class AuthController {
       httpOnly: true,
       secure: true,
       sameSite: "none",
-      maxAge: 3 * 24 * 60 * 60 * 1000,
+      maxAge: 3 * 24 * 60 * 60 * 1000, // 3 days
       path: "/",
+      domain: ".havenlease.com",
     });
 
     result.data.token = undefined;
@@ -34,7 +35,7 @@ class AuthController {
   }
 
   // Generate Goolge Link
-   async generateGoogleLoginLink(req: Request, res: Response) {
+  async generateGoogleLoginLink(req: Request, res: Response) {
     const { role, redirect } = req.query;
     const result = await authService.loginWithGoogle({
       role: role as string,
@@ -44,7 +45,7 @@ class AuthController {
   }
 
   // Google Login
-   async googleCallback(req: Request, res: Response) {
+  async googleCallback(req: Request, res: Response) {
     const query = req.query;
     const result = await authService.handleGoogleCallback(query);
     const { token, user, redirectPath, error } = result.data as {
@@ -123,7 +124,7 @@ class AuthController {
     return res.redirect(clientURLs.landingPageURL);
   }
 
-   async logout(req: Request, res: Response) {
+  async logout(req: Request, res: Response) {
     res.clearCookie("token", { path: "/" });
     res.status(200).json({
       success: true,
@@ -135,7 +136,7 @@ class AuthController {
 
   // src/modules/auth/auth.controller.ts
 
-   async completeOnboarding(req: Request, res: Response) {
+  async completeOnboarding(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const { role } = req.body;
 
@@ -156,58 +157,57 @@ class AuthController {
   }
 
   // Get user data
-   async getUser(req: Request, res: Response) {
+  async getUser(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const result = await authService.getUser(userId);
     res.status(200).json(result);
   }
 
   //
-   async updateUser(req: Request, res: Response) {
+  async updateUser(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
     const files = req.files as
-      | { document?: UploadedFile; avatar?: UploadedFile }
-      | undefined;
+      { document?: UploadedFile; avatar?: UploadedFile } | undefined;
     const result = await authService.updateUser(userId, userData, files);
     res.status(200).json(result);
   }
 
   // Send OTP
-   async sendOTP(req: Request, res: Response) {
+  async sendOTP(req: Request, res: Response) {
     const { email } = req.body;
     const result = await authService.sendOTP({ email });
     res.status(200).json(result);
   }
 
   // Verify OTP
-   async verifyOTP(req: Request, res: Response) {
+  async verifyOTP(req: Request, res: Response) {
     const { email, otp } = req.body;
     const result = await authService.verifyOTP({ email, otp });
     res.status(200).json(result);
   }
 
   // Forgot password
-   async forgotPassword(req: Request, res: Response) {
+  async forgotPassword(req: Request, res: Response) {
     const { email } = req.body;
     const result = await authService.forgotPassword({ email });
     res.status(200).json(result);
   }
 
   // Reset password
-   async resetPassword(req: Request, res: Response) {
+  async resetPassword(req: Request, res: Response) {
     const { email, otp, password } = req.body;
     const result = await authService.resetPassword({ email, otp, password });
     res.status(200).json(result);
   }
 
   // Profile - Personal Info
-   async getPersonalInfo(req: Request, res: Response) {
+  async getPersonalInfo(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const result = await authService.getUserPersonalInfo(userId);
     res.status(200).json(result);
   }
-   async updatePersonalInfo(req: Request, res: Response) {
+  async updatePersonalInfo(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
 
@@ -216,12 +216,12 @@ class AuthController {
   }
 
   // Profile - Employment
-   async getUserEmployment(req: Request, res: Response) {
+  async getUserEmployment(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const result = await authService.getUserEmployment(userId);
     res.status(200).json(result);
   }
-   async updateUserEmployment(req: Request, res: Response) {
+  async updateUserEmployment(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
     const result = await authService.updateUserEmployment(userId, userData);
@@ -229,7 +229,7 @@ class AuthController {
   }
 
   // Profile - Documents
-   async getUserDocuments(req: Request, res: Response) {
+  async getUserDocuments(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const result = await authService.getUserDocuments(userId);
     res.status(200).json(result);
@@ -241,13 +241,13 @@ class AuthController {
   //   res.status(200).json(result);
   // }
 
-   async getAllUserDocuments(req: Request, res: Response) {
+  async getAllUserDocuments(req: Request, res: Response) {
     const query = req.query as IQueryParams;
     const result = await authService.getAllUserDocuments(query);
     res.status(200).json(result);
   }
 
-   async verifyUserDocument(req: Request, res: Response) {
+  async verifyUserDocument(req: Request, res: Response) {
     const { documentId } = req.params as unknown as {
       documentId: Types.ObjectId;
     };
@@ -255,7 +255,7 @@ class AuthController {
     res.status(200).json(result);
   }
 
-   async rejectUserDocument(req: Request, res: Response) {
+  async rejectUserDocument(req: Request, res: Response) {
     const { documentId } = req.params as unknown as {
       documentId: Types.ObjectId;
     };
@@ -263,7 +263,7 @@ class AuthController {
     res.status(200).json(result);
   }
 
-   async uploadUserDocument(req: Request, res: Response) {
+  async uploadUserDocument(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const { document, name } = req.body;
     const result = await authService.uploadUserDocument(userId, document, name);
@@ -271,12 +271,12 @@ class AuthController {
   }
 
   // Profile - Next Of Kin
-   async getUserNextOfKin(req: Request, res: Response) {
+  async getUserNextOfKin(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const result = await authService.getUserNextOfKin(userId);
     res.status(200).json(result);
   }
-   async updateUserNextOfKin(req: Request, res: Response) {
+  async updateUserNextOfKin(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
     const result = await authService.updateUserNextOfKin(userId, userData);
@@ -284,12 +284,12 @@ class AuthController {
   }
 
   // Profile - Guarantor
-   async getUserGuarantor(req: Request, res: Response) {
+  async getUserGuarantor(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const result = await authService.getUserGuarantor(userId);
     res.status(200).json(result);
   }
-   async updateUserGuarantor(req: Request, res: Response) {
+  async updateUserGuarantor(req: Request, res: Response) {
     const { userId } = req.user as AuthenticatedUser;
     const userData = req.body;
     const result = await authService.updateUserGuarantor(userId, userData);
