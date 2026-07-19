@@ -308,6 +308,10 @@ export class BookingService {
     bookingId: string,
     transactionReference: string,
   ) {
+    console.log(
+      `Webhook received: bookingId=${bookingId}, transactionReference=${transactionReference}`,
+    );
+
     const existingPaymentReference = await Booking.findOne({
       paymentReference: transactionReference,
     });
