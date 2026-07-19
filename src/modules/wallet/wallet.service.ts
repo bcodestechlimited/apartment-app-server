@@ -12,7 +12,7 @@ import { env } from "@/config/env.config.js";
 import UserService from "../user/user.service.js";
 
 export class WalletService {
-  static async topUpWallet(userId: Types.ObjectId, amount: number) {
+  static async topUpWallet(userId: Types.ObjectId | string, amount: number) {
     if (amount <= 100) {
       throw ApiError.badRequest("Top-up amount must be at least ₦100");
     }
@@ -40,9 +40,12 @@ export class WalletService {
       description: "Wallet Topup",
       reference: response.data.data.reference,
       provider: "paystack",
+      currency: "NGN",
+      method: "wallet",
       status: "pending",
       adminApproval: "approved",
     });
+
     return ApiSuccess.ok("Wallet Topup Initialized", {
       authorization_url: response.data.data.authorization_url,
       reference: response.data.data.reference,
@@ -184,6 +187,8 @@ export class WalletService {
       description: "Withdrawal",
       status: "pending",
       provider: "paystack",
+      currency: "NGN",
+      method: "wallet",
       adminApproval: "pending",
     });
 
@@ -241,7 +246,6 @@ export class WalletService {
       if (error instanceof AxiosError) {
         const { response } = error;
 
-
         if (
           response?.data?.message ===
           "Your IP address is not allowed to make this call"
@@ -295,6 +299,31 @@ export class WalletService {
       }
       throw ApiError.internalServerError("Something went wrong");
     }
+  }
+
+  static async fundUserWallet(userId: Types.ObjectId | string, amount: number) {
+    if (amount <= 0) {
+      throw ApiError.badRequest("Amount must be greater than zero");
+    }
+
+    const wallet = await this.getWalletByUserId(userId);
+
+    wallet.balance += amount;
+    await wallet.save();
+
+    await TransactionService.createTransaction({
+      user: userId,
+      transactionType: "deposit",
+      amount,
+      description: "Wallet Funded by Admin",
+      status: "success",
+      provider: "wallet",
+      currency: "NGN",
+      method: "wallet",
+      adminApproval: "approved",
+    });
+
+    return ApiSuccess.ok("Wallet funded successfully", { wallet });
   }
 
   static async approveWithdrawal() {}

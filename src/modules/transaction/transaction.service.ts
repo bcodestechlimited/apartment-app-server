@@ -120,75 +120,20 @@ export class TransactionService {
     return transaction;
   }
 
-  // static async getPaymentOverview(query: IQueryParams) {
-  //   const { page = 1, limit = 10, search, status, transactionType } = query;
+  static async getTransactionByReferenceMain(reference: string) {
+    const transaction = await Transaction.findOne({ reference }).populate({
+      path: "user",
+      select: ["firstName", "lastName", "email"],
+    });
 
-  //   // 1. Calculate Global Stats using ONLY the Transaction collection
-  //   const [revenueStats, payoutStats] = await Promise.all([
-  //     // Sum successful payments (Income)
-  //     Transaction.aggregate([
-  //       {
-  //         $match: {
-  //           transactionType: "payment",
-  //           status: "success",
-  //         },
-  //       },
-  //       { $group: { _id: null, total: { $sum: "$amount" } } },
-  //     ]),
-  //     // Sum withdrawals grouped by status (Outgoings)
-  //     Transaction.aggregate([
-  //       { $match: { transactionType: "withdrawal" } },
-  //       {
-  //         $group: {
-  //           _id: "$status",
-  //           total: { $sum: "$amount" },
-  //         },
-  //       },
-  //     ]),
-  //   ]);
+    if (!transaction) {
+      throw ApiError.notFound("Transaction not found");
+    }
 
-  //   // Parse withdrawal results
-  //   const pendingPayouts =
-  //     payoutStats.find((p) => p._id === "pending")?.total || 0;
-  //   const successfulPayouts =
-  //     payoutStats.find((p) => p._id === "success")?.total || 0;
-
-  //   // 2. Fetch Transactions for the table
-  //   const filterQuery: any = {};
-  //   if (status && status !== "all") filterQuery.status = status;
-  //   if (transactionType && transactionType !== "all")
-  //     filterQuery.transactionType = transactionType;
-  //   if (search) {
-  //     const searchRegex = new RegExp(search, "i");
-  //     filterQuery.$or = [
-  //       { reference: { $regex: searchRegex } },
-  //       { "user.email": { $regex: searchRegex } },
-  //     ];
-  //   }
-
-  //   const { documents: transactions, pagination } = await paginate({
-  //     model: Transaction,
-  //     query: filterQuery,
-  //     populateOptions: [
-  //       { path: "user", select: "firstName lastName email roles" },
-  //       { path: "approvedBy", select: "firstName lastName" },
-  //     ],
-  //     page,
-  //     limit,
-  //     sort: { createdAt: -1 },
-  //   });
-
-  //   return ApiSuccess.ok("Payments retrieved", {
-  //     transactions,
-  //     stats: {
-  //       // This will now equal 20,000 + 65,000 + 65,000 = 150,000
-  //       totalRevenue: revenueStats[0]?.total || 0,
-  //       pendingPayouts,
-  //       successfulPayouts,
-  //     },
-  //     pagination,
-  //   });
-  // }
+    return ApiSuccess.ok("Transaction retrieved successfully", {
+      transaction,
+    });
+  }
 
   static async getPaymentOverview(query: IQueryParams) {
     const { page = 1, limit = 10, search, status, transactionType } = query;

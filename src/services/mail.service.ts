@@ -335,13 +335,11 @@ class MailService {
     tenantEmail,
     tenantName,
     propertyTitle,
-    moveInDate,
     tenantDashboardUrl,
   }: {
     tenantEmail: string;
     tenantName: string;
     propertyTitle: string;
-    moveInDate: string;
     tenantDashboardUrl: string;
   }): Promise<SentMessageInfo> {
     const subject = `Payment Successful - ${propertyTitle}`;
@@ -351,7 +349,6 @@ class MailService {
       `Dear ${tenantName},`,
       ``,
       `Your payment for "${propertyTitle}" has been received successfully.`,
-      `Move-in date: ${moveInDate}`,
       ``,
       `Your booking is now confirmed.`,
       `You can view your booking details here: ${tenantDashboardUrl}`,
@@ -362,7 +359,6 @@ class MailService {
     const html = MailService.loadTemplate("TenantPaymentConfirmation", {
       tenantName: !tenantName ? "There" : tenantName,
       propertyTitle,
-      moveInDate,
       tenantDashboardUrl,
       date,
     });
@@ -379,7 +375,6 @@ class MailService {
     landlordName,
     landlordEmail,
     propertyTitle,
-    moveInDate,
     tenantName,
     landlordDashboardUrl,
   }: {
@@ -396,8 +391,7 @@ class MailService {
     const emailText = [
       `Dear ${landlordName},`,
       ``,
-      `The tenant ${tenantName} has completed payment for the property "${propertyTitle}".`,
-      `Move-in date: ${moveInDate}`,
+      `A new booking payment from ${tenantName} has been comfirmed for the property "${propertyTitle}".`,
       ``,
       `You can view booking details here: ${landlordDashboardUrl}`,
       ``,

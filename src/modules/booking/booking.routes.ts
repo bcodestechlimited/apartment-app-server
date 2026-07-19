@@ -10,12 +10,12 @@ const router = express.Router();
 router
   .route("/")
   .get(BookingController.getAllBookings)
-  // .post(
-  //   isAuth,
-  //   validateBody(BookingSchemas.createBooking),
-  //   // validateBody(PropertySchemas.create),
-  //   BookingController.createBooking
-  // )
+  .post(
+    isAuth,
+    validateBody(BookingSchemas.createBooking),
+    // validateBody(PropertySchemas.create),
+    BookingController.createBooking,
+  )
   .all(methodNotAllowed);
 
 router
@@ -44,5 +44,11 @@ router
 //   .route("/:bookingId/verify")
 //   .get(BookingController.verifyBookingPayment)
 //   .all(methodNotAllowed);
+//
+// Verify payment for booking request
+router
+  .route("/:bookingId/verify")
+  .get(BookingController.verifyPayStackPayment)
+  .all(methodNotAllowed);
 
 export default router;

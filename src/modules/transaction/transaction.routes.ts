@@ -12,6 +12,11 @@ router
   .all(methodNotAllowed);
 
 router
+  .route("/reference/:reference")
+  .get(isAuth, TransactionController.getTransactionByReference) // Get a single transaction by ID
+  .all(methodNotAllowed);
+
+router
   .route("/:transactionId")
   .get(isAuth, TransactionController.getTransactionById) // Get a single transaction by ID
   .all(methodNotAllowed);

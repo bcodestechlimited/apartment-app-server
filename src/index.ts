@@ -16,7 +16,6 @@ import { startAgenda } from "./lib/agenda";
 //Routes
 import propertyRoutes from "./modules/property/property.routes";
 import bookingRoutes from "./modules/booking/booking.routes";
-import bookingRequestRoutes from "./modules/booking-request/booking-request.routes";
 import transactionRoutes from "./modules/transaction/transaction.routes";
 import walletRoutes from "./modules/wallet/wallet.routes";
 import tenantRoutes from "./modules/tenant/tenant.routes";
@@ -76,7 +75,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/property", propertyRoutes);
 app.use("/api/v1/booking", bookingRoutes);
 app.use("/api/v1/booking-request", bookingRequestRoutes);
-app.use("/api/v1/transaction", transactionRoutes);
+app.use("/api/v1/transactions", transactionRoutes);
 app.use("/api/v1/wallet", walletRoutes);
 app.use("/api/v1/tenants", tenantRoutes);
 app.use("/api/v1/message", messageRoutes);

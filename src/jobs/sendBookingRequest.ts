@@ -2,7 +2,6 @@ import agenda from "../lib/agenda";
 import type { Job } from "agenda";
 import { mailService } from "../services/mail.service";
 import logger from "../utils/logger";
-import BookingRequest from "../modules/booking-request/booking-request.model";
 import Property from "../modules/property/property.model";
 
 export interface SendBookingRequestData {
@@ -156,7 +155,7 @@ export const expireBookingRequestAfter24Hours = async (
 ) => {
   const { bookingRequestId, propertyId, tenantUserId } = job.attrs.data;
   // Expire the booking request
-  await BookingRequest.findByIdAndUpdate(bookingRequestId, {
+  await Booking.findByIdAndUpdate(bookingRequestId, {
     status: "expired",
   });
 

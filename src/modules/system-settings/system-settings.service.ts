@@ -29,7 +29,7 @@ export class SystemSettingService {
   static async getPlatformFee() {
     let settings = await SystemSetting.findOne();
     if (!settings) {
-      settings = await SystemSetting.create({ platformFeePercentage: 5 });
+      settings = await SystemSetting.create({ platformFeePercentage: 3 });
     }
     return settings.platformFeePercentage;
   }

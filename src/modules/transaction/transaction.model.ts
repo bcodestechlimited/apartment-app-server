@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import type { ITransaction } from "./transaction.interface";
 
 const TransactionSchema: Schema<ITransaction> = new Schema(
@@ -8,11 +8,6 @@ const TransactionSchema: Schema<ITransaction> = new Schema(
       ref: "User",
       required: true,
     },
-    provider: {
-      type: String,
-      enum: ["paystack", "flutterwave", "wallet"],
-      required: true,
-    },
     transactionType: {
       type: String,
       enum: ["withdrawal", "deposit", "transfer", "payment", "debit"],
@@ -20,12 +15,7 @@ const TransactionSchema: Schema<ITransaction> = new Schema(
     },
     amount: {
       type: Number,
-
       required: true,
-    },
-    platformFee: {
-      type: Number,
-      default: 0,
     },
     bankAccountNumber: {
       type: String,
@@ -45,14 +35,33 @@ const TransactionSchema: Schema<ITransaction> = new Schema(
     },
     status: {
       type: String,
-      enum: ["success", "failed", "pending"],
+      enum: [
+        "pending",
+        "success",
+        "failed",
+        "expired",
+        "needs_refund",
+        "refunded",
+      ],
       default: "pending",
     },
     reference: {
       type: String,
       default: null,
     },
-
+    method: {
+      type: String,
+      enum: ["cash", "card", "bank_transfer", "wallet"],
+    },
+    provider: {
+      type: String,
+      enum: ["paystack", "flutterwave", "wallet"],
+    },
+    currency: {
+      type: String,
+      enum: ["NGN", "USD", "EUR", "GBP"],
+      default: "NGN",
+    },
     adminApproval: {
       type: String,
       enum: ["pending", "approved", "rejected"],

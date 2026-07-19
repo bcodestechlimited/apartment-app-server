@@ -5,20 +5,20 @@ export interface ITransaction extends Document {
   user: IUser;
   transactionType: "withdrawal" | "deposit" | "transfer" | "payment" | "debit";
   amount: number;
-  platformFee?: number;
   bankName?: string;
   bankAccountNumber?: string;
   bankAccountName?: string;
   description?: string;
-  status: "success" | "failed" | "pending";
-  reference?: string;
   adminApproval: "pending" | "approved" | "rejected";
   approvedBy?: ObjectId;
-  approvalDate?: Date;
+  approvalDate?: Date | null;
   rejectionReason?: string;
-
+  reference?: string | null;
+  status:
+    "pending" | "success" | "failed" | "expired" | "needs_refund" | "refunded";
   provider: "paystack" | "flutterwave" | "wallet";
-
+  method: "cash" | "card" | "bank_transfer" | "wallet" | null;
+  currency: "NGN" | "USD" | "EUR" | "GBP";
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -26,17 +26,19 @@ export interface ITransaction extends Document {
 export interface createTransactionDTO {
   user: Types.ObjectId | string;
   transactionType: "withdrawal" | "deposit" | "transfer" | "payment" | "debit";
-  amount: number;
-  platformFee?: number;
-  provider: "paystack" | "flutterwave" | "wallet";
-  reference?: string;
   bankName?: string;
   bankAccountNumber?: string;
   bankAccountName?: string;
   description?: string;
-  adminApproval?: "pending" | "approved" | "rejected";
   approvalDate?: Date;
-  status?: "success" | "failed" | "pending";
+  adminApproval?: "pending" | "approved" | "rejected";
+  amount: number;
+  reference?: string;
+  method: "cash" | "card" | "bank_transfer" | "wallet" | null;
+  currency: "NGN" | "USD" | "EUR" | "GBP";
+  provider: "paystack" | "flutterwave" | "wallet";
+  status:
+    "pending" | "success" | "failed" | "expired" | "needs_refund" | "refunded";
 }
 
 export interface IProcessWithdrawal {

@@ -49,25 +49,33 @@ export class PaymentService {
   static async payWithPayStack({
     email,
     amount,
-    bookingRequestId,
+    bookingId,
   }: {
     email: string;
     amount: number;
-    bookingRequestId: string;
-  }): Promise<{ authorizationUrl: string }> {
+    bookingId: string;
+  }): Promise<{
+    authorizationUrl: string;
+    accessCode: string;
+    reference: string;
+  }> {
     try {
       const response = await paystackClient.post("/transaction/initialize", {
         email,
         amount: amount * 100,
-        callback_url: `${env.SERVER_BASE_URL}/api/v1/booking-request/${bookingRequestId}/verify`,
+        callback_url: `${env.SERVER_BASE_URL}/api/v1/booking/${bookingId}/verify`,
       });
 
+      const { authorization_url, access_code, reference } = response.data.data;
+
       return {
-        authorizationUrl: response.data.data.authorization_url,
+        authorizationUrl: authorization_url,
+        accessCode: access_code,
+        reference,
       };
-    } catch (error: any) {
-      logger.error(error?.response?.data);
+    } catch (error) {
       if (error instanceof AxiosError) {
+        logger.error(error?.response?.data);
         // Handle Axios specific errors
         if (error.response?.status === 400) {
           throw ApiError.badRequest("Invalid request parameters");
@@ -75,10 +83,9 @@ export class PaymentService {
         if (error.response?.status === 401) {
           throw ApiError.unauthorized("Unauthorized access");
         }
-      }
-
-      if (error?.response?.data) {
-        throw ApiError.serviceUnavailable("Payment Gateway Unavailable");
+        if (error?.response?.data) {
+          throw ApiError.serviceUnavailable("Payment Gateway Unavailable");
+        }
       }
 
       throw ApiError.internalServerError("Something went wrong");
@@ -106,9 +113,9 @@ export class PaymentService {
     } catch (error) {
       if (error instanceof AxiosError) {
         // Handle Axios specific errors
-        const { message } = error?.response?.data;
-        if (message) {
-          throw ApiError.badRequest(message);
+        // const { message } = error?.response?.data;
+        if (error?.response?.data?.message) {
+          throw ApiError.badRequest(error?.response?.data?.message);
         }
         throw ApiError.badRequest(
           "Verification Failed" + error?.response?.data,

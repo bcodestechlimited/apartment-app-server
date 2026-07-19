@@ -23,7 +23,16 @@ export class TransactionController {
   static async getTransactionById(req: Request, res: Response) {
     const { transactionId } = req.params;
     const result = await TransactionService.getTransaction(
-      transactionId as string
+      transactionId as string,
+    );
+    res.status(200).json(result);
+  }
+
+  // Controller to get a single transaction by ID
+  static async getTransactionByReference(req: Request, res: Response) {
+    const { transactionReference } = req.params;
+    const result = await TransactionService.getTransactionByReferenceMain(
+      transactionReference as string,
     );
     res.status(200).json(result);
   }
