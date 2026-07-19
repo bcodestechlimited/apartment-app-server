@@ -21,15 +21,16 @@ class AuthController {
     const result = await authService.login(userData);
     const { token } = result.data;
 
-    const isProduction = env.NODE_ENV === "production";
+    const isProdOrStaging =
+      env.NODE_ENV === "production" || env.NODE_ENV === "staging";
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: isProduction, // see note below re: local dev
-      sameSite: isProduction ? "none" : "lax",
+      secure: isProdOrStaging, // see note below re: local dev
+      sameSite: isProdOrStaging ? "none" : "lax",
       maxAge: 3 * 24 * 60 * 60 * 1000,
       path: "/",
-      domain: isProduction ? ".havenlease.com" : undefined,
+      domain: isProdOrStaging ? ".havenlease.com" : undefined,
     });
 
     result.data.token = undefined;
@@ -148,15 +149,16 @@ class AuthController {
       role,
     );
 
-    const isProduction = env.NODE_ENV === "production";
+    const isProdOrStaging =
+      env.NODE_ENV === "production" || env.NODE_ENV === "staging";
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: isProduction, // see note below re: local dev
-      sameSite: isProduction ? "none" : "lax",
+      secure: isProdOrStaging, // see note below re: local dev
+      sameSite: isProdOrStaging ? "none" : "lax",
       maxAge: 3 * 24 * 60 * 60 * 1000,
       path: "/",
-      domain: isProduction ? ".havenlease.com" : undefined,
+      domain: isProdOrStaging ? ".havenlease.com" : undefined,
     });
 
     res.status(200).json({ success: true, data: { user, token } });
