@@ -57,6 +57,10 @@ const BookingSchema: Schema<IBooking> = new Schema(
         },
       },
     ],
+    days: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,

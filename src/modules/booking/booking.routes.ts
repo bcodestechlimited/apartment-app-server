@@ -48,7 +48,7 @@ router
 // Verify payment for booking request
 router
   .route("/:bookingId/verify")
-  .get(BookingController.verifyPayStackPayment)
+  .post(BookingController.verifyPayStackPayment)
   .all(methodNotAllowed);
 
 export default router;

@@ -3,6 +3,7 @@ import { PropertyService } from "./property.service.js";
 import type { AuthenticatedUser } from "../user/user.interface.js";
 import type { IQueryParams } from "../../shared/interfaces/query.interface.js";
 import type { FileArray, UploadedFile } from "express-fileupload";
+import { BookingService } from "../booking/booking.service.js";
 
 export class PropertyController {
   // Create new property
@@ -10,7 +11,6 @@ export class PropertyController {
     const propertyData = req.body;
     // const files = req.files as { pictures: UploadedFile[] };
     const { userId } = req.user as AuthenticatedUser;
-
 
     const result = await PropertyService.createProperty(
       propertyData,
@@ -114,6 +114,11 @@ export class PropertyController {
       id as string,
       userId,
     );
+    res.status(200).json(result);
+  }
+
+  static async getPropertyBookedDays(req: Request, res: Response) {
+    const result = await BookingService.getBookedDays(req.query);
     res.status(200).json(result);
   }
 }

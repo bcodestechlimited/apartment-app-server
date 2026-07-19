@@ -23,6 +23,37 @@ import { clientURLs } from "@/utils/clientURL.js";
 import { schedulePaymentSuccessEmail } from "@/jobs/sendPaymentSuccess.js";
 
 export class BookingService {
+  // Get booked days
+  static async getBookedDays(params: IQueryParams) {
+    const { startDate, endDate, bookingId, propertyId } = params;
+
+    const query: any = {};
+
+    if (startDate || endDate) {
+      query.date = {};
+      if (startDate) {
+        query.date.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        query.date.$lte = end;
+      }
+    }
+
+    if (bookingId) {
+      query.booking = bookingId;
+    }
+
+    if (propertyId) {
+      query.property = propertyId;
+    }
+
+    const bookedDays = await BookingDay.find(query);
+
+    return ApiSuccess.ok("Booked days retrieved successfully", { bookedDays });
+  }
+
   // Create new booking
   static async createBooking(
     bookingData: CreateBookingDTO,
@@ -323,6 +354,8 @@ export class BookingService {
     const { data } =
       await PaymentService.verifyPayStackPayment(transactionReference);
 
+    console.log({ transactionReferenceData: data });
+
     if (data?.status !== "success") {
       throw ApiError.badRequest("Transaction Reference Invalid");
     }
@@ -332,6 +365,12 @@ export class BookingService {
     );
 
     if (!booking) throw ApiError.notFound("Booking not found");
+
+    booking.status = "confirmed";
+
+    await booking.save();
+
+    console.log({ booking });
 
     const transaction = await TransactionRepository.findOne({
       _id: booking?.transaction?._id as string,
@@ -352,7 +391,7 @@ export class BookingService {
     const landlordCut = transaction?.amount - booking?.platformFee;
 
     // Create days for the booking (For blocking out calendar)
-    const bookingDays = booking.days.map((day) => ({
+    const bookingDays = booking?.days?.map((day) => ({
       booking: booking._id,
       property: booking.property._id,
       date: new Date(day),

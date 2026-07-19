@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { BookingService } from "./booking.service.js";
 import type { AuthenticatedUser } from "../user/user.interface.js";
 import { env } from "@/config/env.config.js";
-import type { Types } from "mongoose";
+import { PaymentService } from "@/services/payment.service.js";
 
 export class BookingController {
   // Create new booking
@@ -80,18 +80,14 @@ export class BookingController {
 
   // Verify Paystack Payment
   static async verifyPayStackPayment(req: Request, res: Response) {
-    const { bookingId } = req.params;
-    const { trxref } = req.query;
+    const { bookingId, reference } = req.body;
     // await PaymentService.verifyPaystackSignature(req);
     const result = await BookingService.handlePaymentSuccess(
       bookingId as string,
-      trxref as string,
+      reference as string,
     );
 
-    res.redirect(
-      `${env.CLIENT_BASE_URL}/dashboard/bookings?bookingId=${result.data.bookingRequest._id}`,
-    );
-    // res.status(200).json(result);
+    res.status(200).json(result);
   }
 }
 

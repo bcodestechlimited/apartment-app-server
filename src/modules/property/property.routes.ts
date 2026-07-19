@@ -51,4 +51,9 @@ router
   .delete(isAuth, PropertyController.deleteProperty)
   .all(methodNotAllowed);
 
+router
+  .route("/:propertyId/booked-days")
+  .get(PropertyController.getPropertyById) // public or protected as needed
+  .all(methodNotAllowed);
+
 export default router;
