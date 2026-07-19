@@ -74,7 +74,6 @@ app.get("/", (req, res) => {
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/property", propertyRoutes);
 app.use("/api/v1/booking", bookingRoutes);
-app.use("/api/v1/booking-request", bookingRequestRoutes);
 app.use("/api/v1/transactions", transactionRoutes);
 app.use("/api/v1/wallet", walletRoutes);
 app.use("/api/v1/tenants", tenantRoutes);

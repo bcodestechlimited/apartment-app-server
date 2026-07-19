@@ -7,7 +7,6 @@ import {
   sendBookingRequestToTenant,
 } from "../jobs/sendBookingRequest";
 import { sendBookingRequestDeclinedEmailToTenant } from "../jobs/sendBookingRequestDeclined";
-import { sendPaymentReminderToTenant } from "../jobs/sendPaymentReminder.job";
 import { sendContactMessage } from "@/jobs/sendContactMeMessage";
 import {
   PROPERTY_UPDATE_ALERT,
@@ -46,7 +45,7 @@ agenda.define(
   expireBookingRequestAfter24Hours,
 );
 
-agenda.define("send_payment_reminder_to_tenant", sendPaymentReminderToTenant);
+// agenda.define("send_payment_reminder_to_tenant", sendPaymentReminderToTenant);
 agenda.define(PROPERTY_UPDATE_ALERT, sendPropertyUpdateAlertJob);
 
 export const startAgenda = async () => {
