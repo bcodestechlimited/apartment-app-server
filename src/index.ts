@@ -36,7 +36,7 @@ const app = express();
 const server = createServer(app);
 const port = process.env.PORT || 3000;
 
-app.set("trust proxy", true);
+// app.set("trust proxy", true);
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -52,7 +52,7 @@ app.use(
 
 app.use(
   cors({
-    origin: env.CORS_ORIGIN.split(",").map((o) => o.trim()),
+    // origin: env.CORS_ORIGIN.split(",").map((o) => o.trim()),
     // origin: [
     //   "http://localhost:5173",
     //   "http://localhost:5174",
@@ -65,7 +65,7 @@ app.use(
     //   "http://localhost:5173",
     //   "http://192.168.8.100:5173",
     // ],
-    // origin: "*",
+    origin: "*",
     credentials: true,
   }),
 );
