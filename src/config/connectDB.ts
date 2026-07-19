@@ -2,7 +2,11 @@ import mongoose from "mongoose";
 import { env } from "./env.config";
 import logger from "../utils/logger";
 
-if (process.versions.bun && env.NODE_ENV !== "production") {
+const isProdOrStaging =
+  env.NODE_ENV === "production" || env.NODE_ENV === "staging";
+const isProd = env.NODE_ENV === "production";
+
+if (process.versions.bun && !isProdOrStaging) {
   (async () => {
     const dns = await import("node:dns");
     dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
@@ -19,8 +23,7 @@ const connectDB = async () => {
   try {
     logger.info("Connecting...");
     await mongoose.connect(env.MONGODB_URI, {
-      dbName:
-        env.NODE_ENV === "production" ? "Haven-Lease" : "Haven-Lease-Staging",
+      dbName: isProd ? "Haven-Lease" : "Haven-Lease-Staging",
       // "Haven-Lease",
     });
     logger.info("DB Connected!");

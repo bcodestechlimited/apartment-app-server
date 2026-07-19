@@ -5,7 +5,7 @@ export const env = cleanEnv(Bun.env, {
   BREVO_EMAIL: str(),
   BREVO_PASSWORD: str(),
   NODE_ENV: str({
-    choices: ["development", "production", "test"],
+    choices: ["development", "production", "staging"],
   }),
   ADMIN_EMAIL: str(),
   PORT: port() || 3000,
