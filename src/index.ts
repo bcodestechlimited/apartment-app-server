@@ -31,6 +31,7 @@ import ReportRouter from "./modules/report/report.routes";
 import savedPropertiesRouter from "./modules/saved-properties/saved-properties.routes";
 import systemSettingsRouter from "./modules/system-settings/system-settings.routes";
 import contactUsRouter from "./modules/contact/contact.routes";
+import { env } from "./config/env.config";
 const app = express();
 const server = createServer(app);
 const port = process.env.PORT || 3000;
@@ -50,18 +51,19 @@ app.use(
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "https://apartment-app-client.vercel.app",
-      "https://www.havenlease.com",
-      "https://havenlease.com",
-      "http://192.168.8.101:5173",
-      "http://192.168.0.200:5173",
-      "192.168.8.101:5173",
-      "http://localhost:5173",
-      "http://192.168.8.100:5173",
-    ],
+    origin: env.CORS_ORIGIN.split(",").map((o) => o.trim()),
+    // origin: [
+    //   "http://localhost:5173",
+    //   "http://localhost:5174",
+    //   "https://apartment-app-client.vercel.app",
+    //   "https://www.havenlease.com",
+    //   "https://havenlease.com",
+    //   "http://192.168.8.101:5173",
+    //   "http://192.168.0.200:5173",
+    //   "192.168.8.101:5173",
+    //   "http://localhost:5173",
+    //   "http://192.168.8.100:5173",
+    // ],
     // origin: "*",
     credentials: true,
   }),
