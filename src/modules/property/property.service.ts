@@ -476,7 +476,7 @@ export class PropertyService {
       ? JSON.parse(updateData.facilities as string)
       : property.facilities || [];
 
-    let updatePropertyPayload = {
+    const updatePropertyPayload = {
       ...updateData,
       amenities: parsedAmenities,
       facilities: parsedFacilities,

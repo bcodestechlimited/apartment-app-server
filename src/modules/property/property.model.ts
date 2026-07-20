@@ -100,11 +100,11 @@ const PropertySchema: Schema<IProperty> = new Schema(
       type: Date,
       required: [true, "Please provide a property availability date"],
     },
-    pricingModel: {
-      type: String,
-      enum: Object.values(PricingModel),
-      required: [true, "Please specify the pricing model"],
-    },
+    // pricingModel: {
+    //   type: String,
+    //   enum: Object.values(PricingModel),
+    //   required: [true, "Please specify the pricing model"],
+    // },
     seatingCapacity: {
       type: Number,
       min: [1, "Seating capacity must be at least 1"],

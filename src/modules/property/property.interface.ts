@@ -34,7 +34,7 @@ export interface IProperty extends Document {
   address: string;
   state: string;
   lga: string;
-  pricingModel: PricingModel;
+  // pricingModel: PricingModel;
   amenities: string[];
   facilities: string[];
   otherFees: IOtherFee[];

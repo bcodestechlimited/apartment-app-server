@@ -24,8 +24,8 @@ import { schedulePaymentSuccessEmail } from "@/jobs/sendPaymentSuccess.js";
 
 export class BookingService {
   // Get booked days
-  static async getBookedDays(params: IQueryParams) {
-    const { startDate, endDate, bookingId, propertyId } = params;
+  static async getBookedDays(propertyId: string, params: IQueryParams) {
+    const { startDate, endDate, bookingId } = params;
 
     const query: any = {};
 

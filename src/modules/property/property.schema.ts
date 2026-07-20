@@ -45,13 +45,13 @@ export class PropertySchemas {
         })
         .nonempty("Please provide at least one availability time slot")
         .optional(),
-      pricingModel: z
-        .nativeEnum(PricingModel, {
-          errorMap: (issue, ctx) => {
-            return { message: "Invalid pricing model" };
-          },
-        })
-        .optional(),
+      // pricingModel: z
+      //   .nativeEnum(PricingModel, {
+      //     errorMap: (issue, ctx) => {
+      //       return { message: "Invalid pricing model" };
+      //     },
+      //   })
+      //   .optional(),
       seatingCapacity: z
         .string({ required_error: "Seating capacity is required" })
         .refine(
@@ -199,13 +199,13 @@ export class PropertySchemas {
         //     path: ["availability"],
         //   });
         // }
-        if (!data.pricingModel) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Pricing model is required for workspaces",
-            path: ["pricingModel"],
-          });
-        }
+        // if (!data.pricingModel) {
+        //   ctx.addIssue({
+        //     code: z.ZodIssueCode.custom,
+        //     message: "Pricing model is required for workspaces",
+        //     path: ["pricingModel"],
+        //   });
+        // }
         if (!data.seatingCapacity) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,

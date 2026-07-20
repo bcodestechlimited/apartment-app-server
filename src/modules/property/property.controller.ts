@@ -118,7 +118,9 @@ export class PropertyController {
   }
 
   static async getPropertyBookedDays(req: Request, res: Response) {
-    const result = await BookingService.getBookedDays(req.query);
+    const { propertyId } = req.params;
+
+    const result = await BookingService.getBookedDays(propertyId!, req.query);
     res.status(200).json(result);
   }
 }

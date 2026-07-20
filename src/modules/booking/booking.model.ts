@@ -95,15 +95,10 @@ const BookingDaySchema = new Schema(
 );
 
 // Prevent duplicates
-BookingDaySchema.index(
-  {
-    property: 1,
-    date: 1,
-  },
-  {
-    unique: true,
-  },
-);
+BookingDaySchema.index({
+  property: 1,
+  date: 1,
+});
 
 export const Booking = mongoose.model<IBooking>("Booking", BookingSchema);
 export const BookingDay = mongoose.model<IBookingDay>(

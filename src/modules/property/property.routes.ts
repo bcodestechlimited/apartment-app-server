@@ -53,7 +53,7 @@ router
 
 router
   .route("/:propertyId/booked-days")
-  .get(PropertyController.getPropertyById) // public or protected as needed
+  .get(PropertyController.getPropertyBookedDays) // public or protected as needed
   .all(methodNotAllowed);
 
 export default router;
